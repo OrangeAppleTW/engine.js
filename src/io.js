@@ -1,12 +1,16 @@
 var keycode = require('keycode');
-var exports={},
-    cursor={x:0, y:0},
-    key=[],
-    clicked={x:null, y:null},
-    keyup={},
-    keydown={};
 
-var io = function(canvas){
+var io = function(canvas, debugMode){
+    
+    var exports={},
+        cursor={x:0, y:0},
+        key=[],
+        clicked={x:null, y:null},
+        keyup={},
+        keydown={},
+        holding={};
+
+    debugMode = debugMode || false;
 
     // Make any element focusable for keydown event.
     canvas.setAttribute("tabindex",'1');
@@ -20,20 +24,34 @@ var io = function(canvas){
     canvas.addEventListener("click", function(e){
         clicked.x = e.offsetX;
         clicked.y = e.offsetY;
+        if(debugMode){
+            console.log( "Clicked! cursor:"+JSON.stringify(cursor) );
+        }
     });
 
     canvas.addEventListener("keydown", function(e){
-        keydown[keycode(e.keyCode)] = true;
+        var key = keycode(e.keyCode);
+        keydown[key] = true;
+        holding[key] = true;
+        if(debugMode){
+            console.log( "Keydown! key:"+key );
+        }
     });
 
     canvas.addEventListener("keyup", function(e){
-        keyup[keycode(e.keyCode)] = true;
+        var key = keycode(e.keyCode);
+        keyup[key] = true;
+        holding[key] = false;
+        if(debugMode){
+            console.log( "Keyup! key:"+key );
+        }
     });
 
     exports.cursor = cursor;
     exports.clicked = clicked;
     exports.keyup = keyup;
     exports.keydown = keydown;
+    exports.holding = holding;
     return exports;
 };
 

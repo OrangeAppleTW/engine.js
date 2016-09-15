@@ -9,7 +9,8 @@ Game.set({
     height: 400, // Default: 480px
     ratio: 0.8, // Default: 1
     gravity: 9.8, // Default: 0
-    frameFunc: function(){}
+    frameFunc: function(){},
+    debugMode: true // Default: false
 });
 
 Game.stop();

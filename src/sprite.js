@@ -52,8 +52,7 @@ Sprite.prototype.toward = function(){
     // console.log(this.direction);
 }
 
-// @TODO: rename => touched
-Sprite.prototype.isCollidedTo = function(){
+Sprite.prototype.touched = function(){
     var crossX = crossY = false;
     if( arguments[0] instanceof Sprite ){
         var target = arguments[0];

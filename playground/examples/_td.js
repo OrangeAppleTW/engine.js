@@ -28,7 +28,7 @@ hidden: true
 
 Game.on("click", null, function(){
 if(isBuilding){
-    if(!towerButton.isCollidedTo(Game.cursor.x,Game.cursor.y)){
+    if(!towerButton.touched(Game.cursor.x,Game.cursor.y)){
         isBuilding = !isBuilding;
         towerTemplate.hidden = !isBuilding;
         buildTower()
@@ -70,7 +70,7 @@ function frameFunc(){
             }
             enemy.toward(destination.x, destination.y);
             enemy.stepForward(3);
-            if( enemy.isCollidedTo(destination.x, destination.y) ){
+            if( enemy.touched(destination.x, destination.y) ){
                 enemy.pathIndex++;
                 if(enemy.pathIndex>=enemyPath.length){
                     enemies.splice(i,1);

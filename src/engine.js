@@ -4,27 +4,43 @@
  */
 // var ENV_WORKER = typeof importScripts === 'function';
 
-function engine(stageId, frameFunc, stageWidth, stageHeight){
+function engine(stageId, debugMode , frameFunc){
     var Sprite = require("./sprite");
+    var Sprites = require("./sprites");
     var inspector = require("./inspector");
     var canvas= document.getElementById(stageId);
     var ctx = canvas.getContext("2d");
-    var sprites = {};
+    var sprites = new Sprites();
+    var settings = {
+        width: canvas.width,
+        height: canvas.height,
+        // ratio: 1, //@TODO: set ratio
+        // gravity: 0, //@TODO: set gravity
+        frameFunc: function(){}
+    };
 
-    stageWidth = stageWidth || canvas.width;
-    stageHeight = stageHeight || canvas.height;
+    debugMode = debugMode || false;
 
-    var io = require("./io")(canvas);
-    var eventList = require("./event-list")(io);
-    var renderer = require("./renderer")(ctx, stageWidth, stageHeight, frameFunc, sprites, eventList, inspector);
+    var io = require("./io")(canvas, debugMode);
+    var eventList = require("./event-list")(io, debugMode);
+    var renderer = require("./renderer")(ctx, settings, sprites, eventList, inspector);
 
-    // @TODO: Stop 的時候clear sprites
-    function stop(){
-        eventList.clear();
-        renderer.stop();
+    function set(args){
+        if(args.width){canvas.width = args.width;}
+        if(args.height){canvas.height = args.height;}
+        settings.width      = args.width || settings.width;
+        settings.height     = args.height || settings.height;
+        settings.ratio      = args.ratio || settings.ratio;
+        settings.gravity    = args.gravity || settings.gravity;
+        settings.frameFunc  = args.frameFunc || settings.frameFunc;
+        return this;
     }
 
-    // @TODO: Clear all sprites
+    // function reset(){
+    //     eventList.clear();
+    //     sprites.clear();
+    // }
+
     var proxy = {
         sprites: sprites,
         createSprite: Sprite.new,
@@ -34,13 +50,10 @@ function engine(stageId, frameFunc, stageWidth, stageHeight){
         cursor: io.cursor,
         inspector: inspector,
         on: eventList.register,
-        //@TODO: set ratio
-        //@TODO: set gravity
-        set: function(){},
-        stop: stop,
+        set: set,
+        stop: renderer.stop,
         start: renderer.startRendering,
-        // @TODO: merge into set
-        setFrameFunc: renderer.setFrameFunc,
+        setFrameFunc: function(func){ set({frameFunc:func}) },
         ctx: ctx
     };
     return proxy;

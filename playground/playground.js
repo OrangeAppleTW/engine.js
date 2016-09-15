@@ -44,14 +44,16 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Game = Engine("stage");
+	window.Game = Engine("stage",true);
 	var tdScript = __webpack_require__(8),
 	    flappyBirdScript = __webpack_require__(10),
-	    starsScript = __webpack_require__(9);
+	    starsScript = __webpack_require__(9),
+	    scrollingScript = __webpack_require__(12);
 
 	$("textarea#TD").val(tdScript);
 	$("textarea#flappy-bird").val(flappyBirdScript);
 	$("textarea#stars").val(starsScript);
+	$("textarea#scrolling").val(scrollingScript);
 
 	var editor = CodeMirror.fromTextArea(document.getElementById("script-box"), {
 	    lineNumbers: true,
@@ -60,17 +62,26 @@
 	    styleActiveLine: true,
 	    matchBrackets: true
 	});
-	document.getElementById("run-code-button").addEventListener(
-	    "click", function(){
+	$("#run-code-button").click(
+	    function(){
 	        Game.stop();
 	        editor.save();
 	        eval(document.getElementById("script-box").value);
 	        Game.start();
 	    }
 	)
-	document.getElementById("stop-code-button").addEventListener(
-	    "click", function(){
+	$("#stop-code-button").click(
+	    function(){
+	        $(this).hide();
+	        $("#start-code-button").show()
 	        Game.stop();
+	    }
+	);
+	$("#start-code-button").click(
+	    function(){
+	        $(this).hide();
+	        $("#stop-code-button").show()
+	        Game.start();
 	    }
 	);
 	$("#demo-selector a").click(function(){
@@ -112,7 +123,7 @@
 /* 8 */
 /***/ function(module, exports) {
 
-	module.exports = "var ctx = Game.ctx;\n\nvar clock = 0,\nhp = 100,\nscore = 0,\nisBuilding = false;\nvar enemyPath = [\n{x:96+16, y:64},\n{x:384+32, y:64+16},\n{x:384+16, y:192+32},\n{x:224, y:192+16},\n{x:224+16, y:320+32},\n{x:544+32, y:320+16},\n{x:544+16, y:96}\n];\n\nvar enemies = Game.sprites.enemies=[];\nvar towers = Game.sprites.towers=[];\nvar towerButton = Game.sprites.towerButton = Game.createSprite({\nx:608, y:448,\ncostumes:\"./images/tower-btn.png\"\n});\nvar towerTemplate = Game.sprites.towerTemplate = Game.createSprite({\nx:0, y:0,\ncostumes: \"./images/tower.png\",\nhidden: true\n});\n\nGame.on(\"click\", null, function(){\nif(isBuilding){\n    if(!towerButton.isCollidedTo(Game.cursor.x,Game.cursor.y)){\n        isBuilding = !isBuilding;\n        towerTemplate.hidden = !isBuilding;\n        buildTower()\n    }\n}\n});\n\nGame.on(\"click\", towerButton, function(){\nisBuilding = !isBuilding;\ntowerTemplate.hidden = !isBuilding;\n});\n\nGame.on(\"keydown\", \"s\", function(){\nscore += 100;\n});\n\nfunction frameFunc(){\n    Game.drawBackdrop(\"./images/map.png\")\n    Game.drawSprites();\n    if(clock%30===0){\n        var newEnemy = Game.createSprite({\n            x: 112,\n            y: 480,\n            costumes:\"./images/slime.gif\"\n        });\n        newEnemy.pathIndex = 0;\n        newEnemy.hp = 10;\n        enemies.push(newEnemy);\n    }\n    for(let i=0; i<enemies.length; i++){\n        var enemy = enemies[i]\n        if(enemy.hp<=0){\n            enemies.splice(i,1);\n            score += 10;\n        } else {\n            var destination = {\n                x:enemyPath[enemy.pathIndex].x,\n                y:enemyPath[enemy.pathIndex].y\n            }\n            enemy.toward(destination.x, destination.y);\n            enemy.stepForward(3);\n            if( enemy.isCollidedTo(destination.x, destination.y) ){\n                enemy.pathIndex++;\n                if(enemy.pathIndex>=enemyPath.length){\n                    enemies.splice(i,1);\n                    hp-=10;\n                }\n            }\n        }\n    }\n    for(let i=0; i<towers.length; i++){\n        if(clock%30<=0){\n            towers[i].searchEnemy();\n        }\n    }\n    towerTemplate.moveTo(Game.cursor.x, Game.cursor.y);\n    Game.print(\"HP: \"+hp, 20, 40, \"white\", 20);\n    Game.print(\"Score: \"+score, 20, 60, \"white\", 20);\n    Game.print(\"FPS: \"+Game.inspector.fps, 20, 80, \"red\", 20);\n    clock++;\n}\n\nfunction buildTower() {\nvar newTower = Game.createSprite({\n    x: Game.cursor.x,\n    y: Game.cursor.y,\n    costumes:\"./images/tower.png\"\n});\nnewTower.range = 96;\nnewTower.searchEnemy = function(){\n    for(let i=0; i<enemies.length; i++){\n        var distance = this.distanceTo(enemies[i]);\n        if (distance<=this.range) {\n            this.shoot(enemies[i]);\n            return;\n        }\n    }\n};\nnewTower.shoot = function(enemy){\n    ctx.beginPath();\n    ctx.moveTo(this.x,this.y-16);\n    ctx.lineTo(enemy.x+16,enemy.y+16);\n    ctx.strokeStyle = 'red';\n    ctx.lineWidth = 3;\n    ctx.stroke();\n    enemy.hp -= 10;\n};\ntowers.push(newTower);\n}\nGame.setFrameFunc(frameFunc);"
+	module.exports = "var ctx = Game.ctx;\n\nvar clock = 0,\nhp = 100,\nscore = 0,\nisBuilding = false;\nvar enemyPath = [\n{x:96+16, y:64},\n{x:384+32, y:64+16},\n{x:384+16, y:192+32},\n{x:224, y:192+16},\n{x:224+16, y:320+32},\n{x:544+32, y:320+16},\n{x:544+16, y:96}\n];\n\nvar enemies = Game.sprites.enemies=[];\nvar towers = Game.sprites.towers=[];\nvar towerButton = Game.sprites.towerButton = Game.createSprite({\nx:608, y:448,\ncostumes:\"./images/tower-btn.png\"\n});\nvar towerTemplate = Game.sprites.towerTemplate = Game.createSprite({\nx:0, y:0,\ncostumes: \"./images/tower.png\",\nhidden: true\n});\n\nGame.on(\"click\", null, function(){\nif(isBuilding){\n    if(!towerButton.touched(Game.cursor.x,Game.cursor.y)){\n        isBuilding = !isBuilding;\n        towerTemplate.hidden = !isBuilding;\n        buildTower()\n    }\n}\n});\n\nGame.on(\"click\", towerButton, function(){\nisBuilding = !isBuilding;\ntowerTemplate.hidden = !isBuilding;\n});\n\nGame.on(\"keydown\", \"s\", function(){\nscore += 100;\n});\n\nfunction frameFunc(){\n    Game.drawBackdrop(\"./images/map.png\")\n    Game.drawSprites();\n    if(clock%30===0){\n        var newEnemy = Game.createSprite({\n            x: 112,\n            y: 480,\n            costumes:\"./images/slime.gif\"\n        });\n        newEnemy.pathIndex = 0;\n        newEnemy.hp = 10;\n        enemies.push(newEnemy);\n    }\n    for(let i=0; i<enemies.length; i++){\n        var enemy = enemies[i]\n        if(enemy.hp<=0){\n            enemies.splice(i,1);\n            score += 10;\n        } else {\n            var destination = {\n                x:enemyPath[enemy.pathIndex].x,\n                y:enemyPath[enemy.pathIndex].y\n            }\n            enemy.toward(destination.x, destination.y);\n            enemy.stepForward(3);\n            if( enemy.touched(destination.x, destination.y) ){\n                enemy.pathIndex++;\n                if(enemy.pathIndex>=enemyPath.length){\n                    enemies.splice(i,1);\n                    hp-=10;\n                }\n            }\n        }\n    }\n    for(let i=0; i<towers.length; i++){\n        if(clock%30<=0){\n            towers[i].searchEnemy();\n        }\n    }\n    towerTemplate.moveTo(Game.cursor.x, Game.cursor.y);\n    Game.print(\"HP: \"+hp, 20, 40, \"white\", 20);\n    Game.print(\"Score: \"+score, 20, 60, \"white\", 20);\n    Game.print(\"FPS: \"+Game.inspector.fps, 20, 80, \"red\", 20);\n    clock++;\n}\n\nfunction buildTower() {\nvar newTower = Game.createSprite({\n    x: Game.cursor.x,\n    y: Game.cursor.y,\n    costumes:\"./images/tower.png\"\n});\nnewTower.range = 96;\nnewTower.searchEnemy = function(){\n    for(let i=0; i<enemies.length; i++){\n        var distance = this.distanceTo(enemies[i]);\n        if (distance<=this.range) {\n            this.shoot(enemies[i]);\n            return;\n        }\n    }\n};\nnewTower.shoot = function(enemy){\n    ctx.beginPath();\n    ctx.moveTo(this.x,this.y-16);\n    ctx.lineTo(enemy.x+16,enemy.y+16);\n    ctx.strokeStyle = 'red';\n    ctx.lineWidth = 3;\n    ctx.stroke();\n    enemy.hp -= 10;\n};\ntowers.push(newTower);\n}\nGame.setFrameFunc(frameFunc);"
 
 /***/ },
 /* 9 */
@@ -124,7 +135,14 @@
 /* 10 */
 /***/ function(module, exports) {
 
-	module.exports = "var bird = Game.sprites.bird = Game.createSprite({\n    x: 320,\n    y: 240,\n    costumes: \"./images/slime.gif\"\n});\nvar upTube = Game.sprites.upTube = Game.createSprite({\n    x: 640,\n    y: 0,\n    costumes: \"./images/up-tube.png\"\n});\nvar downTube = Game.sprites.downTube = Game.createSprite({\n    x: 640,\n    y: 440,\n    costumes: \"./images/down-tube.png\"\n});\nvar ground = Game.sprites.ground = Game.createSprite({\n    x: 320,\n    y: 460,\n    costumes: \"./images/ground.png\"\n});\nbird.speed = 1;\n\nGame.on(\"click\", null, function(){\n    bird.speed = -4;\n});\n\nfunction frameFunc() {\n    if(downTube.x<-30){\n        downTube.x = 670;\n    }\n    upTube.x = downTube.x = downTube.x-2;\n    bird.y += bird.speed;\n    bird.speed += 0.15;\n    Game.drawSprites();\n    if(bird.isCollidedTo(ground)){\n        Game.stop();\n    }\n}\n\nGame.setFrameFunc(frameFunc);\nGame.start();"
+	module.exports = "var bird = Game.sprites.bird = Game.createSprite({\n    x: 160,\n    y: 240,\n    costumes: \"./images/flappy-bird/bird.png\"\n});\nvar upTube = Game.sprites.upTube = Game.createSprite({\n    x: 320,\n    y: 0,\n    costumes: \"./images/flappy-bird/up-tube.png\"\n});\nvar downTube = Game.sprites.downTube = Game.createSprite({\n    x: 320,\n    y: 440,\n    costumes: \"./images/flappy-bird/down-tube.png\"\n});\nvar ground = Game.sprites.ground = Game.createSprite({\n    x: 160,\n    y: 460,\n    costumes: \"./images/flappy-bird/ground.png\"\n});\nbird.speed = 1;\n\nGame.on(\"click\", null, function(){\n    bird.speed = -4;\n});\n\nfunction frameFunc() {\n    Game.drawBackdrop(\"./images/flappy-bird/bg.jpg\",0,0,320)\n    if(downTube.x<-30){\n        downTube.x = 330;\n    }\n    upTube.x = downTube.x = downTube.x-2;\n    bird.y += bird.speed;\n    bird.speed += 0.15;\n    Game.drawSprites();\n    if( bird.touched(ground) || bird.touched(upTube) || bird.touched(downTube)){\n        Game.stop();\n    }\n}\n\nGame.set({\n    width: 320,\n    height: 480\n});\n\nGame.setFrameFunc(frameFunc);\nGame.start();"
+
+/***/ },
+/* 11 */,
+/* 12 */
+/***/ function(module, exports) {
+
+	module.exports = "var bird = Game.sprites.bird = Game.createSprite({\n    x: 160,\n    y: 240,\n    costumes: \"./images/flappy-bird/bird.png\"\n});\n\nvar bgPosition = {x:0, y:0};\n\nGame.on(\"holding\", \"right\", function(){\n    bgPosition.x -= 4;\n});\n\nGame.on(\"holding\", \"left\", function(){\n    bgPosition.x += 4;\n});\n\nfunction frameFunc() {\n    Game.drawBackdrop(\"./images/scrolling/bg.jpg\",bgPosition.x,bgPosition.y)\n    // if(downTube.x<-30){\n    //     downTube.x = 330;\n    // }\n    // upTube.x = downTube.x = downTube.x-2;\n    // bird.y += bird.speed;\n    // bird.speed += 0.15;\n    Game.drawSprites();\n    // if( bird.touched(ground) || bird.touched(upTube) || bird.touched(downTube)){\n    //     Game.stop();\n    // }\n}\n\nGame.set({\n    width: 320,\n    height: 480\n});\n\nGame.setFrameFunc(frameFunc);\nGame.start();"
 
 /***/ }
 /******/ ]);

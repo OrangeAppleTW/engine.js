@@ -50,27 +50,43 @@
 	 */
 	// var ENV_WORKER = typeof importScripts === 'function';
 
-	function engine(stageId, frameFunc, stageWidth, stageHeight){
+	function engine(stageId, debugMode , frameFunc){
 	    var Sprite = __webpack_require__(1);
+	    var Sprites = __webpack_require__(11);
 	    var inspector = __webpack_require__(4);
 	    var canvas= document.getElementById(stageId);
 	    var ctx = canvas.getContext("2d");
-	    var sprites = {};
+	    var sprites = new Sprites();
+	    var settings = {
+	        width: canvas.width,
+	        height: canvas.height,
+	        // ratio: 1, //@TODO: set ratio
+	        // gravity: 0, //@TODO: set gravity
+	        frameFunc: function(){}
+	    };
 
-	    stageWidth = stageWidth || canvas.width;
-	    stageHeight = stageHeight || canvas.height;
+	    debugMode = debugMode || false;
 
-	    var io = __webpack_require__(5)(canvas);
-	    var eventList = __webpack_require__(3)(io);
-	    var renderer = __webpack_require__(7)(ctx, stageWidth, stageHeight, frameFunc, sprites, eventList, inspector);
+	    var io = __webpack_require__(5)(canvas, debugMode);
+	    var eventList = __webpack_require__(3)(io, debugMode);
+	    var renderer = __webpack_require__(7)(ctx, settings, sprites, eventList, inspector);
 
-	    // @TODO: Stop 的時候clear sprites
-	    function stop(){
-	        eventList.clear();
-	        renderer.stop();
+	    function set(args){
+	        if(args.width){canvas.width = args.width;}
+	        if(args.height){canvas.height = args.height;}
+	        settings.width      = args.width || settings.width;
+	        settings.height     = args.height || settings.height;
+	        settings.ratio      = args.ratio || settings.ratio;
+	        settings.gravity    = args.gravity || settings.gravity;
+	        settings.frameFunc  = args.frameFunc || settings.frameFunc;
+	        return this;
 	    }
 
-	    // @TODO: Clear all sprites
+	    // function reset(){
+	    //     eventList.clear();
+	    //     sprites.clear();
+	    // }
+
 	    var proxy = {
 	        sprites: sprites,
 	        createSprite: Sprite.new,
@@ -80,13 +96,10 @@
 	        cursor: io.cursor,
 	        inspector: inspector,
 	        on: eventList.register,
-	        //@TODO: set ratio
-	        //@TODO: set gravity
-	        set: function(){},
-	        stop: stop,
+	        set: set,
+	        stop: renderer.stop,
 	        start: renderer.startRendering,
-	        // @TODO: merge into set
-	        setFrameFunc: renderer.setFrameFunc,
+	        setFrameFunc: function(func){ set({frameFunc:func}) },
 	        ctx: ctx
 	    };
 	    return proxy;
@@ -162,8 +175,7 @@
 	    // console.log(this.direction);
 	}
 
-	// @TODO: rename => touched
-	Sprite.prototype.isCollidedTo = function(){
+	Sprite.prototype.touched = function(){
 	    var crossX = crossY = false;
 	    if( arguments[0] instanceof Sprite ){
 	        var target = arguments[0];
@@ -240,12 +252,80 @@
 /* 3 */
 /***/ function(module, exports) {
 
-	var pool=[],
-	    io = {};
+	function eventList(io, debugMode){
+	    var exports={},
+	        pool=[];
 
-	function eventList(importIo){
-	    var exports={};
-	    io = importIo;
+	    debugMode = debugMode || false;
+
+	    function hoverJudger(sprite, handler){
+	        var crossX = (sprite.x+sprite.width/2)>io.cursor.x && io.cursor.x>(sprite.x-sprite.width/2),
+	            crossY = (sprite.y+sprite.height/2)>io.cursor.y && io.cursor.y>(sprite.y-sprite.height/2);
+	        if(crossX && crossY){
+	            handler.call(sprite);
+	            if(debugMode){
+	                console.log("Just fired a hover handler at: "+JSON.stringify(io.clicked));
+	            }
+	        }
+	    }
+
+	    function clickJudger(sprite, handler){
+	        if(io.clicked.x && io.clicked.y){ // 如果有點擊記錄才檢查
+	            if(sprite){
+	                // 如果是 Sprite, 則對其做判定
+	                var crossX = (sprite.x+sprite.width/2)>io.clicked.x && io.clicked.x>(sprite.x-sprite.width/2),
+	                    crossY = (sprite.y+sprite.height/2)>io.clicked.y && io.clicked.y>(sprite.y-sprite.height/2);
+	                if(crossX && crossY){
+	                    handler.call(sprite);
+	                }
+	                if(debugMode){
+	                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(io.clicked)+")");
+	                }
+	            } else {
+	                // 如果為 null, 則對整個遊戲舞台做判定
+	                handler();
+	                if(debugMode){
+	                    console.log("Just fired a click handler on stage! ("+JSON.stringify(io.clicked)+")");
+	                }
+	            }
+	        }
+	    }
+
+	    function keydownJudger(key, handler){
+	        if(io.keydown[key]){
+	            handler();
+	            if(debugMode){
+	                console.log("Just fired a keydown handler on: "+key);
+	            }
+	        }
+	    }
+
+	    function keyupJudger(key, handler){
+	        if(io.keyup[key]){
+	            handler();
+	            if(debugMode){
+	                console.log("Just fired a keyup handler on: "+key);
+	            }
+	        }
+	    }
+
+	    function holdingJudger(key, handler){
+	        if(io.holding[key]){
+	            handler();
+	            if(debugMode){
+	                console.log("Just fired a holding handler on: "+key);
+	            }
+	        }
+	    }
+
+	    function clearEventRecord(){
+	        io.clicked.x=null;
+	        io.clicked.y=null;
+	        for(let key in io.keydown){
+	            io.keydown[key]=false;
+	            io.keyup[key]=false;
+	        }
+	    }
 
 	    exports.register = function(event, target, handler){
 	        var eventObj = {
@@ -253,7 +333,7 @@
 	            handler:handler
 	        }
 	        // @TODO: target 型別偵測
-	        if (event=="keydown" || event=="keyup"){
+	        if (event=="keydown" || event=="keyup" || event=="holding"){
 	            eventObj.key = target;
 	        } else {
 	            eventObj.sprite = target;
@@ -265,7 +345,8 @@
 	            if (pool[i].event=="hover") { hoverJudger( pool[i].sprite, pool[i].handler ); }
 	            else if (pool[i].event=="click") { clickJudger( pool[i].sprite, pool[i].handler ); }
 	            else if (pool[i].event=="keydown") { keydownJudger(pool[i].key, pool[i].handler); }
-	            else if (pool[i].event=="keyup") {}
+	            else if (pool[i].event=="keyup") { keydownJudger(pool[i].key, pool[i].handler); }
+	            else if (pool[i].event=="holding") { holdingJudger(pool[i].key, pool[i].handler); }
 	        }
 	        clearEventRecord();
 	    }
@@ -273,44 +354,6 @@
 	        pool=[];
 	    }
 	    return exports;
-	}
-
-	function hoverJudger(sprite, handler){
-	    var crossX = (sprite.x+sprite.width/2)>io.cursor.x && io.cursor.x>(sprite.x-sprite.width/2),
-	        crossY = (sprite.y+sprite.height/2)>io.cursor.y && io.cursor.y>(sprite.y-sprite.height/2);
-	    if(crossX && crossY){
-	        handler.call(sprite);
-	    }
-	}
-
-	function clickJudger(sprite, handler){
-	    if(io.clicked.x && io.clicked.y){ // 如果有點擊記錄才檢查
-	        if(sprite){
-	            // 如果是 Sprite, 則對其做判定
-	            var crossX = (sprite.x+sprite.width/2)>io.clicked.x && io.clicked.x>(sprite.x-sprite.width/2),
-	                crossY = (sprite.y+sprite.height/2)>io.clicked.y && io.clicked.y>(sprite.y-sprite.height/2);
-	            if(crossX && crossY){
-	                handler.call(sprite);
-	            }
-	        } else {
-	            // 如果為 null, 則對整個遊戲舞台做判定
-	            handler();
-	        }
-	    }
-	}
-
-	function keydownJudger(key, handler){
-	    if(io.keydown[key]){
-	        handler();
-	    }
-	}
-
-	function clearEventRecord(){
-	    io.clicked.x=null;
-	    io.clicked.y=null;
-	    for(let key in io.keydown){
-	        io.keydown[key]=false;
-	    }
 	}
 
 	module.exports = eventList;
@@ -336,14 +379,18 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var keycode = __webpack_require__(6);
-	var exports={},
-	    cursor={x:0, y:0},
-	    key=[],
-	    clicked={x:null, y:null},
-	    keyup={},
-	    keydown={};
 
-	var io = function(canvas){
+	var io = function(canvas, debugMode){
+	    
+	    var exports={},
+	        cursor={x:0, y:0},
+	        key=[],
+	        clicked={x:null, y:null},
+	        keyup={},
+	        keydown={},
+	        holding={};
+
+	    debugMode = debugMode || false;
 
 	    // Make any element focusable for keydown event.
 	    canvas.setAttribute("tabindex",'1');
@@ -357,20 +404,34 @@
 	    canvas.addEventListener("click", function(e){
 	        clicked.x = e.offsetX;
 	        clicked.y = e.offsetY;
+	        if(debugMode){
+	            console.log( "Clicked! cursor:"+JSON.stringify(cursor) );
+	        }
 	    });
 
 	    canvas.addEventListener("keydown", function(e){
-	        keydown[keycode(e.keyCode)] = true;
+	        var key = keycode(e.keyCode);
+	        keydown[key] = true;
+	        holding[key] = true;
+	        if(debugMode){
+	            console.log( "Keydown! key:"+key );
+	        }
 	    });
 
 	    canvas.addEventListener("keyup", function(e){
-	        keyup[keycode(e.keyCode)] = true;
+	        var key = keycode(e.keyCode);
+	        keyup[key] = true;
+	        holding[key] = false;
+	        if(debugMode){
+	            console.log( "Keyup! key:"+key );
+	        }
 	    });
 
 	    exports.cursor = cursor;
 	    exports.clicked = clicked;
 	    exports.keyup = keyup;
 	    exports.keydown = keydown;
+	    exports.holding = holding;
 	    return exports;
 	};
 
@@ -552,13 +613,11 @@
 	    backdropCache={},
 	    state="readyToStart"; //"readyToStart", "stopping", "running";
 
-	function Renderer(ctx, stageWidth, stageHeight, frameFunc, sprites, eventList, inspector){
+	function Renderer(ctx, settings, sprites, eventList, inspector){
 
 	    var exports = {};
-
-	    if(frameFunc){
-	        startRendering(frameFunc);
-	    }
+	    var stageWidth = settings.width,
+	        stageHeight = settings.height;
 
 	    function print(words, x, y, color, size, font) {
 	        var size = size || 16; // Set or default
@@ -569,17 +628,7 @@
 	    }
 
 	    function drawSprites(){
-	        for(let key in sprites){
-	            if (sprites[key].constructor.name === "Sprite") {
-	                drawInstance(sprites[key]);
-	            } else if (sprites[key] instanceof Array) {
-	                var instances = sprites[key];
-	                for(let i=0; i<instances.length; i++){
-	                    var instance = instances[i];
-	                    drawInstance(instance);
-	                }
-	            }
-	        }
+	        sprites.each(drawInstance);
 	        function drawInstance(instance){
 	            if(!instance.hidden){
 	                var id = instance.currentCostumeId;
@@ -601,8 +650,10 @@
 	        }
 	    }
 
-	    // @TODO: 型別檢測
-	    function drawBackdrop(src){
+	    // @Params:
+	    // - src: backdrop image location
+	    // - options: {x:number, y:number, width:number, height:number}
+	    function drawBackdrop(src, x, y, width, height){
 	        if(src[0]=='#'){
 	            ctx.fillStyle=src;
 	            ctx.fillRect(0,0,stageWidth,stageHeight);
@@ -614,12 +665,8 @@
 	                img.src=src;
 	                backdropCache[src]=img;
 	            }
-	            ctx.drawImage( img, 0, 0 )
+	            ctx.drawImage( img, x||0, y||0, width||img.width, height||img.height );
 	        }
-	    }
-
-	    function setFrameFunc(func) {
-	        frameFunc = func;
 	    }
 
 	    function startRendering(){
@@ -629,7 +676,7 @@
 	                if(state==="running"){
 	                    ctx.clearRect(0,0,stageWidth,stageHeight);
 
-	                    frameFunc(); // 放在 clear 後面，才能讓使用者自行在 canvas 上畫東西
+	                    settings.frameFunc(); // 放在 clear 後面，才能讓使用者自行在 canvas 上畫東西
 
 	                    eventList.traverse();
 
@@ -658,12 +705,42 @@
 	    exports.drawBackdrop = drawBackdrop;
 	    exports.startRendering = startRendering;
 	    exports.stop = stop;
-	    exports.setFrameFunc = setFrameFunc;
 
 	    return exports;
 	}
 
 	module.exports = Renderer;
+
+/***/ },
+/* 8 */,
+/* 9 */,
+/* 10 */,
+/* 11 */
+/***/ function(module, exports) {
+
+	function Sprites(){}
+
+	Sprites.prototype.each = function(func){
+	    for(let key in this){
+	        if (this[key].constructor.name === "Sprite") {
+	            func.call(this[key],this[key]);
+	        } else if (this[key] instanceof Array) {
+	            var instances = this[key];
+	            for(let i=0; i<instances.length; i++){
+	                var instance = instances[i];
+	                func.call(instance,instance);
+	            }
+	        }
+	    }
+	}
+
+	Sprites.prototype.clear = function(){
+	    for(let key in this){
+	        delete this[key];
+	    }
+	};
+
+	module.exports = Sprites;
 
 /***/ }
 /******/ ]);

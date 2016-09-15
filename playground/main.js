@@ -1,11 +1,13 @@
-var Game = Engine("stage");
+window.Game = Engine("stage",true);
 var tdScript = require("raw!./examples/_td.js"),
     flappyBirdScript = require("raw!./examples/_flappy-bird.js"),
-    starsScript = require("raw!./examples/_stars.js");
+    starsScript = require("raw!./examples/_stars.js"),
+    scrollingScript = require("raw!./examples/_scrolling.js");
 
 $("textarea#TD").val(tdScript);
 $("textarea#flappy-bird").val(flappyBirdScript);
 $("textarea#stars").val(starsScript);
+$("textarea#scrolling").val(scrollingScript);
 
 var editor = CodeMirror.fromTextArea(document.getElementById("script-box"), {
     lineNumbers: true,
@@ -14,17 +16,26 @@ var editor = CodeMirror.fromTextArea(document.getElementById("script-box"), {
     styleActiveLine: true,
     matchBrackets: true
 });
-document.getElementById("run-code-button").addEventListener(
-    "click", function(){
+$("#run-code-button").click(
+    function(){
         Game.stop();
         editor.save();
         eval(document.getElementById("script-box").value);
         Game.start();
     }
 )
-document.getElementById("stop-code-button").addEventListener(
-    "click", function(){
+$("#stop-code-button").click(
+    function(){
+        $(this).hide();
+        $("#start-code-button").show()
         Game.stop();
+    }
+);
+$("#start-code-button").click(
+    function(){
+        $(this).hide();
+        $("#stop-code-button").show()
+        Game.start();
     }
 );
 $("#demo-selector a").click(function(){
