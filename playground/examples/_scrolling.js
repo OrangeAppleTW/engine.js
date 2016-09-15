@@ -14,7 +14,12 @@ Game.on("holding", "left", function(){
     bgPosition.x += 4;
 });
 
-function frameFunc() {
+Game.set({
+    width: 320,
+    height: 480
+});
+
+Game.draw( function(){
     Game.drawBackdrop("./images/scrolling/bg.jpg",bgPosition.x,bgPosition.y)
     // if(downTube.x<-30){
     //     downTube.x = 330;
@@ -26,12 +31,6 @@ function frameFunc() {
     // if( bird.touched(ground) || bird.touched(upTube) || bird.touched(downTube)){
     //     Game.stop();
     // }
-}
-
-Game.set({
-    width: 320,
-    height: 480
 });
 
-Game.setFrameFunc(frameFunc);
 Game.start();

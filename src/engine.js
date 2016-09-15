@@ -4,7 +4,7 @@
  */
 // var ENV_WORKER = typeof importScripts === 'function';
 
-function engine(stageId, debugMode , frameFunc){
+function engine(stageId, debugMode){
     var Sprite = require("./sprite");
     var Sprites = require("./sprites");
     var inspector = require("./inspector");
@@ -23,7 +23,8 @@ function engine(stageId, debugMode , frameFunc){
 
     var io = require("./io")(canvas, debugMode);
     var eventList = require("./event-list")(io, debugMode);
-    var renderer = require("./renderer")(ctx, settings, sprites, eventList, inspector);
+    var renderer = require("./renderer")(ctx, settings, sprites);
+    var clock = require("./clock")(settings, eventList, inspector);
 
     function set(args){
         if(args.width){canvas.width = args.width;}
@@ -40,7 +41,7 @@ function engine(stageId, debugMode , frameFunc){
     //     eventList.clear();
     //     sprites.clear();
     // }
-
+    // @TODO: clear()
     var proxy = {
         sprites: sprites,
         createSprite: Sprite.new,
@@ -51,9 +52,9 @@ function engine(stageId, debugMode , frameFunc){
         inspector: inspector,
         on: eventList.register,
         set: set,
-        stop: renderer.stop,
-        start: renderer.startRendering,
-        setFrameFunc: function(func){ set({frameFunc:func}) },
+        stop: clock.stop,
+        start: clock.start,
+        draw: function(func){ settings.frameFunc=func; },
         ctx: ctx
     };
     return proxy;

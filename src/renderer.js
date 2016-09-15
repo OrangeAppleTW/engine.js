@@ -1,32 +1,21 @@
-//  state 用來表達 renderer 的以下狀態：
-//
-//   1. readyToStart:
-//      初始狀態，此時執行 startRendering 會直接開始 rendering，並將狀態切換為 "running"。
-//   2. running:
-//      不停 Rendering，此時可執行 stop 將狀態切換為 "stopping"。
-//      但是執行 startRendering 則不會有任何反應
-//      執行 stop 則不會有任何反應。
-//   3. stopping:
-//      此時雖然已接受到停止訊息，但是最後一次的 rendering 尚未結束，
-//      因此若在此時執行 startRendering，會每隔一小段時間檢查 state 是否回復到 "readyToStart"。
-//
-//  狀態變化流程如下：
-//  (1) -> (2) -> (3) -> (1)
+var costumesCache={},
+    backdropCache={};
 
-var FPS = 60,
-    costumesCache={},
-    backdropCache={},
-    state="readyToStart"; //"readyToStart", "stopping", "running";
-
-function Renderer(ctx, settings, sprites, eventList, inspector){
+function Renderer(ctx, settings, sprites){
 
     var exports = {};
     var stageWidth = settings.width,
         stageHeight = settings.height;
 
+    function clear() {
+        ctx.clearRect(0,0,stageWidth,stageHeight);
+    }
+
     function print(words, x, y, color, size, font) {
-        var size = size || 16; // Set or default
-        var font = font || "Arial";
+        x = x || 20;
+        y = y || 20;
+        size = size || 16; // Set or default
+        font = font || "Arial";
         ctx.font = size+"px " + font;
         ctx.fillStyle = color || "black";
         ctx.fillText(words,x,y);
@@ -74,42 +63,10 @@ function Renderer(ctx, settings, sprites, eventList, inspector){
         }
     }
 
-    function startRendering(){
-        if(state==="readyToStart"){
-            state = "running";
-            var draw = function(){
-                if(state==="running"){
-                    ctx.clearRect(0,0,stageWidth,stageHeight);
-
-                    settings.frameFunc(); // 放在 clear 後面，才能讓使用者自行在 canvas 上畫東西
-
-                    eventList.traverse();
-
-                    inspector.updateFPS();
-                    setTimeout(function(){
-                        requestAnimationFrame(draw);
-                    },1000/FPS);
-                } else {
-                    state = "readyToStart";
-                }
-            }
-            setTimeout( draw, 0 ); // 必須 Async，否則會產生微妙的時間差
-        } else if (state==="stopping") {
-            setTimeout( startRendering, 10 );
-        }
-    }
-
-    function stop(){
-        if(state==="running"){
-            state = "stopping";
-        }
-    }
-
+    exports.clear = clear;
     exports.print = print;
     exports.drawSprites = drawSprites;
     exports.drawBackdrop = drawBackdrop;
-    exports.startRendering = startRendering;
-    exports.stop = stop;
 
     return exports;
 }

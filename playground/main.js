@@ -21,7 +21,6 @@ $("#run-code-button").click(
         Game.stop();
         editor.save();
         eval(document.getElementById("script-box").value);
-        Game.start();
     }
 )
 $("#stop-code-button").click(

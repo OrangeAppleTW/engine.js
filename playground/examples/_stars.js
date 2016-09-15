@@ -1,5 +1,7 @@
 var clock = 0;
+
 Game.sprites.stars = [];
+
 for(let i=0; i<100; i++){
     var newStar = Game.createSprite({
     	  x: Math.random()*640,
@@ -9,7 +11,7 @@ for(let i=0; i<100; i++){
   	Game.sprites.stars.push(newStar);
 }
 
-function frameFunc() {
+Game.draw(function(){
   	Game.drawBackdrop("#000000");
     if(clock%30===0){
         for(let i=0; i<Game.sprites.stars.length; i++){
@@ -23,6 +25,6 @@ function frameFunc() {
     }
     clock++;
   	Game.drawSprites();
-}
-Game.setFrameFunc(frameFunc);
+});
+
 Game.start();

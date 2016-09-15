@@ -24,7 +24,12 @@ Game.on("click", null, function(){
     bird.speed = -4;
 });
 
-function frameFunc() {
+Game.set({
+    width: 320,
+    height: 480
+});
+
+Game.draw( function(){
     Game.drawBackdrop("./images/flappy-bird/bg.jpg",0,0,320)
     if(downTube.x<-30){
         downTube.x = 330;
@@ -36,12 +41,6 @@ function frameFunc() {
     if( bird.touched(ground) || bird.touched(upTube) || bird.touched(downTube)){
         Game.stop();
     }
-}
-
-Game.set({
-    width: 320,
-    height: 480
 });
 
-Game.setFrameFunc(frameFunc);
 Game.start();

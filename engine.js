@@ -50,7 +50,7 @@
 	 */
 	// var ENV_WORKER = typeof importScripts === 'function';
 
-	function engine(stageId, debugMode , frameFunc){
+	function engine(stageId, debugMode){
 	    var Sprite = __webpack_require__(1);
 	    var Sprites = __webpack_require__(11);
 	    var inspector = __webpack_require__(4);
@@ -69,7 +69,8 @@
 
 	    var io = __webpack_require__(5)(canvas, debugMode);
 	    var eventList = __webpack_require__(3)(io, debugMode);
-	    var renderer = __webpack_require__(7)(ctx, settings, sprites, eventList, inspector);
+	    var renderer = __webpack_require__(7)(ctx, settings, sprites);
+	    var clock = __webpack_require__(13)(settings, eventList, inspector);
 
 	    function set(args){
 	        if(args.width){canvas.width = args.width;}
@@ -86,7 +87,7 @@
 	    //     eventList.clear();
 	    //     sprites.clear();
 	    // }
-
+	    // @TODO: clear()
 	    var proxy = {
 	        sprites: sprites,
 	        createSprite: Sprite.new,
@@ -97,9 +98,9 @@
 	        inspector: inspector,
 	        on: eventList.register,
 	        set: set,
-	        stop: renderer.stop,
-	        start: renderer.startRendering,
-	        setFrameFunc: function(func){ set({frameFunc:func}) },
+	        stop: clock.stop,
+	        start: clock.start,
+	        draw: function(func){ settings.frameFunc=func; },
 	        ctx: ctx
 	    };
 	    return proxy;
@@ -593,35 +594,24 @@
 /* 7 */
 /***/ function(module, exports) {
 
-	//  state 用來表達 renderer 的以下狀態：
-	//
-	//   1. readyToStart:
-	//      初始狀態，此時執行 startRendering 會直接開始 rendering，並將狀態切換為 "running"。
-	//   2. running:
-	//      不停 Rendering，此時可執行 stop 將狀態切換為 "stopping"。
-	//      但是執行 startRendering 則不會有任何反應
-	//      執行 stop 則不會有任何反應。
-	//   3. stopping:
-	//      此時雖然已接受到停止訊息，但是最後一次的 rendering 尚未結束，
-	//      因此若在此時執行 startRendering，會每隔一小段時間檢查 state 是否回復到 "readyToStart"。
-	//
-	//  狀態變化流程如下：
-	//  (1) -> (2) -> (3) -> (1)
+	var costumesCache={},
+	    backdropCache={};
 
-	var FPS = 60,
-	    costumesCache={},
-	    backdropCache={},
-	    state="readyToStart"; //"readyToStart", "stopping", "running";
-
-	function Renderer(ctx, settings, sprites, eventList, inspector){
+	function Renderer(ctx, settings, sprites){
 
 	    var exports = {};
 	    var stageWidth = settings.width,
 	        stageHeight = settings.height;
 
+	    function clear() {
+	        ctx.clearRect(0,0,stageWidth,stageHeight);
+	    }
+
 	    function print(words, x, y, color, size, font) {
-	        var size = size || 16; // Set or default
-	        var font = font || "Arial";
+	        x = x || 20;
+	        y = y || 20;
+	        size = size || 16; // Set or default
+	        font = font || "Arial";
 	        ctx.font = size+"px " + font;
 	        ctx.fillStyle = color || "black";
 	        ctx.fillText(words,x,y);
@@ -669,42 +659,10 @@
 	        }
 	    }
 
-	    function startRendering(){
-	        if(state==="readyToStart"){
-	            state = "running";
-	            var draw = function(){
-	                if(state==="running"){
-	                    ctx.clearRect(0,0,stageWidth,stageHeight);
-
-	                    settings.frameFunc(); // 放在 clear 後面，才能讓使用者自行在 canvas 上畫東西
-
-	                    eventList.traverse();
-
-	                    inspector.updateFPS();
-	                    setTimeout(function(){
-	                        requestAnimationFrame(draw);
-	                    },1000/FPS);
-	                } else {
-	                    state = "readyToStart";
-	                }
-	            }
-	            setTimeout( draw, 0 ); // 必須 Async，否則會產生微妙的時間差
-	        } else if (state==="stopping") {
-	            setTimeout( startRendering, 10 );
-	        }
-	    }
-
-	    function stop(){
-	        if(state==="running"){
-	            state = "stopping";
-	        }
-	    }
-
+	    exports.clear = clear;
 	    exports.print = print;
 	    exports.drawSprites = drawSprites;
 	    exports.drawBackdrop = drawBackdrop;
-	    exports.startRendering = startRendering;
-	    exports.stop = stop;
 
 	    return exports;
 	}
@@ -741,6 +699,68 @@
 	};
 
 	module.exports = Sprites;
+
+/***/ },
+/* 12 */,
+/* 13 */
+/***/ function(module, exports) {
+
+	//  state 用來表達 renderer 的以下狀態：
+	//
+	//   1. readyToStart:
+	//      初始狀態，此時執行 start 會直接開始 cycling(不斷執行 draw)，並將狀態切換為 "running"。
+	//   2. running:
+	//      不停 cycling，此時可執行 stop 將狀態切換為 "stopping"。
+	//      但是執行 start 則不會有任何反應
+	//      執行 stop 則不會有任何反應。
+	//   3. stopping:
+	//      此時雖然已接受到停止訊息，但是最後一次的 rendering 尚未結束，
+	//      因此若在此時執行 start，會每隔一小段時間檢查 state 是否回復到 "readyToStart"。
+	//
+	//  狀態變化流程如下：
+	//  (1) -> (2) -> (3) -> (1)
+
+	var FPS = 60
+
+	function Clock(settings, eventList, inspector){
+
+	    var state="readyToStart"; //"readyToStart", "stopping", "running";
+
+	    function start(){
+	        if(state==="readyToStart"){
+	            state = "running";
+	            var draw = function(){
+	                if(state==="running"){
+	                    // renderer.clear();
+	                    settings.frameFunc(); // 放在 clear 後面，才能讓使用者自行在 canvas 上畫東西
+	                    eventList.traverse();
+	                    inspector.updateFPS();
+	                    setTimeout(function(){
+	                        requestAnimationFrame(draw);
+	                    },1000/FPS);
+	                } else {
+	                    state = "readyToStart";
+	                }
+	            }
+	            setTimeout( draw, 0 ); // 必須 Async，否則會產生微妙的時間差
+	        } else if (state==="stopping") {
+	            setTimeout( start, 10 );
+	        }
+	    }
+
+	    function stop(){
+	        if(state==="running"){
+	            state = "stopping";
+	        }
+	    }
+
+	    exports.start = start;
+	    exports.stop = stop;
+
+	    return exports;
+	}
+
+	module.exports = Clock;
 
 /***/ }
 /******/ ]);
