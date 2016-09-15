@@ -1,0 +1,15 @@
+{
+  "name": "oa-engine",
+  "version": "1.0.0",
+  "description": "",
+  "main": "engine.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "keycode": "2.1.4",
+    "raw-loader": "latest"
+  },
+  "author": "Kevin Shu",
+  "license": "ISC"
+}
