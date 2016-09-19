@@ -67,7 +67,7 @@ function eventList(io, debugMode){
     function clearEventRecord(){
         io.clicked.x=null;
         io.clicked.y=null;
-        for(let key in io.keydown){
+        for(var key in io.keydown){
             io.keydown[key]=false;
             io.keyup[key]=false;
         }
@@ -87,7 +87,7 @@ function eventList(io, debugMode){
         pool.push(eventObj);
     };
     exports.traverse = function (){
-        for(let i=0; i<pool.length; i++){
+        for(var i=0; i<pool.length; i++){
             if (pool[i].event=="hover") { hoverJudger( pool[i].sprite, pool[i].handler ); }
             else if (pool[i].event=="click") { clickJudger( pool[i].sprite, pool[i].handler ); }
             else if (pool[i].event=="keydown") { keydownJudger(pool[i].key, pool[i].handler); }
