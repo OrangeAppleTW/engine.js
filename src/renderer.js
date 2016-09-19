@@ -39,7 +39,7 @@ function Renderer(ctx, settings, sprites){
                 // Solution B:
                 // var img = new Image();
                 // img.src=instance.costumes[0];
-                ctx.drawImage( img, instance.x-img.width/2, instance.y-img.height/2 );
+                ctx.drawImage( img, instance.x-img.width/2, instance.y-img.height/2, instance.width*instance.scale, instance.height*instance.scale );
             }
         }
     }

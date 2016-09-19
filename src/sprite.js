@@ -5,7 +5,7 @@ function Sprite(args) {
     this.x = args.x;
     this.y = args.y;
     this.direction = args.direction;
-    this.scale = args.scale; // @TODO
+    this.scale = args.scale || 1;
     this.costumes = [].concat(args.costumes); // Deal with single string
     this.currentCostumeId = 0; // Deal with single string
     // this.deleted = args.deleted; // @TODO
