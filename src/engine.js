@@ -23,7 +23,7 @@ function engine(stageId, debugMode){
 
     var io = require("./io")(canvas, debugMode);
     var eventList = require("./event-list")(io, debugMode);
-    var renderer = require("./renderer")(ctx, settings, sprites);
+    var renderer = require("./renderer")(ctx, settings, sprites, debugMode);
     var clock = require("./clock")(settings, eventList, inspector);
 
     function set(args){
@@ -41,7 +41,7 @@ function engine(stageId, debugMode){
     //     eventList.clear();
     //     sprites.clear();
     // }
-    // @TODO: clear()
+
     var proxy = {
         sprites: sprites,
         createSprite: Sprite.new,
@@ -55,7 +55,9 @@ function engine(stageId, debugMode){
         stop: clock.stop,
         start: clock.start,
         draw: function(func){ settings.frameFunc=func; },
-        ctx: ctx
+        ctx: ctx,
+        clear: renderer.clear,
+        preloadImages: renderer.preload
     };
     return proxy;
 }

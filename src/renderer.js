@@ -1,7 +1,7 @@
-var costumesCache={},
-    backdropCache={};
+var loader = new (require("../lib/pxloader-images"))();
+var imageCache={};
 
-function Renderer(ctx, settings, sprites){
+function Renderer(ctx, settings, sprites, debugMode){
 
     var exports = {};
     var stageWidth = settings.width,
@@ -26,13 +26,13 @@ function Renderer(ctx, settings, sprites){
         function drawInstance(instance){
             if(!instance.hidden){
                 var id = instance.currentCostumeId;
-                var img = costumesCache[instance.costumes[id]];
+                var img = imageCache[instance.costumes[id]];
                 // Solution A:
                 // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
                 if( !img ){
                     img=new Image();
                     img.src=instance.costumes[id];
-                    costumesCache[instance.costumes[id]]=img;
+                    imageCache[instance.costumes[id]]=img;
                 }
                 instance.width = img.width;
                 instance.height = img.height;
@@ -52,21 +52,60 @@ function Renderer(ctx, settings, sprites){
             ctx.fillStyle=src;
             ctx.fillRect(0,0,stageWidth,stageHeight);
         } else {
-            var img = costumesCache[src];
+            var img = imageCache[src];
             // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
             if( !img ){
                 img=new Image();
                 img.src=src;
-                backdropCache[src]=img;
+                imageCache[src]=img;
             }
             ctx.drawImage( img, x||0, y||0, width||img.width, height||img.height );
         }
+    }
+
+    function preload(images, completeFunc, progressFunc){
+        var loaderProxy = {};
+        if(completeFunc){
+            onComplete(completeFunc);
+        }
+        if(progressFunc){
+            onProgress(progressFunc);
+        }
+        for(var i=0; i<images.length; i++){
+            var path = images[i];
+            imageCache[path] = loader.addImage(path);
+        }
+        function onComplete(callback){
+            loader.addCompletionListener(function(){
+                callback();
+            });
+        };
+        function onProgress(callback){
+            loader.addProgressListener(function(e) {
+                // e.completedCount, e.totalCount, e.resource.imageNumber
+                callback(e);
+            });
+        }
+        loaderProxy.complete = onComplete;
+        loaderProxy.progress = onProgress;
+        loader.start();
+        if(debugMode){
+            console.log("Start loading "+images.length+" images...");
+            loader.addProgressListener(function(e) {
+                console.log("Preloading progressing...");
+            });
+            loader.addCompletionListener(function(){
+                console.log("Preloading completed!");
+            });
+        }
+        return loaderProxy;
     }
 
     exports.clear = clear;
     exports.print = print;
     exports.drawSprites = drawSprites;
     exports.drawBackdrop = drawBackdrop;
+    exports.preload = preload;
 
     return exports;
 }
