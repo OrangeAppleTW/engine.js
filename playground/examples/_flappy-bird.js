@@ -29,6 +29,17 @@ Game.set({
     height: 480
 });
 
+Game.preloadImages(
+    [
+        "./images/flappy-bird/bird.png",
+        "./images/flappy-bird/up-tube.png",
+        "./images/flappy-bird/down-tube.png"
+    ],
+    function(){
+        console.log("Preloading complete");
+    }
+);
+
 Game.draw( function(){
     Game.drawBackdrop("./images/flappy-bird/bg.jpg",0,0,320)
     if(downTube.x<-30){
