@@ -52,7 +52,7 @@
 
 	function engine(stageId, debugMode){
 	    var Sprite = __webpack_require__(1);
-	    var Sprites = __webpack_require__(11);
+	    var Sprites = __webpack_require__(3);
 	    var inspector = __webpack_require__(4);
 	    var canvas= document.getElementById(stageId);
 	    var ctx = canvas.getContext("2d");
@@ -68,9 +68,9 @@
 	    debugMode = debugMode || false;
 
 	    var io = __webpack_require__(5)(canvas, debugMode);
-	    var eventList = __webpack_require__(3)(io, debugMode);
-	    var renderer = __webpack_require__(7)(ctx, settings, sprites);
-	    var clock = __webpack_require__(13)(settings, eventList, inspector);
+	    var eventList = __webpack_require__(7)(io, debugMode);
+	    var renderer = __webpack_require__(8)(ctx, settings, sprites, debugMode);
+	    var clock = __webpack_require__(9)(settings, eventList, inspector);
 
 	    function set(args){
 	        if(args.width){canvas.width = args.width;}
@@ -87,7 +87,8 @@
 	    //     eventList.clear();
 	    //     sprites.clear();
 	    // }
-	    // @TODO: clear()
+
+	    // @TODO: preload()
 	    var proxy = {
 	        sprites: sprites,
 	        createSprite: Sprite.new,
@@ -101,7 +102,9 @@
 	        stop: clock.stop,
 	        start: clock.start,
 	        draw: function(func){ settings.frameFunc=func; },
-	        ctx: ctx
+	        ctx: ctx,
+	        clear: renderer.clear,
+	        preloadImages: renderer.preload
 	    };
 	    return proxy;
 	}
@@ -129,10 +132,10 @@
 	    this.x = args.x;
 	    this.y = args.y;
 	    this.direction = args.direction;
-	    this.scale = args.scale;
+	    this.scale = args.scale || 1;
 	    this.costumes = [].concat(args.costumes); // Deal with single string
 	    this.currentCostumeId = 0; // Deal with single string
-	    this.deleted = args.scale;
+	    // this.deleted = args.deleted; // @TODO
 	    this.width = 1;
 	    this.height = 1;
 	    this.hidden = args.hidden;
@@ -253,111 +256,29 @@
 /* 3 */
 /***/ function(module, exports) {
 
-	function eventList(io, debugMode){
-	    var exports={},
-	        pool=[];
+	function Sprites(){}
 
-	    debugMode = debugMode || false;
-
-	    function hoverJudger(sprite, handler){
-	        var crossX = (sprite.x+sprite.width/2)>io.cursor.x && io.cursor.x>(sprite.x-sprite.width/2),
-	            crossY = (sprite.y+sprite.height/2)>io.cursor.y && io.cursor.y>(sprite.y-sprite.height/2);
-	        if(crossX && crossY){
-	            handler.call(sprite);
-	            if(debugMode){
-	                console.log("Just fired a hover handler at: "+JSON.stringify(io.clicked));
+	Sprites.prototype.each = function(func){
+	    for(var key in this){
+	        if (this[key].constructor.name === "Sprite") {
+	            func.call(this[key],this[key]);
+	        } else if (this[key] instanceof Array) {
+	            var instances = this[key];
+	            for(var i=0; i<instances.length; i++){
+	                var instance = instances[i];
+	                func.call(instance,instance);
 	            }
 	        }
 	    }
-
-	    function clickJudger(sprite, handler){
-	        if(io.clicked.x && io.clicked.y){ // 如果有點擊記錄才檢查
-	            if(sprite){
-	                // 如果是 Sprite, 則對其做判定
-	                var crossX = (sprite.x+sprite.width/2)>io.clicked.x && io.clicked.x>(sprite.x-sprite.width/2),
-	                    crossY = (sprite.y+sprite.height/2)>io.clicked.y && io.clicked.y>(sprite.y-sprite.height/2);
-	                if(crossX && crossY){
-	                    handler.call(sprite);
-	                }
-	                if(debugMode){
-	                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(io.clicked)+")");
-	                }
-	            } else {
-	                // 如果為 null, 則對整個遊戲舞台做判定
-	                handler();
-	                if(debugMode){
-	                    console.log("Just fired a click handler on stage! ("+JSON.stringify(io.clicked)+")");
-	                }
-	            }
-	        }
-	    }
-
-	    function keydownJudger(key, handler){
-	        if(io.keydown[key]){
-	            handler();
-	            if(debugMode){
-	                console.log("Just fired a keydown handler on: "+key);
-	            }
-	        }
-	    }
-
-	    function keyupJudger(key, handler){
-	        if(io.keyup[key]){
-	            handler();
-	            if(debugMode){
-	                console.log("Just fired a keyup handler on: "+key);
-	            }
-	        }
-	    }
-
-	    function holdingJudger(key, handler){
-	        if(io.holding[key]){
-	            handler();
-	            if(debugMode){
-	                console.log("Just fired a holding handler on: "+key);
-	            }
-	        }
-	    }
-
-	    function clearEventRecord(){
-	        io.clicked.x=null;
-	        io.clicked.y=null;
-	        for(let key in io.keydown){
-	            io.keydown[key]=false;
-	            io.keyup[key]=false;
-	        }
-	    }
-
-	    exports.register = function(event, target, handler){
-	        var eventObj = {
-	            event:event,
-	            handler:handler
-	        }
-	        // @TODO: target 型別偵測
-	        if (event=="keydown" || event=="keyup" || event=="holding"){
-	            eventObj.key = target;
-	        } else {
-	            eventObj.sprite = target;
-	        }
-	        pool.push(eventObj);
-	    };
-	    exports.traverse = function (){
-	        for(let i=0; i<pool.length; i++){
-	            if (pool[i].event=="hover") { hoverJudger( pool[i].sprite, pool[i].handler ); }
-	            else if (pool[i].event=="click") { clickJudger( pool[i].sprite, pool[i].handler ); }
-	            else if (pool[i].event=="keydown") { keydownJudger(pool[i].key, pool[i].handler); }
-	            else if (pool[i].event=="keyup") { keydownJudger(pool[i].key, pool[i].handler); }
-	            else if (pool[i].event=="holding") { holdingJudger(pool[i].key, pool[i].handler); }
-	        }
-	        clearEventRecord();
-	    }
-	    exports.clear = function(){
-	        pool=[];
-	    }
-	    return exports;
 	}
 
-	module.exports = eventList;
+	Sprites.prototype.clear = function(){
+	    for(var key in this){
+	        delete this[key];
+	    }
+	};
+
+	module.exports = Sprites;
 
 /***/ },
 /* 4 */
@@ -594,10 +515,120 @@
 /* 7 */
 /***/ function(module, exports) {
 
-	var costumesCache={},
-	    backdropCache={};
+	function eventList(io, debugMode){
+	    var exports={},
+	        pool=[];
 
-	function Renderer(ctx, settings, sprites){
+	    debugMode = debugMode || false;
+
+	    function hoverJudger(sprite, handler){
+	        var crossX = (sprite.x+sprite.width/2)>io.cursor.x && io.cursor.x>(sprite.x-sprite.width/2),
+	            crossY = (sprite.y+sprite.height/2)>io.cursor.y && io.cursor.y>(sprite.y-sprite.height/2);
+	        if(crossX && crossY){
+	            handler.call(sprite);
+	            if(debugMode){
+	                console.log("Just fired a hover handler at: "+JSON.stringify(io.clicked));
+	            }
+	        }
+	    }
+
+	    function clickJudger(sprite, handler){
+	        if(io.clicked.x && io.clicked.y){ // 如果有點擊記錄才檢查
+	            if(sprite){
+	                // 如果是 Sprite, 則對其做判定
+	                var crossX = (sprite.x+sprite.width/2)>io.clicked.x && io.clicked.x>(sprite.x-sprite.width/2),
+	                    crossY = (sprite.y+sprite.height/2)>io.clicked.y && io.clicked.y>(sprite.y-sprite.height/2);
+	                if(crossX && crossY){
+	                    handler.call(sprite);
+	                }
+	                if(debugMode){
+	                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(io.clicked)+")");
+	                }
+	            } else {
+	                // 如果為 null, 則對整個遊戲舞台做判定
+	                handler();
+	                if(debugMode){
+	                    console.log("Just fired a click handler on stage! ("+JSON.stringify(io.clicked)+")");
+	                }
+	            }
+	        }
+	    }
+
+	    function keydownJudger(key, handler){
+	        if(io.keydown[key]){
+	            handler();
+	            if(debugMode){
+	                console.log("Just fired a keydown handler on: "+key);
+	            }
+	        }
+	    }
+
+	    function keyupJudger(key, handler){
+	        if(io.keyup[key]){
+	            handler();
+	            if(debugMode){
+	                console.log("Just fired a keyup handler on: "+key);
+	            }
+	        }
+	    }
+
+	    function holdingJudger(key, handler){
+	        if(io.holding[key]){
+	            handler();
+	            if(debugMode){
+	                console.log("Just fired a holding handler on: "+key);
+	            }
+	        }
+	    }
+
+	    function clearEventRecord(){
+	        io.clicked.x=null;
+	        io.clicked.y=null;
+	        for(var key in io.keydown){
+	            io.keydown[key]=false;
+	            io.keyup[key]=false;
+	        }
+	    }
+
+	    exports.register = function(event, target, handler){
+	        var eventObj = {
+	            event:event,
+	            handler:handler
+	        }
+	        // @TODO: target 型別偵測
+	        if (event=="keydown" || event=="keyup" || event=="holding"){
+	            eventObj.key = target;
+	        } else {
+	            eventObj.sprite = target;
+	        }
+	        pool.push(eventObj);
+	    };
+	    exports.traverse = function (){
+	        for(var i=0; i<pool.length; i++){
+	            if (pool[i].event=="hover") { hoverJudger( pool[i].sprite, pool[i].handler ); }
+	            else if (pool[i].event=="click") { clickJudger( pool[i].sprite, pool[i].handler ); }
+	            else if (pool[i].event=="keydown") { keydownJudger(pool[i].key, pool[i].handler); }
+	            else if (pool[i].event=="keyup") { keydownJudger(pool[i].key, pool[i].handler); }
+	            else if (pool[i].event=="holding") { holdingJudger(pool[i].key, pool[i].handler); }
+	        }
+	        clearEventRecord();
+	    }
+	    exports.clear = function(){
+	        pool=[];
+	    }
+	    return exports;
+	}
+
+	module.exports = eventList;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var loader = new (__webpack_require__(16))();
+	var imageCache={};
+
+	function Renderer(ctx, settings, sprites, debugMode){
 
 	    var exports = {};
 	    var stageWidth = settings.width,
@@ -622,20 +653,20 @@
 	        function drawInstance(instance){
 	            if(!instance.hidden){
 	                var id = instance.currentCostumeId;
-	                var img = costumesCache[instance.costumes[id]];
+	                var img = imageCache[instance.costumes[id]];
 	                // Solution A:
 	                // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
 	                if( !img ){
 	                    img=new Image();
 	                    img.src=instance.costumes[id];
-	                    costumesCache[instance.costumes[id]]=img;
+	                    imageCache[instance.costumes[id]]=img;
 	                }
 	                instance.width = img.width;
 	                instance.height = img.height;
 	                // Solution B:
 	                // var img = new Image();
 	                // img.src=instance.costumes[0];
-	                ctx.drawImage( img, instance.x-img.width/2, instance.y-img.height/2 );
+	                ctx.drawImage( img, instance.x-img.width/2, instance.y-img.height/2, instance.width*instance.scale, instance.height*instance.scale );
 	            }
 	        }
 	    }
@@ -648,21 +679,60 @@
 	            ctx.fillStyle=src;
 	            ctx.fillRect(0,0,stageWidth,stageHeight);
 	        } else {
-	            var img = costumesCache[src];
+	            var img = imageCache[src];
 	            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
 	            if( !img ){
 	                img=new Image();
 	                img.src=src;
-	                backdropCache[src]=img;
+	                imageCache[src]=img;
 	            }
 	            ctx.drawImage( img, x||0, y||0, width||img.width, height||img.height );
 	        }
+	    }
+
+	    function preload(images, completeFunc, progressFunc){
+	        var loaderProxy = {};
+	        if(completeFunc){
+	            onComplete(completeFunc);
+	        }
+	        if(progressFunc){
+	            onProgress(progressFunc);
+	        }
+	        for(var i=0; i<images.length; i++){
+	            var path = images[i];
+	            imageCache[path] = loader.addImage(path);
+	        }
+	        function onComplete(callback){
+	            loader.addCompletionListener(function(){
+	                callback();
+	            });
+	        };
+	        function onProgress(callback){
+	            loader.addProgressListener(function(e) {
+	                // e.completedCount, e.totalCount, e.resource.imageNumber
+	                callback(e);
+	            });
+	        }
+	        loaderProxy.complete = onComplete;
+	        loaderProxy.progress = onProgress;
+	        loader.start();
+	        if(debugMode){
+	            console.log("Start loading "+images.length+" images...");
+	            loader.addProgressListener(function(e) {
+	                console.log("Preloading progressing...");
+	            });
+	            loader.addCompletionListener(function(){
+	                console.log("Preloading completed!");
+	            });
+	        }
+	        return loaderProxy;
 	    }
 
 	    exports.clear = clear;
 	    exports.print = print;
 	    exports.drawSprites = drawSprites;
 	    exports.drawBackdrop = drawBackdrop;
+	    exports.preload = preload;
 
 	    return exports;
 	}
@@ -670,39 +740,7 @@
 	module.exports = Renderer;
 
 /***/ },
-/* 8 */,
-/* 9 */,
-/* 10 */,
-/* 11 */
-/***/ function(module, exports) {
-
-	function Sprites(){}
-
-	Sprites.prototype.each = function(func){
-	    for(let key in this){
-	        if (this[key].constructor.name === "Sprite") {
-	            func.call(this[key],this[key]);
-	        } else if (this[key] instanceof Array) {
-	            var instances = this[key];
-	            for(let i=0; i<instances.length; i++){
-	                var instance = instances[i];
-	                func.call(instance,instance);
-	            }
-	        }
-	    }
-	}
-
-	Sprites.prototype.clear = function(){
-	    for(let key in this){
-	        delete this[key];
-	    }
-	};
-
-	module.exports = Sprites;
-
-/***/ },
-/* 12 */,
-/* 13 */
+/* 9 */
 /***/ function(module, exports) {
 
 	//  state 用來表達 renderer 的以下狀態：
@@ -761,6 +799,520 @@
 	}
 
 	module.exports = Clock;
+
+/***/ },
+/* 10 */,
+/* 11 */,
+/* 12 */,
+/* 13 */,
+/* 14 */,
+/* 15 */,
+/* 16 */
+/***/ function(module, exports) {
+
+	/*!  | http://thinkpixellab.com/PxLoader */
+	/*
+	 * PixelLab Resource Loader
+	 * Loads resources while providing progress updates.
+	 */
+
+	function PxLoader(settings) {
+
+	    // merge settings with defaults
+	    settings = settings || {};
+	    this.settings = settings;
+
+	    // how frequently we poll resources for progress
+	    if (settings.statusInterval == null) {
+	        settings.statusInterval = 5000; // every 5 seconds by default
+	    }
+
+	    // delay before logging since last progress change
+	    if (settings.loggingDelay == null) {
+	        settings.loggingDelay = 20 * 1000; // log stragglers after 20 secs
+	    }
+
+	    // stop waiting if no progress has been made in the moving time window
+	    if (settings.noProgressTimeout == null) {
+	        settings.noProgressTimeout = Infinity; // do not stop waiting by default
+	    }
+
+	    var entries = [],
+	        // holds resources to be loaded with their status
+	        completionListeners = [],
+	        progressListeners = [],
+	        timeStarted, progressChanged = Date.now();
+
+	    /**
+	     * The status of a resource
+	     * @enum {number}
+	     */
+	    var ResourceState = {
+	        QUEUED: 0,
+	        WAITING: 1,
+	        LOADED: 2,
+	        ERROR: 3,
+	        TIMEOUT: 4
+	    };
+
+	    // places non-array values into an array.
+	    var ensureArray = function(val) {
+	        if (val == null) {
+	            return [];
+	        }
+
+	        if (Array.isArray(val)) {
+	            return val;
+	        }
+
+	        return [val];
+	    };
+
+	    // add an entry to the list of resources to be loaded
+	    this.add = function(resource) {
+
+	        // TODO: would be better to create a base class for all resources and
+	        // initialize the PxLoaderTags there rather than overwritting tags here
+	        resource.tags = new PxLoaderTags(resource.tags);
+
+	        // ensure priority is set
+	        if (resource.priority == null) {
+	            resource.priority = Infinity;
+	        }
+
+	        entries.push({
+	            resource: resource,
+	            status: ResourceState.QUEUED
+	        });
+	    };
+
+	    this.addProgressListener = function(callback, tags) {
+	        progressListeners.push({
+	            callback: callback,
+	            tags: new PxLoaderTags(tags)
+	        });
+	    };
+
+	    this.addCompletionListener = function(callback, tags) {
+	        completionListeners.push({
+	            tags: new PxLoaderTags(tags),
+	            callback: function(e) {
+	                if (e.completedCount === e.totalCount) {
+	                    callback(e);
+	                }
+	            }
+	        });
+	    };
+
+	    // creates a comparison function for resources
+	    var getResourceSort = function(orderedTags) {
+
+	        // helper to get the top tag's order for a resource
+	        orderedTags = ensureArray(orderedTags);
+	        var getTagOrder = function(entry) {
+	            var resource = entry.resource,
+	                bestIndex = Infinity;
+	            for (var i = 0; i < resource.tags.length; i++) {
+	                for (var j = 0; j < Math.min(orderedTags.length, bestIndex); j++) {
+	                    if (resource.tags.all[i] === orderedTags[j] && j < bestIndex) {
+	                        bestIndex = j;
+	                        if (bestIndex === 0) {
+	                            break;
+	                        }
+	                    }
+	                    if (bestIndex === 0) {
+	                        break;
+	                    }
+	                }
+	            }
+	            return bestIndex;
+	        };
+	        return function(a, b) {
+	            // check tag order first
+	            var aOrder = getTagOrder(a),
+	                bOrder = getTagOrder(b);
+	            if (aOrder < bOrder) { return -1; }
+	            if (aOrder > bOrder) { return 1; }
+
+	            // now check priority
+	            if (a.priority < b.priority) { return -1; }
+	            if (a.priority > b.priority) { return 1; }
+	            return 0;
+	        };
+	    };
+
+	    this.start = function(orderedTags) {
+	        timeStarted = Date.now();
+
+	        // first order the resources
+	        var compareResources = getResourceSort(orderedTags);
+	        entries.sort(compareResources);
+
+	        // trigger requests for each resource
+	        for (var i = 0, len = entries.length; i < len; i++) {
+	            var entry = entries[i];
+	            entry.status = ResourceState.WAITING;
+	            entry.resource.start(this);
+	        }
+
+	        // do an initial status check soon since items may be loaded from the cache
+	        setTimeout(statusCheck, 100);
+	    };
+
+	    var statusCheck = function() {
+	        var checkAgain = false,
+	            noProgressTime = Date.now() - progressChanged,
+	            timedOut = (noProgressTime >= settings.noProgressTimeout),
+	            shouldLog = (noProgressTime >= settings.loggingDelay);
+
+	        for (var i = 0, len = entries.length; i < len; i++) {
+	            var entry = entries[i];
+	            if (entry.status !== ResourceState.WAITING) {
+	                continue;
+	            }
+
+	            // see if the resource has loaded
+	            if (entry.resource.checkStatus) {
+	                entry.resource.checkStatus();
+	            }
+
+	            // if still waiting, mark as timed out or make sure we check again
+	            if (entry.status === ResourceState.WAITING) {
+	                if (timedOut) {
+	                    entry.resource.onTimeout();
+	                } else {
+	                    checkAgain = true;
+	                }
+	            }
+	        }
+
+	        // log any resources that are still pending
+	        if (shouldLog && checkAgain) {
+	            log();
+	        }
+
+	        if (checkAgain) {
+	            setTimeout(statusCheck, settings.statusInterval);
+	        }
+	    };
+
+	    this.isBusy = function() {
+	        for (var i = 0, len = entries.length; i < len; i++) {
+	            if (entries[i].status === ResourceState.QUEUED || entries[i].status === ResourceState.WAITING) {
+	                return true;
+	            }
+	        }
+	        return false;
+	    };
+
+	    var onProgress = function(resource, statusType) {
+
+	        var entry = null,
+	            i, len, listeners, listener, shouldCall;
+
+	        // find the entry for the resource
+	        for (i = 0, len = entries.length; i < len; i++) {
+	            if (entries[i].resource === resource) {
+	                entry = entries[i];
+	                break;
+	            }
+	        }
+
+	        // we have already updated the status of the resource
+	        if (entry == null || entry.status !== ResourceState.WAITING) {
+	            return;
+	        }
+	        entry.status = statusType;
+	        progressChanged = Date.now();
+
+	        // ensure completion listeners fire after progress listeners
+	        listeners = progressListeners.concat( completionListeners );
+
+	        // fire callbacks for interested listeners
+	        for (i = 0, len = listeners.length; i < len; i++) {
+
+	            listener = listeners[i];
+	            if (listener.tags.length === 0) {
+	                // no tags specified so always tell the listener
+	                shouldCall = true;
+	            } else {
+	                // listener only wants to hear about certain tags
+	                shouldCall = resource.tags.intersects(listener.tags);
+	            }
+
+	            if (shouldCall) {
+	                sendProgress(entry, listener);
+	            }
+	        }
+	    };
+
+	    this.onLoad = function(resource) {
+	        onProgress(resource, ResourceState.LOADED);
+	    };
+	    this.onError = function(resource) {
+	        onProgress(resource, ResourceState.ERROR);
+	    };
+	    this.onTimeout = function(resource) {
+	        onProgress(resource, ResourceState.TIMEOUT);
+	    };
+
+	    // sends a progress report to a listener
+	    var sendProgress = function(updatedEntry, listener) {
+	        // find stats for all the resources the caller is interested in
+	        var completed = 0,
+	            total = 0,
+	            i, len, entry, includeResource;
+	        for (i = 0, len = entries.length; i < len; i++) {
+
+	            entry = entries[i];
+	            includeResource = false;
+
+	            if (listener.tags.length === 0) {
+	                // no tags specified so always tell the listener
+	                includeResource = true;
+	            } else {
+	                includeResource = entry.resource.tags.intersects(listener.tags);
+	            }
+
+	            if (includeResource) {
+	                total++;
+	                if (entry.status === ResourceState.LOADED ||
+	                    entry.status === ResourceState.ERROR ||
+	                    entry.status === ResourceState.TIMEOUT) {
+
+	                    completed++;
+	                }
+	            }
+	        }
+
+	        listener.callback({
+	            // info about the resource that changed
+	            resource: updatedEntry.resource,
+
+	            // should we expose StatusType instead?
+	            loaded: (updatedEntry.status === ResourceState.LOADED),
+	            error: (updatedEntry.status === ResourceState.ERROR),
+	            timeout: (updatedEntry.status === ResourceState.TIMEOUT),
+
+	            // updated stats for all resources
+	            completedCount: completed,
+	            totalCount: total
+	        });
+	    };
+
+	    // prints the status of each resource to the console
+	    var log = this.log = function(showAll) {
+	        if (!window.console) {
+	            return;
+	        }
+
+	        var elapsedSeconds = Math.round((Date.now() - timeStarted) / 1000);
+	        window.console.log('PxLoader elapsed: ' + elapsedSeconds + ' sec');
+
+	        for (var i = 0, len = entries.length; i < len; i++) {
+	            var entry = entries[i];
+	            if (!showAll && entry.status !== ResourceState.WAITING) {
+	                continue;
+	            }
+
+	            var message = 'PxLoader: #' + i + ' ' + entry.resource.getName();
+	            switch(entry.status) {
+	                case ResourceState.QUEUED:
+	                    message += ' (Not Started)';
+	                    break;
+	                case ResourceState.WAITING:
+	                    message += ' (Waiting)';
+	                    break;
+	                case ResourceState.LOADED:
+	                    message += ' (Loaded)';
+	                    break;
+	                case ResourceState.ERROR:
+	                    message += ' (Error)';
+	                    break;
+	                case ResourceState.TIMEOUT:
+	                    message += ' (Timeout)';
+	                    break;
+	            }
+
+	            if (entry.resource.tags.length > 0) {
+	                message += ' Tags: [' + entry.resource.tags.all.join(',') + ']';
+	            }
+
+	            window.console.log(message);
+	        }
+	    };
+	}
+
+
+	// Tag object to handle tag intersection; once created not meant to be changed
+	// Performance rationale: http://jsperf.com/lists-indexof-vs-in-operator/3
+
+	function PxLoaderTags(values) {
+
+	    this.all = [];
+	    this.first = null; // cache the first value
+	    this.length = 0;
+
+	    // holds values as keys for quick lookup
+	    this.lookup = {};
+
+	    if (values) {
+
+	        // first fill the array of all values
+	        if (Array.isArray(values)) {
+	            // copy the array of values, just to be safe
+	            this.all = values.slice(0);
+	        } else if (typeof values === 'object') {
+	            for (var key in values) {
+	                if(values.hasOwnProperty(key)) {
+	                    this.all.push(key);
+	                }
+	            }
+	        } else {
+	            this.all.push(values);
+	        }
+
+	        // cache the length and the first value
+	        this.length = this.all.length;
+	        if (this.length > 0) {
+	            this.first = this.all[0];
+	        }
+
+	        // set values as object keys for quick lookup during intersection test
+	        for (var i = 0; i < this.length; i++) {
+	            this.lookup[this.all[i]] = true;
+	        }
+	    }
+	}
+
+	// compare this object with another; return true if they share at least one value
+	PxLoaderTags.prototype.intersects = function(other) {
+
+	    // handle empty values case
+	    if (this.length === 0 || other.length === 0) {
+	        return false;
+	    }
+
+	    // only a single value to compare?
+	    if (this.length === 1 && other.length === 1) {
+	        return this.first === other.first;
+	    }
+
+	    // better to loop through the smaller object
+	    if (other.length < this.length) {
+	        return other.intersects(this);
+	    }
+
+	    // loop through every key to see if there are any matches
+	    for (var key in this.lookup) {
+	        if (other.lookup[key]) {
+	            return true;
+	        }
+	    }
+
+	    return false;
+	};
+
+	function PxLoaderImage(url, tags, priority, options) {
+	    options = options || {};
+
+	    var self = this,
+	        loader = null,
+	        img;
+
+	    img = this.img = new Image();
+	    if (options.origin) {
+	        img.crossOrigin = options.origin;
+	    }
+
+	    this.tags = tags;
+	    this.priority = priority;
+
+	    var onReadyStateChange = function() {
+	        if (self.img.readyState !== 'complete') {
+	            return;
+	        }
+
+	        onLoad();
+	    };
+
+	    var onLoad = function() {
+	        loader.onLoad(self);
+	        cleanup();
+	    };
+
+	    var onError = function() {
+	        loader.onError(self);
+	        cleanup();
+	    };
+
+	    var onTimeout = function() {
+	        loader.onTimeout(self);
+	        cleanup();
+	    };
+
+	    var cleanup = function() {
+	        self.unbind('load', onLoad);
+	        self.unbind('readystatechange', onReadyStateChange);
+	        self.unbind('error', onError);
+	    };
+
+	    this.start = function(pxLoader) {
+	        // we need the loader ref so we can notify upon completion
+	        loader = pxLoader;
+
+	        // NOTE: Must add event listeners before the src is set. We
+	        // also need to use the readystatechange because sometimes
+	        // load doesn't fire when an image is in the cache.
+	        self.bind('load', onLoad);
+	        self.bind('readystatechange', onReadyStateChange);
+	        self.bind('error', onError);
+
+	        self.img.src = url;
+	    };
+
+	    // called by PxLoader to check status of image (fallback in case
+	    // the event listeners are not triggered).
+	    this.checkStatus = function() {
+	        onReadyStateChange();
+	    };
+
+	    // called by PxLoader when it is no longer waiting
+	    this.onTimeout = function() {
+	        if (self.img.complete) {
+	            onLoad();
+	        } else {
+	            onTimeout();
+	        }
+	    };
+
+	    // returns a name for the resource that can be used in logging
+	    this.getName = function() {
+	        return url;
+	    };
+
+	    // cross-browser event binding
+	    this.bind = function(eventName, eventHandler) {
+	        self.img.addEventListener(eventName, eventHandler, false);
+	    };
+
+	    // cross-browser event un-binding
+	    this.unbind = function(eventName, eventHandler) {
+	        self.img.removeEventListener(eventName, eventHandler, false);
+	    };
+
+	}
+
+	// add a convenience method to PxLoader for adding an image
+	PxLoader.prototype.addImage = function(url, tags, priority, options) {
+	    var imageLoader = new PxLoaderImage(url, tags, priority, options);
+	    this.add(imageLoader);
+
+	    // return the img element to the caller
+	    return imageLoader.img;
+	};
+
+	module.exports = PxLoader;
 
 /***/ }
 /******/ ]);

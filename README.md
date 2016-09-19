@@ -38,7 +38,7 @@ Game.sprites.slime = slime;
 slime.x;
 slime.y;
 slime.direction;
-slime.scale; // @TODO
+slime.scale;
 slime.costumes;
 slime.currentCostumeId;
 slime.width;
@@ -76,6 +76,12 @@ Game.on("holding", "right", function(){ /* Do something */ });
 ## Rendering
 
 ```javascript
+Game.preloadImages(
+    [path1, path2, path3],
+    completeCallback,
+    progressCallback
+);
+
 Game.draw(function(){
 
   Game.drawBackdrop("./images/backGround.jpg");
@@ -90,6 +96,8 @@ Game.draw(function(){
 Game.start();
 
 Game.stop();
+
+Game.clear();
 ```
 
 你也可以拿 context 物件自由畫出你要畫的東西
