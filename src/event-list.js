@@ -64,6 +64,24 @@ function eventList(io, debugMode){
         }
     }
 
+    // @TODO: Now we could only detect Sprite instance, not include cursor.
+    function touchJudger(sprites, handler){
+        if(!sprites.length || sprites.length<2){
+            console.log("You must pass a sprites array which length is bigger than 1 as the second argument!");
+            return;
+        }
+        for(var i=1; i<sprites.length; i++){
+            if(!sprites[i-1].touched(sprites[i])){
+                return false;
+            }
+        }
+        handler();
+        if(debugMode){
+            console.log("Just fired a touch handler on: "+sprites);
+        }
+        return true; // we do not need this.
+    }
+
     function clearEventRecord(){
         io.clicked.x=null;
         io.clicked.y=null;
@@ -79,9 +97,11 @@ function eventList(io, debugMode){
             handler:handler
         }
         // @TODO: target 型別偵測
-        if (event=="keydown" || event=="keyup" || event=="holding"){
+        if (event=="touch"){
+            eventObj.sprites = target;
+        } else if (event=="keydown" || event=="keyup" || event=="holding"){
             eventObj.key = target;
-        } else {
+        } else if (event=="hover" || event=="click") {
             eventObj.sprite = target;
         }
         pool.push(eventObj);
@@ -93,6 +113,7 @@ function eventList(io, debugMode){
             else if (pool[i].event=="keydown") { keydownJudger(pool[i].key, pool[i].handler); }
             else if (pool[i].event=="keyup") { keydownJudger(pool[i].key, pool[i].handler); }
             else if (pool[i].event=="holding") { holdingJudger(pool[i].key, pool[i].handler); }
+            else if (pool[i].event=="touch") { touchJudger(pool[i].sprites, pool[i].handler); }
         }
         clearEventRecord();
     }

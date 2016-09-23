@@ -71,6 +71,7 @@ Game.on("hover", Game.sprites.hero, function(){ /* Do something */ });
 Game.on("keydown", "w", function(){ /* Do something */ });
 Game.on("keyup", "space", function(){ /* Do something */ });
 Game.on("holding", "right", function(){ /* Do something */ });
+Game.on("touch", [sprite1, sprite2], function(){ /* Do something */ });
 ```
 
 
