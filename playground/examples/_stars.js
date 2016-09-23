@@ -4,8 +4,9 @@ Game.sprites.stars = [];
 
 for(let i=0; i<100; i++){
     var newStar = Game.createSprite({
-    	  x: Math.random()*640,
+    	x: Math.random()*640,
       	y: Math.random()*480,
+        scale: 0.8 + Math.random()*0.4,
       	costumes: "./images/slime.gif"
     });
   	Game.sprites.stars.push(newStar);

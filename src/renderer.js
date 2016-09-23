@@ -34,8 +34,8 @@ function Renderer(ctx, settings, sprites, debugMode){
                     img.src=instance.costumes[id];
                     imageCache[instance.costumes[id]]=img;
                 }
-                instance.width = img.width;
-                instance.height = img.height;
+                instance.width = img.width * instance.scale;
+                instance.height = img.height * instance.scale;
                 // Solution B:
                 // var img = new Image();
                 // img.src=instance.costumes[0];

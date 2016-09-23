@@ -21,6 +21,7 @@ Game.set({
 var slime = Game.createSprite({
     x: 200,
     y: 200,
+    scale: 1.2, // 1.2倍大
     costumes: ["./slime.gif"]
 });
 

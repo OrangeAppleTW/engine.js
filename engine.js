@@ -63,7 +63,7 @@
 	        height: canvas.height,
 	        // ratio: 1, //@TODO: set ratio
 	        // gravity: 0, //@TODO: set gravity
-	        frameFunc: function(){}
+	        onTick: function(){}
 	    };
 
 	    debugMode = debugMode || false;
@@ -80,7 +80,7 @@
 	        settings.height     = args.height || settings.height;
 	        settings.ratio      = args.ratio || settings.ratio;
 	        settings.gravity    = args.gravity || settings.gravity;
-	        settings.frameFunc  = args.frameFunc || settings.frameFunc;
+	        settings.onTick     = args.onTick || settings.onTick;
 	        return this;
 	    }
 
@@ -101,7 +101,7 @@
 	        set: set,
 	        stop: clock.stop,
 	        start: clock.start,
-	        draw: function(func){ settings.frameFunc=func; },
+	        update: function(func){ settings.onTick=func; },
 	        ctx: ctx,
 	        clear: renderer.clear,
 	        preloadImages: renderer.preload
@@ -719,8 +719,8 @@
 	                    img.src=instance.costumes[id];
 	                    imageCache[instance.costumes[id]]=img;
 	                }
-	                instance.width = img.width;
-	                instance.height = img.height;
+	                instance.width = img.width * instance.scale;
+	                instance.height = img.height * instance.scale;
 	                // Solution B:
 	                // var img = new Image();
 	                // img.src=instance.costumes[0];
@@ -1312,7 +1312,7 @@
 	//  state 用來表達 renderer 的以下狀態：
 	//
 	//   1. readyToStart:
-	//      初始狀態，此時執行 start 會直接開始 cycling(不斷執行 draw)，並將狀態切換為 "running"。
+	//      初始狀態，此時執行 start 會直接開始 cycling(不斷執行 update)，並將狀態切換為 "running"。
 	//   2. running:
 	//      不停 cycling，此時可執行 stop 將狀態切換為 "stopping"。
 	//      但是執行 start 則不會有任何反應
@@ -1333,20 +1333,20 @@
 	    function start(){
 	        if(state==="readyToStart"){
 	            state = "running";
-	            var draw = function(){
+	            var update = function(){
 	                if(state==="running"){
 	                    sprites.runTickFunc();
-	                    settings.frameFunc();
+	                    settings.onTick();
 	                    eventList.traverse();
 	                    inspector.updateFPS();
 	                    setTimeout(function(){
-	                        requestAnimationFrame(draw);
+	                        requestAnimationFrame(update);
 	                    },1000/FPS);
 	                } else {
 	                    state = "readyToStart";
 	                }
 	            }
-	            setTimeout( draw, 0 ); // 必須 Async，否則會產生微妙的時間差
+	            setTimeout( update, 0 ); // 必須 Async，否則會產生微妙的時間差
 	        } else if (state==="stopping") {
 	            setTimeout( start, 10 );
 	        }
