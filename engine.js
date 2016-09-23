@@ -313,7 +313,6 @@
 /* 4 */
 /***/ function(module, exports) {
 
-	// @TODO: 同時開 多個遊戲時可能會重複寫入 inspector, 造成 FPS 為 Infinity
 	var inspector = {
 	    fps:0,
 	    lastFrameUpdatedTime:(new Date()).getTime(),
@@ -689,11 +688,13 @@
 	function Renderer(ctx, settings, sprites, debugMode){
 
 	    var exports = {};
-	    var stageWidth = settings.width,
-	        stageHeight = settings.height;
+
+	    // 不可以這麼做，因為當我們要取 canvas 大小時，他可能已經變了
+	    // var stageWidth = settings.width,
+	    //     stageHeight = settings.height;
 
 	    function clear() {
-	        ctx.clearRect(0,0,stageWidth,stageHeight);
+	        ctx.clearRect(0,0,settings.width,settings.height);
 	    }
 
 	    function print(words, x, y, color, size, font) {
@@ -735,7 +736,7 @@
 	    function drawBackdrop(src, x, y, width, height){
 	        if(src[0]=='#'){
 	            ctx.fillStyle=src;
-	            ctx.fillRect(0,0,stageWidth,stageHeight);
+	            ctx.fillRect(0,0,settings.width,settings.height);
 	        } else {
 	            var img = imageCache[src];
 	            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
