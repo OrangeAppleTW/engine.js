@@ -19,6 +19,19 @@ var ground = Game.sprites.ground = Game.createSprite({
     costumes: "./images/flappy-bird/ground.png"
 });
 bird.speed = 1;
+bird.forever(function(){
+    bird.y += bird.speed;
+    bird.speed += 0.15;
+    if( bird.touched(ground) || bird.touched(upTube) || bird.touched(downTube)){
+        Game.stop();
+    }
+});
+downTube.forever(function(){
+	if(this.x<-30){
+        this.x = 330;
+    }
+    upTube.x = this.x = this.x-2;
+});
 
 Game.on("click", null, function(){
     bird.speed = -4;
@@ -41,17 +54,8 @@ Game.preloadImages(
 );
 
 Game.draw( function(){
-    Game.drawBackdrop("./images/flappy-bird/bg.jpg",0,0,320)
-    if(downTube.x<-30){
-        downTube.x = 330;
-    }
-    upTube.x = downTube.x = downTube.x-2;
-    bird.y += bird.speed;
-    bird.speed += 0.15;
+    Game.drawBackdrop("./images/flappy-bird/bg.jpg",0,0,320);
     Game.drawSprites();
-    if( bird.touched(ground) || bird.touched(upTube) || bird.touched(downTube)){
-        Game.stop();
-    }
 });
 
 Game.start();

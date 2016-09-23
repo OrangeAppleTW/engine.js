@@ -15,7 +15,7 @@
 
 var FPS = 60
 
-function Clock(settings, eventList, inspector){
+function Clock(settings, eventList, sprites, inspector){
 
     var state="readyToStart"; //"readyToStart", "stopping", "running";
 
@@ -24,8 +24,8 @@ function Clock(settings, eventList, inspector){
             state = "running";
             var draw = function(){
                 if(state==="running"){
-                    // renderer.clear();
-                    settings.frameFunc(); // 放在 clear 後面，才能讓使用者自行在 canvas 上畫東西
+                    sprites.runTickFunc();
+                    settings.frameFunc();
                     eventList.traverse();
                     inspector.updateFPS();
                     setTimeout(function(){

@@ -1,5 +1,11 @@
 function Sprites(){}
 
+Sprites.prototype.runTickFunc = function(){
+    this.each(function(){
+        if(this._onTickFunc){ this._onTickFunc(); }
+    });
+}
+
 Sprites.prototype.each = function(func){
     for(var key in this){
         if (this[key].constructor.name === "Sprite") {

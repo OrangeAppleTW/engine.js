@@ -12,6 +12,7 @@ function Sprite(args) {
     this.width = 1;
     this.height = 1;
     this.hidden = args.hidden;
+    this._onTickFunc = null;
 }
 
 Sprite.new = function(args){
@@ -75,6 +76,10 @@ Sprite.prototype.distanceTo = function(){
     } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ){
         return util.distanceBetween( this.x, this.y, arguments[0], arguments[1] );
     }
+}
+
+Sprite.prototype.forever = function(func){
+    this._onTickFunc = func;
 }
 
 module.exports = Sprite;

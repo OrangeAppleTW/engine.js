@@ -52,6 +52,7 @@ slime.moveTo();
 slime.move();
 slime.stepForward();
 slime.toward();
+slime.forever();
 slime.touched();
 slime.distanceTo();
 ```

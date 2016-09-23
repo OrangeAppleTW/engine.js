@@ -24,7 +24,7 @@ function engine(stageId, debugMode){
     var io = require("./io")(canvas, debugMode);
     var eventList = require("./event-list")(io, debugMode);
     var renderer = require("./renderer")(ctx, settings, sprites, debugMode);
-    var clock = require("./clock")(settings, eventList, inspector);
+    var clock = require("./clock")(settings, eventList, sprites, inspector);
 
     function set(args){
         if(args.width){canvas.width = args.width;}
