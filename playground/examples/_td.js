@@ -26,6 +26,11 @@ var towerTemplate = Game.sprites.towerTemplate = Game.createSprite({
     hidden: true
 });
 
+Game.set({
+    width: 640,
+    height: 480
+});
+
 Game.on("click", null, function(){
     if(isBuilding){
         if(!towerButton.touched(Game.cursor.x,Game.cursor.y)){

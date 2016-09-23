@@ -1,4 +1,4 @@
-window.Game = Engine("stage",true);
+window.Game = {};
 var tdScript = require("raw!./examples/_td.js"),
     flappyBirdScript = require("raw!./examples/_flappy-bird.js"),
     starsScript = require("raw!./examples/_stars.js"),
@@ -18,9 +18,11 @@ var editor = CodeMirror.fromTextArea(document.getElementById("script-box"), {
 });
 $("#run-code-button").click(
     function(){
-        Game.stop();
+        if(Game.stop){Game.stop();}
+        Game = Engine("stage",true)
         editor.save();
         eval(document.getElementById("script-box").value);
+        arrangeLayout();
     }
 )
 $("#stop-code-button").click(
@@ -47,7 +49,6 @@ $(window).resize(function(){
 });
 arrangeLayout();
 putDemoCode();
-
 
 function arrangeLayout(){
     editor.setSize("100%", 540);

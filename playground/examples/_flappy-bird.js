@@ -33,7 +33,6 @@ downTube.forever(function(){
 bird.on("touch", ground, Game.stop);
 Game.on("touch", [bird, upTube], Game.stop);
 Game.on("touch", [bird, downTube], Game.stop);
-
 Game.on("click", null, function(){
     bird.speed = -4;
 });
@@ -43,20 +42,22 @@ Game.set({
     height: 480
 });
 
-Game.preloadImages(
-    [
-        "./images/flappy-bird/bird.png",
-        "./images/flappy-bird/up-tube.png",
-        "./images/flappy-bird/down-tube.png"
-    ],
-    function(){
-        console.log("Preloading complete");
-    }
-);
-
 Game.update( function(){
     Game.drawBackdrop("./images/flappy-bird/bg.jpg",0,0,320);
     Game.drawSprites();
 });
 
-Game.start();
+Game.preloadImages(
+    [
+        "./images/flappy-bird/bird.png",
+        "./images/flappy-bird/up-tube.png",
+        "./images/flappy-bird/down-tube.png",
+        "./images/flappy-bird/bg.jpg"
+    ],
+    function(){
+        console.log("Preloading complete");
+        Game.start();
+    }
+);
+
+Game.print("Loading....", 100, 240);

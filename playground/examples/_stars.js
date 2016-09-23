@@ -1,5 +1,10 @@
 var clock = 0;
 
+Game.set({
+    width: 640,
+    height: 480
+});
+
 Game.sprites.stars = [];
 
 for(let i=0; i<100; i++){
