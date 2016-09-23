@@ -52,6 +52,7 @@ Game.preloadImages(
         "./images/flappy-bird/bird.png",
         "./images/flappy-bird/up-tube.png",
         "./images/flappy-bird/down-tube.png",
+        "./images/flappy-bird/ground.png",
         "./images/flappy-bird/bg.jpg"
     ],
     function(){
