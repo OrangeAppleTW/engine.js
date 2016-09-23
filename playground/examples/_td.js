@@ -36,7 +36,7 @@ Game.on("click", null, function(){
     }
 });
 
-Game.on("click", towerButton, function(){
+towerButton.on("click", function(){
     isBuilding = !isBuilding;
     towerTemplate.hidden = !isBuilding;
 });

@@ -30,9 +30,9 @@ downTube.forever(function(){
     upTube.x = this.x = this.x-2;
 });
 
-Game.on("touch",[bird, ground], Game.stop);
-Game.on("touch",[bird, upTube], Game.stop);
-Game.on("touch",[bird, downTube], Game.stop);
+bird.on("touch", ground, Game.stop);
+Game.on("touch", [bird, upTube], Game.stop);
+Game.on("touch", [bird, downTube], Game.stop);
 
 Game.on("click", null, function(){
     bird.speed = -4;

@@ -48,13 +48,24 @@ slime.hidden;
 
 ### 角色的方法
 ```javascript
-slime.moveTo();
-slime.move();
-slime.stepForward();
-slime.toward();
-slime.forever();
-slime.touched();
-slime.distanceTo();
+slime.moveTo(160, 200);
+slime.move(10, 0);
+slime.stepForward(4);
+slime.toward(sprite1);
+
+slime.always(function(){/* Do this every tick */});
+slime.forever(function(){/* Do this every tick */}); // Alias to always
+
+slime.touched(sprite1); // Return Boolean
+slime.touched(40, 160); // Return Boolean
+slime.distanceTo(sprite1); // Return number
+slime.distanceTo({x:0, y:0}); // Return number
+slime.distanceTo(0, 0); // Return number
+
+slime.on("click",function(){});
+slime.on("hover",function(){});
+slime.on("touch", sprite1, function(){});
+slime.on("touch", [sprite1, sprite2], function(){}); // 同時碰到兩個角色
 ```
 
 ## IO & Events
@@ -72,6 +83,7 @@ Game.on("keydown", "w", function(){ /* Do something */ });
 Game.on("keyup", "space", function(){ /* Do something */ });
 Game.on("holding", "right", function(){ /* Do something */ });
 Game.on("touch", [sprite1, sprite2], function(){ /* Do something */ });
+Game.on("touch", [sprite1, sprite2, sprite3], function(){ /* Do something */ }); // 三個角色同時碰在一起
 ```
 
 

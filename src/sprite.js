@@ -1,7 +1,7 @@
 var util = require("./util");
 
 // @TODO: 客製化特征
-function Sprite(args) {
+function Sprite(args, eventList) {
     this.x = args.x;
     this.y = args.y;
     this.direction = args.direction;
@@ -12,12 +12,10 @@ function Sprite(args) {
     this.width = 1;
     this.height = 1;
     this.hidden = args.hidden;
-    this._onTickFunc = null;
-}
 
-Sprite.new = function(args){
-    return new Sprite(args);
-};
+    this._onTickFunc = null;
+    this._eventList = eventList;
+}
 
 Sprite.prototype.moveTo = function(x, y){
     this.x = x;
@@ -76,10 +74,30 @@ Sprite.prototype.distanceTo = function(){
     } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ){
         return util.distanceBetween( this.x, this.y, arguments[0], arguments[1] );
     }
-}
+};
 
-Sprite.prototype.forever = function(func){
+Sprite.prototype.always = Sprite.prototype.forever = function(func){
     this._onTickFunc = func;
-}
+};
+
+Sprite.prototype.on = function(){
+    var event = arguments[0],
+        target, handler;
+    if(event=="hover" || event=="click"){
+        target = this;
+        handler = arguments[1];
+    } else if (event=="touch"){
+        if(Array.isArray(arguments[1])){
+            target = [this].concat(arguments[1]);
+        } else {
+            target = [this].concat([arguments[1]]);
+        }
+        handler = arguments[2];
+    } else {
+        console.log('Sprite.on() does only support "click", "hover" and "touch" events');
+        return false;
+    }
+    this._eventList.register(event, target, handler);
+};
 
 module.exports = Sprite;

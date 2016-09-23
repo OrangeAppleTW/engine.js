@@ -7,6 +7,7 @@
 function engine(stageId, debugMode){
     var Sprite = require("./sprite");
     var Sprites = require("./sprites");
+    var EventList = require("./event-list");
     var inspector = require("./inspector");
     var canvas= document.getElementById(stageId);
     var ctx = canvas.getContext("2d");
@@ -22,7 +23,7 @@ function engine(stageId, debugMode){
     debugMode = debugMode || false;
 
     var io = require("./io")(canvas, debugMode);
-    var eventList = require("./event-list")(io, debugMode);
+    var eventList = new EventList(io, debugMode);
     var renderer = require("./renderer")(ctx, settings, sprites, debugMode);
     var clock = require("./clock")(settings, eventList, sprites, inspector);
 
@@ -44,13 +45,13 @@ function engine(stageId, debugMode){
 
     var proxy = {
         sprites: sprites,
-        createSprite: Sprite.new,
+        createSprite: function(args){ return new Sprite(args, eventList) }, // Pass io object into it because the sprite need to hear from events
         print: renderer.print,
         drawSprites: renderer.drawSprites,
         drawBackdrop: renderer.drawBackdrop,
         cursor: io.cursor,
         inspector: inspector,
-        on: eventList.register,
+        on: function(event, target, handler){ eventList.register(event, target, handler) },
         set: set,
         stop: clock.stop,
         start: clock.start,
