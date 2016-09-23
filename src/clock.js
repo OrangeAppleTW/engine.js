@@ -1,7 +1,7 @@
 //  state 用來表達 renderer 的以下狀態：
 //
 //   1. readyToStart:
-//      初始狀態，此時執行 start 會直接開始 cycling(不斷執行 draw)，並將狀態切換為 "running"。
+//      初始狀態，此時執行 start 會直接開始 cycling(不斷執行 update)，並將狀態切換為 "running"。
 //   2. running:
 //      不停 cycling，此時可執行 stop 將狀態切換為 "stopping"。
 //      但是執行 start 則不會有任何反應
@@ -22,20 +22,20 @@ function Clock(settings, eventList, sprites, inspector){
     function start(){
         if(state==="readyToStart"){
             state = "running";
-            var draw = function(){
+            var update = function(){
                 if(state==="running"){
                     sprites.runTickFunc();
-                    settings.frameFunc();
+                    settings.onTick();
                     eventList.traverse();
                     inspector.updateFPS();
                     setTimeout(function(){
-                        requestAnimationFrame(draw);
+                        requestAnimationFrame(update);
                     },1000/FPS);
                 } else {
                     state = "readyToStart";
                 }
             }
-            setTimeout( draw, 0 ); // 必須 Async，否則會產生微妙的時間差
+            setTimeout( update, 0 ); // 必須 Async，否則會產生微妙的時間差
         } else if (state==="stopping") {
             setTimeout( start, 10 );
         }

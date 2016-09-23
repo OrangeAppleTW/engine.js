@@ -19,7 +19,7 @@ Game.set({
     height: 480
 });
 
-Game.draw( function(){
+Game.update( function(){
     Game.drawBackdrop("./images/scrolling/bg.jpg",bgPosition.x,bgPosition.y)
     // if(downTube.x<-30){
     //     downTube.x = 330;

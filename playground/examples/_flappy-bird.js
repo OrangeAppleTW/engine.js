@@ -54,7 +54,7 @@ Game.preloadImages(
     }
 );
 
-Game.draw( function(){
+Game.update( function(){
     Game.drawBackdrop("./images/flappy-bird/bg.jpg",0,0,320);
     Game.drawSprites();
 });

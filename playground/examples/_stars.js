@@ -11,7 +11,7 @@ for(let i=0; i<100; i++){
   	Game.sprites.stars.push(newStar);
 }
 
-Game.draw(function(){
+Game.update(function(){
   	Game.drawBackdrop("#000000");
     if(clock%30===0){
         for(let i=0; i<Game.sprites.stars.length; i++){

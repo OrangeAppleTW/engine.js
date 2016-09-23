@@ -45,7 +45,7 @@ Game.on("keydown", "s", function(){
     score += 100;
 });
 
-Game.draw( function(){
+Game.update( function(){
     Game.drawBackdrop("./images/map.png")
     Game.drawSprites();
     if(clock%30===0){

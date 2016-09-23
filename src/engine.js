@@ -17,7 +17,7 @@ function engine(stageId, debugMode){
         height: canvas.height,
         // ratio: 1, //@TODO: set ratio
         // gravity: 0, //@TODO: set gravity
-        frameFunc: function(){}
+        onTick: function(){}
     };
 
     debugMode = debugMode || false;
@@ -34,7 +34,7 @@ function engine(stageId, debugMode){
         settings.height     = args.height || settings.height;
         settings.ratio      = args.ratio || settings.ratio;
         settings.gravity    = args.gravity || settings.gravity;
-        settings.frameFunc  = args.frameFunc || settings.frameFunc;
+        settings.onTick     = args.onTick || settings.onTick;
         return this;
     }
 
@@ -55,7 +55,7 @@ function engine(stageId, debugMode){
         set: set,
         stop: clock.stop,
         start: clock.start,
-        draw: function(func){ settings.frameFunc=func; },
+        update: function(func){ settings.onTick=func; },
         ctx: ctx,
         clear: renderer.clear,
         preloadImages: renderer.preload
