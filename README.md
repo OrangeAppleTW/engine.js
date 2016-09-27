@@ -9,7 +9,7 @@ Game.set({
     width: 400, // Default: 640px
     height: 400, // Default: 480px
     ratio: 0.8, // Default: 1
-    draw: function(){},
+    update: function(){}, // 每次刷新畫面都要做的事放這裡
     debugMode: true // Default: false
 });
 ```
@@ -67,6 +67,7 @@ slime.on("click",function(){});
 slime.on("hover",function(){});
 slime.on("touch", sprite1, function(){});
 slime.on("touch", [sprite1, sprite2], function(){}); // 同時碰到兩個角色
+slime.when("EventName", target, function(){}); // Alias to Sprite.on
 ```
 
 ## IO & Events
@@ -85,6 +86,7 @@ Game.on("keyup", "space", function(){ /* Do something */ });
 Game.on("holding", "right", function(){ /* Do something */ });
 Game.on("touch", [sprite1, sprite2], function(){ /* Do something */ });
 Game.on("touch", [sprite1, sprite2, sprite3], function(){ /* Do something */ }); // 三個角色同時碰在一起
+Game.when("EventName", target, function(){}); // Alias to Game.on
 ```
 
 
@@ -97,7 +99,7 @@ Game.preloadImages(
     progressCallback
 );
 
-Game.draw(function(){
+Game.update(function(){
 
   Game.drawBackdrop("./images/backGround.jpg");
   Game.drawBackdrop("#000000");

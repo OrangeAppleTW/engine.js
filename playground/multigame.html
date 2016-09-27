@@ -115,7 +115,7 @@
       }
   );
 
-  Game1.draw( function(){
+  Game1.update( function(){
       Game1.drawBackdrop("./images/flappy-bird/bg.jpg",0,0,320)
       if(downTube.x<-30){
           downTube.x = 330;
@@ -178,7 +178,7 @@
       score += 100;
   });
 
-  Game2.draw( function(){
+  Game2.always( function(){
       Game2.drawBackdrop("./images/map.png")
       Game2.drawSprites();
       if(clock%30===0){
