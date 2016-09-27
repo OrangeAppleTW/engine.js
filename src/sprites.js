@@ -1,8 +1,8 @@
 function Sprites(){}
 
-Sprites.prototype.runTickFunc = function(){
+Sprites.prototype.runOnTick = function(){
     this.each(function(){
-        if(this._onTickFunc){ this._onTickFunc(); }
+        if(this._onTick){ this._onTick(); }
     });
 }
 

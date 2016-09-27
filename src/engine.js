@@ -23,14 +23,11 @@ function engine(stageId, debugMode){
     var eventList = new EventList(io, debugMode);
     var renderer = require("./renderer")(ctx, settings, sprites, debugMode);
     var clock = new Clock(function(){
-        var start = (new Date()).getTime();
         settings.update();
-        sprites.runTickFunc();
+        sprites.runOnTick();
         sprites.removeDeletedSprites();
         eventList.traverse();
         inspector.updateFPS();
-        var end = (new Date()).getTime();
-        console.log(end-start);
     });
 
     debugMode = debugMode || false;
@@ -65,8 +62,6 @@ function engine(stageId, debugMode){
         stop: function(){ clock.stop(); },
         start: function(){ clock.start(); },
         update: function(func){ settings.update=func; },
-        forever: function(func){ settings.update=func; },
-        always: function(func){ settings.update=func; },
         ctx: ctx,
         clear: renderer.clear,
         preloadImages: renderer.preload

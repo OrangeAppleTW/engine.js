@@ -138,7 +138,7 @@
 /* 13 */
 /***/ function(module, exports) {
 
-	module.exports = "var clock = 0;\n\nGame.set({\n    width: 640,\n    height: 480\n});\n\nGame.sprites.stars = [];\n\nfor(let i=0; i<100; i++){\n    var newStar = Game.createSprite({\n    \tx: Math.random()*640,\n      \ty: Math.random()*480,\n        scale: 0.8 + Math.random()*0.4,\n      \tcostumes: \"./images/slime.gif\"\n    });\n  \tGame.sprites.stars.push(newStar);\n}\n\nGame.update(function(){\n  \tGame.drawBackdrop(\"#000000\");\n    if(clock%30===0){\n        for(let i=0; i<Game.sprites.stars.length; i++){\n            var star = Game.sprites.stars[i];\n            if(Math.random()>0.2){\n                star.hidden=true;\n            } else {\n                star.hidden=false;\n            }\n        }\n    }\n    clock++;\n  \tGame.drawSprites();\n});\n\nGame.start();"
+	module.exports = "var clock = 0;\n\nGame.set({\n    width: 640,\n    height: 480\n});\n\nGame.sprites.stars = [];\n\nfor(let i=0; i<100; i++){\n    var newStar = Game.createSprite({\n    \tx: Math.random()*640,\n      \ty: Math.random()*480,\n        scale: 0.8 + Math.random()*0.4,\n      \tcostumes: \"./images/slime.gif\"\n    });\n    newStar.on(\"click\",function(){\n        this.destroy();\n    });\n  \tGame.sprites.stars.push(newStar);\n}\n\nGame.update(function(){\n  \tGame.drawBackdrop(\"#000000\");\n    if(clock%30===0){\n        for(let i=0; i<Game.sprites.stars.length; i++){\n            var star = Game.sprites.stars[i];\n            if(Math.random()>0.2){\n                star.hidden=true;\n            } else {\n                star.hidden=false;\n            }\n        }\n    }\n    clock++;\n  \tGame.drawSprites();\n});\n\nGame.start();"
 
 /***/ },
 /* 14 */

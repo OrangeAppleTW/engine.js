@@ -55,19 +55,6 @@
 	    var canvas= document.getElementById(stageId);
 	    var ctx = canvas.getContext("2d");
 
-	    var sprites = new Sprites();
-	    var inspector = new Inspector();
-	    var eventList = new EventList(io, debugMode);
-	    var renderer = __webpack_require__(8)(ctx, settings, sprites, debugMode);
-	    var io = __webpack_require__(5)(canvas, debugMode);
-	    var clock = new Clock(function(){
-	        settings.update();
-	        sprites.runTickFunc();
-	        sprites.removeDeletedSprites();
-	        eventList.traverse();
-	        inspector.updateFPS();
-	    });
-
 	    var settings = {
 	        width: canvas.width,
 	        height: canvas.height,
@@ -75,6 +62,19 @@
 	        // gravity: 0, //@TODO: set gravity
 	        update: function(){}
 	    };
+
+	    var sprites = new Sprites();
+	    var inspector = new Inspector();
+	    var io = __webpack_require__(5)(canvas, debugMode);
+	    var eventList = new EventList(io, debugMode);
+	    var renderer = __webpack_require__(8)(ctx, settings, sprites, debugMode);
+	    var clock = new Clock(function(){
+	        settings.update();
+	        sprites.runOnTick();
+	        sprites.removeDeletedSprites();
+	        eventList.traverse();
+	        inspector.updateFPS();
+	    });
 
 	    debugMode = debugMode || false;
 
@@ -108,8 +108,6 @@
 	        stop: function(){ clock.stop(); },
 	        start: function(){ clock.start(); },
 	        update: function(func){ settings.update=func; },
-	        forever: function(func){ settings.update=func; },
-	        always: function(func){ settings.update=func; },
 	        ctx: ctx,
 	        clear: renderer.clear,
 	        preloadImages: renderer.preload
@@ -137,7 +135,7 @@
 	    this.height = 1;
 	    this.hidden = args.hidden;
 
-	    this._onTickFunc = null;
+	    this._onTick = null;
 	    this._eventList = eventList;
 	    this._deleted = false;
 
@@ -222,7 +220,7 @@
 	};
 
 	Sprite.prototype.always = Sprite.prototype.forever = function(func){
-	    this._onTickFunc = func;
+	    this._onTick = func;
 	};
 
 	Sprite.prototype.when = Sprite.prototype.on = function(){
@@ -303,9 +301,9 @@
 
 	function Sprites(){}
 
-	Sprites.prototype.runTickFunc = function(){
+	Sprites.prototype.runOnTick = function(){
 	    this.each(function(){
-	        if(this._onTickFunc){ this._onTickFunc(); }
+	        if(this._onTick){ this._onTick(); }
 	    });
 	}
 
@@ -593,7 +591,8 @@
 	        io = this.io,
 	        debugMode = this.debugMode;
 	    for(var i=0; i<pool.length; i++){
-	        if (pool[i].event=="hover")         { hoverJudger(   pool[i].sprite,  pool[i].handler, io.cursor,  debugMode ); }
+	        if (pool[i].sprite && pool[i].sprite.constructor.name=="Sprite" && pool[i].sprite._deleted){ pool.splice(i,1); }
+	        else if (pool[i].event=="hover")    { hoverJudger(   pool[i].sprite,  pool[i].handler, io.cursor,  debugMode ); }
 	        else if (pool[i].event=="click")    { clickJudger(   pool[i].sprite,  pool[i].handler, io.clicked, debugMode ); }
 	        else if (pool[i].event=="keydown")  { keydownJudger( pool[i].key,     pool[i].handler, io.keydown, debugMode ); }
 	        else if (pool[i].event=="keyup")    { keydownJudger( pool[i].key,     pool[i].handler, io.keyup,   debugMode ); }
@@ -649,9 +648,9 @@
 	                crossY = (sprite.y+sprite.height/2)>clicked.y && clicked.y>(sprite.y-sprite.height/2);
 	            if(crossX && crossY){
 	                handler.call(sprite);
-	            }
-	            if(debugMode){
-	                console.log("Just fired a click handler on a sprite! ("+JSON.stringify(clicked)+")");
+	                if(debugMode){
+	                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(clicked)+")");
+	                }
 	            }
 	        } else {
 	            // 如果為 null, 則對整個遊戲舞台做判定

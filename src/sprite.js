@@ -12,7 +12,7 @@ function Sprite(args, eventList) {
     this.height = 1;
     this.hidden = args.hidden;
 
-    this._onTickFunc = null;
+    this._onTick = null;
     this._eventList = eventList;
     this._deleted = false;
 
@@ -97,7 +97,7 @@ Sprite.prototype.distanceTo = function(){
 };
 
 Sprite.prototype.always = Sprite.prototype.forever = function(func){
-    this._onTickFunc = func;
+    this._onTick = func;
 };
 
 Sprite.prototype.when = Sprite.prototype.on = function(){

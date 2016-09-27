@@ -9,7 +9,8 @@ EventList.prototype.traverse = function (){
         io = this.io,
         debugMode = this.debugMode;
     for(var i=0; i<pool.length; i++){
-        if (pool[i].event=="hover")         { hoverJudger(   pool[i].sprite,  pool[i].handler, io.cursor,  debugMode ); }
+        if (pool[i].sprite && pool[i].sprite.constructor.name=="Sprite" && pool[i].sprite._deleted){ pool.splice(i,1); }
+        else if (pool[i].event=="hover")    { hoverJudger(   pool[i].sprite,  pool[i].handler, io.cursor,  debugMode ); }
         else if (pool[i].event=="click")    { clickJudger(   pool[i].sprite,  pool[i].handler, io.clicked, debugMode ); }
         else if (pool[i].event=="keydown")  { keydownJudger( pool[i].key,     pool[i].handler, io.keydown, debugMode ); }
         else if (pool[i].event=="keyup")    { keydownJudger( pool[i].key,     pool[i].handler, io.keyup,   debugMode ); }
@@ -65,9 +66,9 @@ function clickJudger(sprite, handler, clicked, debugMode){
                 crossY = (sprite.y+sprite.height/2)>clicked.y && clicked.y>(sprite.y-sprite.height/2);
             if(crossX && crossY){
                 handler.call(sprite);
-            }
-            if(debugMode){
-                console.log("Just fired a click handler on a sprite! ("+JSON.stringify(clicked)+")");
+                if(debugMode){
+                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(clicked)+")");
+                }
             }
         } else {
             // 如果為 null, 則對整個遊戲舞台做判定

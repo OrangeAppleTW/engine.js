@@ -54,7 +54,7 @@ slime.move(10, 0);
 slime.stepForward(4);
 slime.toward(sprite1);
 
-slime.always(function(){/* Do this every tick */});
+slime.always(function(){/* Do this every tick */}); // Later callback will cover the previous one.
 slime.forever(function(){/* Do this every tick */}); // Alias to always
 
 slime.touched(sprite1); // Return Boolean
@@ -68,6 +68,8 @@ slime.on("hover",function(){});
 slime.on("touch", sprite1, function(){});
 slime.on("touch", [sprite1, sprite2], function(){}); // 同時碰到兩個角色
 slime.when("EventName", target, function(){}); // Alias to Sprite.on
+
+slime.destroy(); // Destroy it-self. (Will be deleted later in the same tick )
 ```
 
 ## IO & Events

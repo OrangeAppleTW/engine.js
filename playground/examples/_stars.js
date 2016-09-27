@@ -14,6 +14,9 @@ for(let i=0; i<100; i++){
         scale: 0.8 + Math.random()*0.4,
       	costumes: "./images/slime.gif"
     });
+    newStar.on("click",function(){
+        this.destroy();
+    });
   	Game.sprites.stars.push(newStar);
 }
 
