@@ -9,19 +9,6 @@ function engine(stageId, debugMode){
     var canvas= document.getElementById(stageId);
     var ctx = canvas.getContext("2d");
 
-    var sprites = new Sprites();
-    var inspector = new Inspector();
-    var eventList = new EventList(io, debugMode);
-    var renderer = require("./renderer")(ctx, settings, sprites, debugMode);
-    var io = require("./io")(canvas, debugMode);
-    var clock = new Clock(function(){
-        settings.update();
-        sprites.runTickFunc();
-        sprites.removeDeletedSprites();
-        eventList.traverse();
-        inspector.updateFPS();
-    });
-
     var settings = {
         width: canvas.width,
         height: canvas.height,
@@ -29,6 +16,22 @@ function engine(stageId, debugMode){
         // gravity: 0, //@TODO: set gravity
         update: function(){}
     };
+
+    var sprites = new Sprites();
+    var inspector = new Inspector();
+    var io = require("./io")(canvas, debugMode);
+    var eventList = new EventList(io, debugMode);
+    var renderer = require("./renderer")(ctx, settings, sprites, debugMode);
+    var clock = new Clock(function(){
+        var start = (new Date()).getTime();
+        settings.update();
+        sprites.runTickFunc();
+        sprites.removeDeletedSprites();
+        eventList.traverse();
+        inspector.updateFPS();
+        var end = (new Date()).getTime();
+        console.log(end-start);
+    });
 
     debugMode = debugMode || false;
 
