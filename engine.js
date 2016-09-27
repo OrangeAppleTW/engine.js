@@ -49,6 +49,7 @@
 	var EventList = __webpack_require__(7);
 	var Inspector = __webpack_require__(4);
 	var Clock = __webpack_require__(10);
+	var Renderer = __webpack_require__(8);
 
 	function engine(stageId, debugMode){
 
@@ -67,12 +68,12 @@
 	    var inspector = new Inspector();
 	    var io = __webpack_require__(5)(canvas, debugMode);
 	    var eventList = new EventList(io, debugMode);
-	    var renderer = __webpack_require__(8)(ctx, settings, sprites, debugMode);
+	    var renderer = new Renderer(ctx, settings, debugMode);
 	    var clock = new Clock(function(){
+	        eventList.traverse();
 	        settings.update();
 	        sprites.runOnTick();
 	        sprites.removeDeletedSprites();
-	        eventList.traverse();
 	        inspector.updateFPS();
 	    });
 
@@ -96,10 +97,10 @@
 
 	    var proxy = {
 	        sprites: sprites,
-	        createSprite: function(args){ return new Sprite(args, eventList) }, // Pass io object into it because the sprite need to hear from events
+	        createSprite: function(args){ return new Sprite(args, eventList, settings, renderer) }, // Pass io object into it because the sprite need to hear from events
 	        print: renderer.print,
-	        drawSprites: renderer.drawSprites,
-	        drawBackdrop: renderer.drawBackdrop,
+	        drawSprites: function(){ renderer.drawSprites(sprites); },
+	        drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
 	        cursor: io.cursor,
 	        inspector: inspector,
 	        on: function(event, target, handler){ eventList.register(event, target, handler) },
@@ -109,8 +110,8 @@
 	        start: function(){ clock.start(); },
 	        update: function(func){ settings.update=func; },
 	        ctx: ctx,
-	        clear: renderer.clear,
-	        preloadImages: renderer.preload
+	        clear: function(){ renderer.clear(); },
+	        preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); }
 	    };
 	    return proxy;
 	}
@@ -122,23 +123,27 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(2);
+	var hitCanvas = document.createElement('canvas'),
+	    hitTester = hitCanvas.getContext('2d');
 
 	// @TODO: 客製化特征
-	function Sprite(args, eventList) {
+	function Sprite(args, eventList, settings, renderer) {
 	    this.x = args.x;
 	    this.y = args.y;
-	    this.direction = args.direction;
+	    this.direction = args.direction || 0;
 	    this.scale = args.scale || 1;
 	    this.costumes = [].concat(args.costumes); // Deal with single string
-	    this.currentCostumeId = 0; // Deal with single string
+	    this.currentCostumeId = 0;
 	    this.width = 1;
 	    this.height = 1;
 	    this.hidden = args.hidden;
 
 	    this._onTick = null;
-	    this._eventList = eventList;
 	    this._deleted = false;
 
+	    this._eventList = eventList;
+	    this._settings = settings;
+	    this._renderer = renderer;
 	}
 
 	Sprite.prototype.moveTo = function(x, y){
@@ -176,39 +181,58 @@
 	}
 
 	Sprite.prototype.touched = function(){
+	    // 由於效能考量，先用成本最小的「座標範圍演算法」判斷是否有機會「像素重疊」
 	    var crossX = crossY = false;
 	    if( arguments[0] instanceof Sprite ){
 	        var target = arguments[0];
 	        crossX = (this.x+this.width/2)>(target.x-target.width/2) && (target.x+target.width/2)>(this.x-this.width/2);
 	        crossY = (this.y+this.height/2)>(target.y-target.height/2) && (target.y+target.height/2)>(this.y-this.height/2);
+	    } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
+	        var targetX = arguments[0].x,
+	            targetY = arguments[0].y;
+	        crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
+	        crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
 	    } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
 	        var targetX = arguments[0],
 	            targetY = arguments[1];
 	        crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
 	        crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
 	    } else {
-	        throw "請傳入角色(Sprite)或是 X, Y 坐標值";
+	        throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
 	    }
-	    return (crossX && crossY);
 
-	    // var hitCanvas = document.createElement('canvas');
-	    // hitCanvas.width = 480;
-	    // hitCanvas.height = 360;
-	    // var hitTester = hitCanvas.getContext('2d');
-	    // hitTester.globalCompositeOperation = 'source-over';
-	    // a.stamp(hitTester, 100);
-	    // hitTester.globalCompositeOperation = 'source-in';
-	    // b.stamp(hitTester, 100);
-	    //
-	    // var aData = hitTester.getImageData(0, 0, 480, 360).data;
-	    //
-	    // var pxCount = aData.length;
-	    // for (var i = 0; i < pxCount; i += 4) {
-	    //     if (aData[i+3] > 0) {
-	    //         return true;
-	    //     }
-	    // }
-	    // return false;
+	    // 如果經過「座標範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
+	    if (crossX && crossY) {
+	        var renderer = this._renderer;
+	        var settings = this._settings;
+	        hitCanvas.width = settings.width;
+	        hitCanvas.height = settings.height;
+
+	        hitTester.globalCompositeOperation = 'source-over';
+	        hitTester.drawImage(    renderer.getImgFromCache(this.getCurrentCostume()),
+	                                this.x-this.width/2, this.y-this.height/2,
+	                                this.width*this.scale, this.height*this.scale );
+
+	        hitTester.globalCompositeOperation = 'source-in';
+	        if( arguments[0] instanceof Sprite ){
+	            var target = arguments[0];
+	            hitTester.drawImage(    renderer.getImgFromCache(target.getCurrentCostume()),
+	                                    target.x-target.width/2, target.y-target.height/2,
+	                                    target.width*target.scale, target.height*target.scale );
+	        } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
+	            hitTester.fillRect(arguments[0],arguments[1],1,1);
+	        }
+
+	        // 只要對 sprite 的大小範圍取樣即可，不需對整張 canvas 取樣
+	        var aData = hitTester.getImageData(this.x-this.width/2, this.y-this.height/2, this.width, this.height).data;
+	        var pxCount = aData.length;
+	        for (var i = 0; i < pxCount; i += 4) {
+	            if (aData[i+3] > 0) {
+	                return true;
+	            }
+	        }
+	    }
+	    return false;
 	};
 
 	Sprite.prototype.distanceTo = function(){
@@ -245,6 +269,11 @@
 
 	Sprite.prototype.destroy = function(){
 	    this._deleted = true;
+	};
+
+	Sprite.prototype.getCurrentCostume = function(){
+	    var id = this.currentCostumeId;
+	    return this.costumes[id];
 	};
 
 	module.exports = Sprite;
@@ -719,21 +748,20 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var loader = new (__webpack_require__(9))();
-	var imageCache={};
 
-	function Renderer(ctx, settings, sprites, debugMode){
-
-	    var exports = {};
+	function Renderer(ctx, settings, debugMode){
 
 	    // 不可以這麼做，因為當我們要取 canvas 大小時，他可能已經變了
 	    // var stageWidth = settings.width,
 	    //     stageHeight = settings.height;
 
-	    function clear() {
-	        ctx.clearRect(0,0,settings.width,settings.height);
-	    }
+	    var imageCache = {};
 
-	    function print(words, x, y, color, size, font) {
+	    this.clear = function() {
+	        ctx.clearRect(0,0,settings.width,settings.height);
+	    };
+
+	    this.print = function(words, x, y, color, size, font) {
 	        x = x || 20;
 	        y = y || 20;
 	        size = size || 16; // Set or default
@@ -741,35 +769,29 @@
 	        ctx.font = size+"px " + font;
 	        ctx.fillStyle = color || "black";
 	        ctx.fillText(words,x,y);
-	    }
+	    };
 
-	    function drawSprites(){
-	        sprites.each(drawInstance);
-	        function drawInstance(instance){
-	            if(!instance.hidden){
-	                var id = instance.currentCostumeId;
-	                var img = imageCache[instance.costumes[id]];
-	                // Solution A:
-	                // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
-	                if( !img ){
-	                    img=new Image();
-	                    img.src=instance.costumes[id];
-	                    imageCache[instance.costumes[id]]=img;
-	                }
-	                instance.width = img.width * instance.scale;
-	                instance.height = img.height * instance.scale;
-	                // Solution B:
-	                // var img = new Image();
-	                // img.src=instance.costumes[0];
-	                ctx.drawImage( img, instance.x-img.width/2, instance.y-img.height/2, instance.width*instance.scale, instance.height*instance.scale );
-	            }
+	    this.drawSprites = function(sprites){
+	        sprites.each(this.drawInstance);
+	    };
+
+	    this.drawInstance = function(instance){
+	        if(!instance.hidden){
+	            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
+	            var img = getImgFromCache(instance.getCurrentCostume());
+	            instance.width = img.width * instance.scale;
+	            instance.height = img.height * instance.scale;
+	            ctx.drawImage(  img, instance.x-instance.width/2, instance.y-instance.height/2,
+	                            instance.width*instance.scale, instance.height*instance.scale );
 	        }
-	    }
+	    };
+
+	    this.getImgFromCache = getImgFromCache;
 
 	    // @Params:
 	    // - src: backdrop image location
 	    // - options: {x:number, y:number, width:number, height:number}
-	    function drawBackdrop(src, x, y, width, height){
+	    this.drawBackdrop = function(src, x, y, width, height){
 	        if(src[0]=='#'){
 	            ctx.fillStyle=src;
 	            ctx.fillRect(0,0,settings.width,settings.height);
@@ -783,9 +805,9 @@
 	            }
 	            ctx.drawImage( img, x||0, y||0, width||img.width, height||img.height );
 	        }
-	    }
+	    };
 
-	    function preload(images, completeFunc, progressFunc){
+	    this.preload = function(images, completeFunc, progressFunc){
 	        var loaderProxy = {};
 	        if(completeFunc){
 	            onComplete(completeFunc);
@@ -821,15 +843,17 @@
 	            });
 	        }
 	        return loaderProxy;
+	    };
+
+	    function getImgFromCache(path){
+	        var img = imageCache[path];
+	        if( !img ){
+	            img=new Image();
+	            img.src=path;
+	            imageCache[path]=img;
+	        }
+	        return img;
 	    }
-
-	    exports.clear = clear;
-	    exports.print = print;
-	    exports.drawSprites = drawSprites;
-	    exports.drawBackdrop = drawBackdrop;
-	    exports.preload = preload;
-
-	    return exports;
 	}
 
 	module.exports = Renderer;
