@@ -20,6 +20,21 @@ Sprites.prototype.each = function(func){
     }
 }
 
+Sprites.prototype.removeDeletedSprites = function(){
+    for(var key in this){
+        if (this[key].constructor.name === "Sprite") {
+            if(this[key]._deleted){ delete this[key]; }
+        } else if (this[key] instanceof Array) {
+            var instances = this[key];
+            for(var i=0; i<instances.length; i++){
+                if(instances[i]._deleted){
+                    instances.splice(i,1);
+                }
+            }
+        }
+    }
+}
+
 Sprites.prototype.clear = function(){
     for(var key in this){
         delete this[key];

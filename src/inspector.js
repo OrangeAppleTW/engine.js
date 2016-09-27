@@ -1,11 +1,12 @@
-var inspector = {
-    fps:0,
-    lastFrameUpdatedTime:(new Date()).getTime(),
-    updateFPS: function(){
-        var now = (new Date()).getTime();
-        this.fps = Math.round( 1000/(now-this.lastFrameUpdatedTime) );
-        this.lastFrameUpdatedTime = now;
-    }
-};
+function Inspector(){
+    this.fps = 0;
+    this._lastFrameUpdatedTime = (new Date()).getTime();
+}
 
-module.exports = inspector;
+Inspector.prototype.updateFPS = function(){
+    var now = (new Date()).getTime();
+    this.fps = Math.round( 1000/(now-this._lastFrameUpdatedTime) );
+    this._lastFrameUpdatedTime = now;
+}
+
+module.exports = Inspector;

@@ -1,31 +1,36 @@
-/**
- * Whether the environment is a WebWorker.
- * @const{boolean}
- */
-// var ENV_WORKER = typeof importScripts === 'function';
+var Sprite = require("./sprite");
+var Sprites = require("./sprites");
+var EventList = require("./event-list");
+var Inspector = require("./inspector");
+var Clock = require("./clock");
 
 function engine(stageId, debugMode){
-    var Sprite = require("./sprite");
-    var Sprites = require("./sprites");
-    var EventList = require("./event-list");
-    var inspector = require("./inspector");
+
     var canvas= document.getElementById(stageId);
     var ctx = canvas.getContext("2d");
+
     var sprites = new Sprites();
+    var inspector = new Inspector();
+    var eventList = new EventList(io, debugMode);
+    var renderer = require("./renderer")(ctx, settings, sprites, debugMode);
+    var io = require("./io")(canvas, debugMode);
+    var clock = new Clock(function(){
+        settings.update();
+        sprites.runTickFunc();
+        sprites.removeDeletedSprites();
+        eventList.traverse();
+        inspector.updateFPS();
+    });
+
     var settings = {
         width: canvas.width,
         height: canvas.height,
         // ratio: 1, //@TODO: set ratio
         // gravity: 0, //@TODO: set gravity
-        onTick: function(){}
+        update: function(){}
     };
 
     debugMode = debugMode || false;
-
-    var io = require("./io")(canvas, debugMode);
-    var eventList = new EventList(io, debugMode);
-    var renderer = require("./renderer")(ctx, settings, sprites, debugMode);
-    var clock = require("./clock")(settings, eventList, sprites, inspector);
 
     function set(args){
         if(args.width){canvas.width = args.width;}
@@ -34,7 +39,7 @@ function engine(stageId, debugMode){
         settings.height     = args.height || settings.height;
         settings.ratio      = args.ratio || settings.ratio;
         settings.gravity    = args.gravity || settings.gravity;
-        settings.onTick     = args.update || settings.onTick;
+        settings.update     = args.update || settings.update;
         return this;
     }
 
@@ -54,24 +59,16 @@ function engine(stageId, debugMode){
         on: function(event, target, handler){ eventList.register(event, target, handler) },
         when: function(event, target, handler){ eventList.register(event, target, handler) },
         set: set,
-        stop: clock.stop,
-        start: clock.start,
-        update: function(func){ settings.onTick=func; },
+        stop: function(){ clock.stop(); },
+        start: function(){ clock.start(); },
+        update: function(func){ settings.update=func; },
+        forever: function(func){ settings.update=func; },
+        always: function(func){ settings.update=func; },
         ctx: ctx,
         clear: renderer.clear,
         preloadImages: renderer.preload
     };
     return proxy;
 }
-
-// if(ENV_WORKER){
-//     onmessage = function(e){
-//         var message = e.data[0],
-//             data = e.data[1];
-//         switch(message){
-//             case ""
-//         }
-//     }
-// }
 
 window.Engine = engine;

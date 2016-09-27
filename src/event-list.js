@@ -42,7 +42,6 @@ EventList.prototype.register = function(event, target, handler){
     } else if (event=="hover" || event=="click") {
         eventObj.sprite = target;
     }
-    console.log(this);
     this.pool.push(eventObj);
 };
 

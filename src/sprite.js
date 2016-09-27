@@ -8,13 +8,14 @@ function Sprite(args, eventList) {
     this.scale = args.scale || 1;
     this.costumes = [].concat(args.costumes); // Deal with single string
     this.currentCostumeId = 0; // Deal with single string
-    // this.deleted = args.deleted; // @TODO
     this.width = 1;
     this.height = 1;
     this.hidden = args.hidden;
 
     this._onTickFunc = null;
     this._eventList = eventList;
+    this._deleted = false;
+
 }
 
 Sprite.prototype.moveTo = function(x, y){
@@ -66,6 +67,25 @@ Sprite.prototype.touched = function(){
         throw "請傳入角色(Sprite)或是 X, Y 坐標值";
     }
     return (crossX && crossY);
+
+    // var hitCanvas = document.createElement('canvas');
+    // hitCanvas.width = 480;
+    // hitCanvas.height = 360;
+    // var hitTester = hitCanvas.getContext('2d');
+    // hitTester.globalCompositeOperation = 'source-over';
+    // a.stamp(hitTester, 100);
+    // hitTester.globalCompositeOperation = 'source-in';
+    // b.stamp(hitTester, 100);
+    //
+    // var aData = hitTester.getImageData(0, 0, 480, 360).data;
+    //
+    // var pxCount = aData.length;
+    // for (var i = 0; i < pxCount; i += 4) {
+    //     if (aData[i+3] > 0) {
+    //         return true;
+    //     }
+    // }
+    // return false;
 };
 
 Sprite.prototype.distanceTo = function(){
@@ -80,7 +100,7 @@ Sprite.prototype.always = Sprite.prototype.forever = function(func){
     this._onTickFunc = func;
 };
 
-Sprite.prototype.on = function(){
+Sprite.prototype.when = Sprite.prototype.on = function(){
     var event = arguments[0],
         target, handler;
     if(event=="hover" || event=="click"){
@@ -100,6 +120,8 @@ Sprite.prototype.on = function(){
     this._eventList.register(event, target, handler);
 };
 
-Sprite.prototype.when = Sprite.prototype.on;
+Sprite.prototype.destroy = function(){
+    this._deleted = true;
+};
 
 module.exports = Sprite;

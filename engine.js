@@ -44,34 +44,39 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Whether the environment is a WebWorker.
-	 * @const{boolean}
-	 */
-	// var ENV_WORKER = typeof importScripts === 'function';
+	var Sprite = __webpack_require__(1);
+	var Sprites = __webpack_require__(3);
+	var EventList = __webpack_require__(7);
+	var Inspector = __webpack_require__(4);
+	var Clock = __webpack_require__(10);
 
 	function engine(stageId, debugMode){
-	    var Sprite = __webpack_require__(1);
-	    var Sprites = __webpack_require__(3);
-	    var EventList = __webpack_require__(7);
-	    var inspector = __webpack_require__(4);
+
 	    var canvas= document.getElementById(stageId);
 	    var ctx = canvas.getContext("2d");
+
 	    var sprites = new Sprites();
+	    var inspector = new Inspector();
+	    var eventList = new EventList(io, debugMode);
+	    var renderer = __webpack_require__(8)(ctx, settings, sprites, debugMode);
+	    var io = __webpack_require__(5)(canvas, debugMode);
+	    var clock = new Clock(function(){
+	        settings.update();
+	        sprites.runTickFunc();
+	        sprites.removeDeletedSprites();
+	        eventList.traverse();
+	        inspector.updateFPS();
+	    });
+
 	    var settings = {
 	        width: canvas.width,
 	        height: canvas.height,
 	        // ratio: 1, //@TODO: set ratio
 	        // gravity: 0, //@TODO: set gravity
-	        onTick: function(){}
+	        update: function(){}
 	    };
 
 	    debugMode = debugMode || false;
-
-	    var io = __webpack_require__(5)(canvas, debugMode);
-	    var eventList = new EventList(io, debugMode);
-	    var renderer = __webpack_require__(8)(ctx, settings, sprites, debugMode);
-	    var clock = __webpack_require__(10)(settings, eventList, sprites, inspector);
 
 	    function set(args){
 	        if(args.width){canvas.width = args.width;}
@@ -80,7 +85,7 @@
 	        settings.height     = args.height || settings.height;
 	        settings.ratio      = args.ratio || settings.ratio;
 	        settings.gravity    = args.gravity || settings.gravity;
-	        settings.onTick     = args.update || settings.onTick;
+	        settings.update     = args.update || settings.update;
 	        return this;
 	    }
 
@@ -98,26 +103,19 @@
 	        cursor: io.cursor,
 	        inspector: inspector,
 	        on: function(event, target, handler){ eventList.register(event, target, handler) },
+	        when: function(event, target, handler){ eventList.register(event, target, handler) },
 	        set: set,
-	        stop: clock.stop,
-	        start: clock.start,
-	        update: function(func){ settings.onTick=func; },
+	        stop: function(){ clock.stop(); },
+	        start: function(){ clock.start(); },
+	        update: function(func){ settings.update=func; },
+	        forever: function(func){ settings.update=func; },
+	        always: function(func){ settings.update=func; },
 	        ctx: ctx,
 	        clear: renderer.clear,
 	        preloadImages: renderer.preload
 	    };
 	    return proxy;
 	}
-
-	// if(ENV_WORKER){
-	//     onmessage = function(e){
-	//         var message = e.data[0],
-	//             data = e.data[1];
-	//         switch(message){
-	//             case ""
-	//         }
-	//     }
-	// }
 
 	window.Engine = engine;
 
@@ -135,13 +133,14 @@
 	    this.scale = args.scale || 1;
 	    this.costumes = [].concat(args.costumes); // Deal with single string
 	    this.currentCostumeId = 0; // Deal with single string
-	    // this.deleted = args.deleted; // @TODO
 	    this.width = 1;
 	    this.height = 1;
 	    this.hidden = args.hidden;
 
 	    this._onTickFunc = null;
 	    this._eventList = eventList;
+	    this._deleted = false;
+
 	}
 
 	Sprite.prototype.moveTo = function(x, y){
@@ -193,6 +192,25 @@
 	        throw "請傳入角色(Sprite)或是 X, Y 坐標值";
 	    }
 	    return (crossX && crossY);
+
+	    // var hitCanvas = document.createElement('canvas');
+	    // hitCanvas.width = 480;
+	    // hitCanvas.height = 360;
+	    // var hitTester = hitCanvas.getContext('2d');
+	    // hitTester.globalCompositeOperation = 'source-over';
+	    // a.stamp(hitTester, 100);
+	    // hitTester.globalCompositeOperation = 'source-in';
+	    // b.stamp(hitTester, 100);
+	    //
+	    // var aData = hitTester.getImageData(0, 0, 480, 360).data;
+	    //
+	    // var pxCount = aData.length;
+	    // for (var i = 0; i < pxCount; i += 4) {
+	    //     if (aData[i+3] > 0) {
+	    //         return true;
+	    //     }
+	    // }
+	    // return false;
 	};
 
 	Sprite.prototype.distanceTo = function(){
@@ -207,7 +225,7 @@
 	    this._onTickFunc = func;
 	};
 
-	Sprite.prototype.on = function(){
+	Sprite.prototype.when = Sprite.prototype.on = function(){
 	    var event = arguments[0],
 	        target, handler;
 	    if(event=="hover" || event=="click"){
@@ -225,6 +243,10 @@
 	        return false;
 	    }
 	    this._eventList.register(event, target, handler);
+	};
+
+	Sprite.prototype.destroy = function(){
+	    this._deleted = true;
 	};
 
 	module.exports = Sprite;
@@ -301,6 +323,21 @@
 	    }
 	}
 
+	Sprites.prototype.removeDeletedSprites = function(){
+	    for(var key in this){
+	        if (this[key].constructor.name === "Sprite") {
+	            if(this[key]._deleted){ delete this[key]; }
+	        } else if (this[key] instanceof Array) {
+	            var instances = this[key];
+	            for(var i=0; i<instances.length; i++){
+	                if(instances[i]._deleted){
+	                    instances.splice(i,1);
+	                }
+	            }
+	        }
+	    }
+	}
+
 	Sprites.prototype.clear = function(){
 	    for(var key in this){
 	        delete this[key];
@@ -313,17 +350,18 @@
 /* 4 */
 /***/ function(module, exports) {
 
-	var inspector = {
-	    fps:0,
-	    lastFrameUpdatedTime:(new Date()).getTime(),
-	    updateFPS: function(){
-	        var now = (new Date()).getTime();
-	        this.fps = Math.round( 1000/(now-this.lastFrameUpdatedTime) );
-	        this.lastFrameUpdatedTime = now;
-	    }
-	};
+	function Inspector(){
+	    this.fps = 0;
+	    this._lastFrameUpdatedTime = (new Date()).getTime();
+	}
 
-	module.exports = inspector;
+	Inspector.prototype.updateFPS = function(){
+	    var now = (new Date()).getTime();
+	    this.fps = Math.round( 1000/(now-this._lastFrameUpdatedTime) );
+	    this._lastFrameUpdatedTime = now;
+	}
+
+	module.exports = Inspector;
 
 /***/ },
 /* 5 */
@@ -588,7 +626,6 @@
 	    } else if (event=="hover" || event=="click") {
 	        eventObj.sprite = target;
 	    }
-	    console.log(this);
 	    this.pool.push(eventObj);
 	};
 
@@ -1313,7 +1350,7 @@
 	//  state 用來表達 renderer 的以下狀態：
 	//
 	//   1. readyToStart:
-	//      初始狀態，此時執行 start 會直接開始 cycling(不斷執行 update)，並將狀態切換為 "running"。
+	//      初始狀態，此時執行 start 會直接開始 cycling(不斷執行 onTick)，並將狀態切換為 "running"。
 	//   2. running:
 	//      不停 cycling，此時可執行 stop 將狀態切換為 "stopping"。
 	//      但是執行 start 則不會有任何反應
@@ -1327,42 +1364,35 @@
 
 	var FPS = 60
 
-	function Clock(settings, eventList, sprites, inspector){
+	function Clock(update){
+	    this._state = "readyToStart"; //"readyToStart", "stopping", "running";
+	    this._update = update;
+	}
 
-	    var state="readyToStart"; //"readyToStart", "stopping", "running";
-
-	    function start(){
-	        if(state==="readyToStart"){
-	            state = "running";
-	            var update = function(){
-	                if(state==="running"){
-	                    sprites.runTickFunc();
-	                    settings.onTick();
-	                    eventList.traverse();
-	                    inspector.updateFPS();
-	                    setTimeout(function(){
-	                        requestAnimationFrame(update);
-	                    },1000/FPS);
-	                } else {
-	                    state = "readyToStart";
-	                }
+	Clock.prototype.start = function(){
+	    if(this._state==="readyToStart"){
+	        var onTick;
+	        this._state = "running";
+	        onTick = (function(){
+	            if(this._state==="running"){
+	                this._update();
+	                setTimeout(function(){
+	                    requestAnimationFrame(onTick);
+	                },1000/FPS);
+	            } else {
+	                this._state = "readyToStart";
 	            }
-	            setTimeout( update, 0 ); // 必須 Async，否則會產生微妙的時間差
-	        } else if (state==="stopping") {
-	            setTimeout( start, 10 );
-	        }
+	        }).bind(this);
+	        setTimeout( onTick, 0 ); // 必須 Async，否則會產生微妙的時間差
+	    } else if (this._state==="stopping") {
+	        setTimeout( start, 10 );
 	    }
+	}
 
-	    function stop(){
-	        if(state==="running"){
-	            state = "stopping";
-	        }
+	Clock.prototype.stop = function(){
+	    if(this._state==="running"){
+	        this._state = "stopping";
 	    }
-
-	    exports.start = start;
-	    exports.stop = stop;
-
-	    return exports;
 	}
 
 	module.exports = Clock;

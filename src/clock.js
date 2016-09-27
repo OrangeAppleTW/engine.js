@@ -1,7 +1,7 @@
 //  state 用來表達 renderer 的以下狀態：
 //
 //   1. readyToStart:
-//      初始狀態，此時執行 start 會直接開始 cycling(不斷執行 update)，並將狀態切換為 "running"。
+//      初始狀態，此時執行 start 會直接開始 cycling(不斷執行 onTick)，並將狀態切換為 "running"。
 //   2. running:
 //      不停 cycling，此時可執行 stop 將狀態切換為 "stopping"。
 //      但是執行 start 則不會有任何反應
@@ -15,42 +15,35 @@
 
 var FPS = 60
 
-function Clock(settings, eventList, sprites, inspector){
+function Clock(update){
+    this._state = "readyToStart"; //"readyToStart", "stopping", "running";
+    this._update = update;
+}
 
-    var state="readyToStart"; //"readyToStart", "stopping", "running";
-
-    function start(){
-        if(state==="readyToStart"){
-            state = "running";
-            var update = function(){
-                if(state==="running"){
-                    sprites.runTickFunc();
-                    settings.onTick();
-                    eventList.traverse();
-                    inspector.updateFPS();
-                    setTimeout(function(){
-                        requestAnimationFrame(update);
-                    },1000/FPS);
-                } else {
-                    state = "readyToStart";
-                }
+Clock.prototype.start = function(){
+    if(this._state==="readyToStart"){
+        var onTick;
+        this._state = "running";
+        onTick = (function(){
+            if(this._state==="running"){
+                this._update();
+                setTimeout(function(){
+                    requestAnimationFrame(onTick);
+                },1000/FPS);
+            } else {
+                this._state = "readyToStart";
             }
-            setTimeout( update, 0 ); // 必須 Async，否則會產生微妙的時間差
-        } else if (state==="stopping") {
-            setTimeout( start, 10 );
-        }
+        }).bind(this);
+        setTimeout( onTick, 0 ); // 必須 Async，否則會產生微妙的時間差
+    } else if (this._state==="stopping") {
+        setTimeout( start, 10 );
     }
+}
 
-    function stop(){
-        if(state==="running"){
-            state = "stopping";
-        }
+Clock.prototype.stop = function(){
+    if(this._state==="running"){
+        this._state = "stopping";
     }
-
-    exports.start = start;
-    exports.stop = stop;
-
-    return exports;
 }
 
 module.exports = Clock;

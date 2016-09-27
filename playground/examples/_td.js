@@ -54,40 +54,7 @@ Game.update( function(){
     Game.drawBackdrop("./images/map.png")
     Game.drawSprites();
     if(clock%30===0){
-        var newEnemy = Game.createSprite({
-            x: 112,
-            y: 480,
-            costumes:"./images/slime.gif"
-        });
-        newEnemy.pathIndex = 0;
-        newEnemy.hp = 10;
-        enemies.push(newEnemy);
-    }
-    for(let i=0; i<enemies.length; i++){
-        var enemy = enemies[i]
-        if(enemy.hp<=0){
-            enemies.splice(i,1);
-            score += 10;
-        } else {
-            var destination = {
-                x:enemyPath[enemy.pathIndex].x,
-                y:enemyPath[enemy.pathIndex].y
-            }
-            enemy.toward(destination.x, destination.y);
-            enemy.stepForward(3);
-            if( enemy.touched(destination.x, destination.y) ){
-                enemy.pathIndex++;
-                if(enemy.pathIndex>=enemyPath.length){
-                    enemies.splice(i,1);
-                    hp-=10;
-                }
-            }
-        }
-    }
-    for(let i=0; i<towers.length; i++){
-        if(clock%30<=0){
-            towers[i].searchEnemy();
-        }
+        spawnEnemy();
     }
     towerTemplate.moveTo(Game.cursor.x, Game.cursor.y);
     Game.print("HP: "+hp, 20, 40, "white", 20);
@@ -121,7 +88,43 @@ function buildTower() {
         ctx.stroke();
         enemy.hp -= 10;
     };
+    newTower.always(function(){
+        if(clock%30<=0){
+            this.searchEnemy();
+        }
+    });
     towers.push(newTower);
+}
+
+function spawnEnemy(){
+    var newEnemy = Game.createSprite({
+        x: 112,
+        y: 480,
+        costumes:"./images/slime.gif"
+    });
+    newEnemy.pathIndex = 0;
+    newEnemy.hp = 10;
+    newEnemy.always(function(){
+        if(this.hp<=0){
+            this.destroy();
+            score += 10;
+        } else {
+            var destination = {
+                x:enemyPath[this.pathIndex].x,
+                y:enemyPath[this.pathIndex].y
+            }
+            this.toward(destination.x, destination.y);
+            this.stepForward(3);
+            if( this.touched(destination.x, destination.y) ){
+                this.pathIndex++;
+                if(this.pathIndex>=enemyPath.length){
+                    this.destroy();
+                    hp-=10;
+                }
+            }
+        }
+    });
+    enemies.push(newEnemy);
 }
 
 Game.start();
