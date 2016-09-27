@@ -103,7 +103,7 @@ Game.preloadImages(
 
 Game.update(function(){
 
-  Game.drawBackdrop("./images/backGround.jpg");
+  Game.drawBackdrop("./images/backGround.jpg", x, y, width, height);
   Game.drawBackdrop("#000000");
 
   Game.print(text, x, y, color, size, font);
