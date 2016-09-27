@@ -3,6 +3,7 @@ var Sprites = require("./sprites");
 var EventList = require("./event-list");
 var Inspector = require("./inspector");
 var Clock = require("./clock");
+var Renderer = require("./renderer");
 
 function engine(stageId, debugMode){
 
@@ -21,7 +22,7 @@ function engine(stageId, debugMode){
     var inspector = new Inspector();
     var io = require("./io")(canvas, debugMode);
     var eventList = new EventList(io, debugMode);
-    var renderer = require("./renderer")(ctx, settings, sprites, debugMode);
+    var renderer = new Renderer(ctx, settings, debugMode);
     var clock = new Clock(function(){
         settings.update();
         sprites.runOnTick();
@@ -50,10 +51,10 @@ function engine(stageId, debugMode){
 
     var proxy = {
         sprites: sprites,
-        createSprite: function(args){ return new Sprite(args, eventList) }, // Pass io object into it because the sprite need to hear from events
+        createSprite: function(args){ return new Sprite(args, eventList, settings) }, // Pass io object into it because the sprite need to hear from events
         print: renderer.print,
-        drawSprites: renderer.drawSprites,
-        drawBackdrop: renderer.drawBackdrop,
+        drawSprites: function(){ renderer.drawSprites(sprites); },
+        drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
         cursor: io.cursor,
         inspector: inspector,
         on: function(event, target, handler){ eventList.register(event, target, handler) },
@@ -63,8 +64,8 @@ function engine(stageId, debugMode){
         start: function(){ clock.start(); },
         update: function(func){ settings.update=func; },
         ctx: ctx,
-        clear: renderer.clear,
-        preloadImages: renderer.preload
+        clear: function(){ renderer.clear(); },
+        preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); }
     };
     return proxy;
 }
