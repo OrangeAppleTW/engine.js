@@ -80,7 +80,7 @@
 	        settings.height     = args.height || settings.height;
 	        settings.ratio      = args.ratio || settings.ratio;
 	        settings.gravity    = args.gravity || settings.gravity;
-	        settings.onTick     = args.onTick || settings.onTick;
+	        settings.onTick     = args.update || settings.onTick;
 	        return this;
 	    }
 
