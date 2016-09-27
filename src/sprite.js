@@ -63,13 +63,18 @@ Sprite.prototype.touched = function(){
         var target = arguments[0];
         crossX = (this.x+this.width/2)>(target.x-target.width/2) && (target.x+target.width/2)>(this.x-this.width/2);
         crossY = (this.y+this.height/2)>(target.y-target.height/2) && (target.y+target.height/2)>(this.y-this.height/2);
+    } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
+        var targetX = arguments[0].x,
+            targetY = arguments[0].y;
+        crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
+        crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
     } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
         var targetX = arguments[0],
             targetY = arguments[1];
         crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
         crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
     } else {
-        throw "請傳入角色(Sprite)或是 X, Y 坐標值";
+        throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
     }
 
     // 如果經過「座標範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
