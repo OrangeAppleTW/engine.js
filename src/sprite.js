@@ -100,4 +100,6 @@ Sprite.prototype.on = function(){
     this._eventList.register(event, target, handler);
 };
 
+Sprite.prototype.when = Sprite.prototype.on;
+
 module.exports = Sprite;

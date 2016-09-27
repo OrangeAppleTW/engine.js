@@ -52,6 +52,7 @@ function engine(stageId, debugMode){
         cursor: io.cursor,
         inspector: inspector,
         on: function(event, target, handler){ eventList.register(event, target, handler) },
+        when: function(event, target, handler){ eventList.register(event, target, handler) },
         set: set,
         stop: clock.stop,
         start: clock.start,
