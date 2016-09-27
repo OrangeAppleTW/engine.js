@@ -37,6 +37,8 @@ Game.on("click", null, function(){
     bird.speed = -4;
 });
 
+Game.on("keydown","space",function(){Game.stop();})
+
 Game.set({
     width: 320,
     height: 480
@@ -45,6 +47,7 @@ Game.set({
 Game.update( function(){
     Game.drawBackdrop("./images/flappy-bird/bg.jpg",0,0,320);
     Game.drawSprites();
+    Game.print(Game.inspector.fps, 280, 20);
 });
 
 Game.preloadImages(
