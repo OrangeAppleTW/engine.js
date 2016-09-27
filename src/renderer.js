@@ -5,6 +5,7 @@ function Renderer(ctx, settings, debugMode){
     // 不可以這麼做，因為當我們要取 canvas 大小時，他可能已經變了
     // var stageWidth = settings.width,
     //     stageHeight = settings.height;
+
     var imageCache = {};
 
     this.clear = function() {
@@ -27,23 +28,16 @@ function Renderer(ctx, settings, debugMode){
 
     this.drawInstance = function(instance){
         if(!instance.hidden){
-            var id = instance.currentCostumeId;
-            var img = imageCache[instance.costumes[id]];
-            // Solution A:
             // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
-            if( !img ){
-                img=new Image();
-                img.src=instance.costumes[id];
-                imageCache[instance.costumes[id]]=img;
-            }
+            var img = getImgFromCache(instance.getCurrentCostume());
             instance.width = img.width * instance.scale;
             instance.height = img.height * instance.scale;
-            // Solution B:
-            // var img = new Image();
-            // img.src=instance.costumes[0];
-            ctx.drawImage( img, instance.x-img.width/2, instance.y-img.height/2, instance.width*instance.scale, instance.height*instance.scale );
+            ctx.drawImage(  img, instance.x-instance.width/2, instance.y-instance.height/2,
+                            instance.width*instance.scale, instance.height*instance.scale );
         }
     };
+
+    this.getImgFromCache = getImgFromCache;
 
     // @Params:
     // - src: backdrop image location
@@ -101,6 +95,16 @@ function Renderer(ctx, settings, debugMode){
         }
         return loaderProxy;
     };
+
+    function getImgFromCache(path){
+        var img = imageCache[path];
+        if( !img ){
+            img=new Image();
+            img.src=path;
+            imageCache[path]=img;
+        }
+        return img;
+    }
 }
 
 module.exports = Renderer;

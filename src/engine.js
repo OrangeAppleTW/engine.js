@@ -24,10 +24,10 @@ function engine(stageId, debugMode){
     var eventList = new EventList(io, debugMode);
     var renderer = new Renderer(ctx, settings, debugMode);
     var clock = new Clock(function(){
+        eventList.traverse();
         settings.update();
         sprites.runOnTick();
         sprites.removeDeletedSprites();
-        eventList.traverse();
         inspector.updateFPS();
     });
 
@@ -51,7 +51,7 @@ function engine(stageId, debugMode){
 
     var proxy = {
         sprites: sprites,
-        createSprite: function(args){ return new Sprite(args, eventList, settings) }, // Pass io object into it because the sprite need to hear from events
+        createSprite: function(args){ return new Sprite(args, eventList, settings, renderer) }, // Pass io object into it because the sprite need to hear from events
         print: renderer.print,
         drawSprites: function(){ renderer.drawSprites(sprites); },
         drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },

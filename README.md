@@ -44,7 +44,7 @@ slime.costumes;
 slime.currentCostumeId;
 slime.width;
 slime.height;
-slime.hidden;
+slime.hidden; // Notice: Sprite could still be touched or clicked when it's hidden. 
 ```
 
 ### 角色的方法

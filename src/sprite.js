@@ -1,21 +1,25 @@
 var util = require("./util");
+var hitCanvas = document.createElement('canvas'),
+    hitTester = hitCanvas.getContext('2d');
 
 // @TODO: 客製化特征
-function Sprite(args, eventList) {
+function Sprite(args, eventList, settings, renderer) {
     this.x = args.x;
     this.y = args.y;
-    this.direction = args.direction;
+    this.direction = args.direction || 0;
     this.scale = args.scale || 1;
     this.costumes = [].concat(args.costumes); // Deal with single string
-    this.currentCostumeId = 0; // Deal with single string
+    this.currentCostumeId = 0;
     this.width = 1;
     this.height = 1;
     this.hidden = args.hidden;
 
     this._onTick = null;
-    this._eventList = eventList;
     this._deleted = false;
 
+    this._eventList = eventList;
+    this._settings = settings;
+    this._renderer = renderer;
 }
 
 Sprite.prototype.moveTo = function(x, y){
@@ -53,6 +57,7 @@ Sprite.prototype.toward = function(){
 }
 
 Sprite.prototype.touched = function(){
+    // 由於效能考量，先用成本最小的「座標範圍演算法」判斷是否有機會「像素重疊」
     var crossX = crossY = false;
     if( arguments[0] instanceof Sprite ){
         var target = arguments[0];
@@ -66,26 +71,39 @@ Sprite.prototype.touched = function(){
     } else {
         throw "請傳入角色(Sprite)或是 X, Y 坐標值";
     }
-    return (crossX && crossY);
 
-    // var hitCanvas = document.createElement('canvas');
-    // hitCanvas.width = 480;
-    // hitCanvas.height = 360;
-    // var hitTester = hitCanvas.getContext('2d');
-    // hitTester.globalCompositeOperation = 'source-over';
-    // a.stamp(hitTester, 100);
-    // hitTester.globalCompositeOperation = 'source-in';
-    // b.stamp(hitTester, 100);
-    //
-    // var aData = hitTester.getImageData(0, 0, 480, 360).data;
-    //
-    // var pxCount = aData.length;
-    // for (var i = 0; i < pxCount; i += 4) {
-    //     if (aData[i+3] > 0) {
-    //         return true;
-    //     }
-    // }
-    // return false;
+    // 如果經過「座標範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
+    if (crossX && crossY) {
+        var renderer = this._renderer;
+        var settings = this._settings;
+        hitCanvas.width = settings.width;
+        hitCanvas.height = settings.height;
+
+        hitTester.globalCompositeOperation = 'source-over';
+        hitTester.drawImage(    renderer.getImgFromCache(this.getCurrentCostume()),
+                                this.x-this.width/2, this.y-this.height/2,
+                                this.width*this.scale, this.height*this.scale );
+
+        hitTester.globalCompositeOperation = 'source-in';
+        if( arguments[0] instanceof Sprite ){
+            var target = arguments[0];
+            hitTester.drawImage(    renderer.getImgFromCache(target.getCurrentCostume()),
+                                    target.x-target.width/2, target.y-target.height/2,
+                                    target.width*target.scale, target.height*target.scale );
+        } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
+            hitTester.fillRect(arguments[0],arguments[1],1,1);
+        }
+
+        // 只要對 sprite 的大小範圍取樣即可，不需對整張 canvas 取樣
+        var aData = hitTester.getImageData(this.x-this.width/2, this.y-this.height/2, this.width, this.height).data;
+        var pxCount = aData.length;
+        for (var i = 0; i < pxCount; i += 4) {
+            if (aData[i+3] > 0) {
+                return true;
+            }
+        }
+    }
+    return false;
 };
 
 Sprite.prototype.distanceTo = function(){
@@ -122,6 +140,11 @@ Sprite.prototype.when = Sprite.prototype.on = function(){
 
 Sprite.prototype.destroy = function(){
     this._deleted = true;
+};
+
+Sprite.prototype.getCurrentCostume = function(){
+    var id = this.currentCostumeId;
+    return this.costumes[id];
 };
 
 module.exports = Sprite;
