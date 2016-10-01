@@ -125,6 +125,7 @@
 	var util = __webpack_require__(2);
 	var hitCanvas = document.createElement('canvas'),
 	    hitTester = hitCanvas.getContext('2d');
+	    // document.body.appendChild(hitCanvas);
 
 	// @TODO: 客製化特征
 	function Sprite(args, eventList, settings, renderer) {
@@ -211,7 +212,7 @@
 	        hitTester.globalCompositeOperation = 'source-over';
 	        hitTester.drawImage(    renderer.getImgFromCache(this.getCurrentCostume()),
 	                                this.x-this.width/2, this.y-this.height/2,
-	                                this.width*this.scale, this.height*this.scale );
+	                                this.width, this.height );
 
 	        hitTester.globalCompositeOperation = 'source-in';
 	        if( arguments[0] instanceof Sprite ){
@@ -219,8 +220,12 @@
 	            hitTester.drawImage(    renderer.getImgFromCache(target.getCurrentCostume()),
 	                                    target.x-target.width/2, target.y-target.height/2,
 	                                    target.width*target.scale, target.height*target.scale );
+	        } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
+	            hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
 	        } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
 	            hitTester.fillRect(arguments[0],arguments[1],1,1);
+	        } else {
+	            return false
 	        }
 
 	        // 只要對 sprite 的大小範圍取樣即可，不需對整張 canvas 取樣
@@ -659,12 +664,10 @@
 
 
 	function hoverJudger(sprite, handler, cursor, debugMode){
-	    var crossX = ( sprite.x+sprite.width/2)>cursor.x  && cursor.x>(sprite.x-sprite.width/2 ),
-	        crossY = ( sprite.y+sprite.height/2)>cursor.y && cursor.y>(sprite.y-sprite.height/2 );
-	    if(crossX && crossY){
+	    if(sprite.touched(cursor)){
 	        handler.call(sprite);
 	        if(debugMode){
-	            console.log("Just fired a hover handler at: "+JSON.stringify(io.clicked));
+	            console.log("Just fired a hover handler at: ("+cursor.x+","+cursor.y+")");
 	        }
 	    }
 	}
@@ -782,7 +785,7 @@
 	            instance.width = img.width * instance.scale;
 	            instance.height = img.height * instance.scale;
 	            ctx.drawImage(  img, instance.x-instance.width/2, instance.y-instance.height/2,
-	                            instance.width*instance.scale, instance.height*instance.scale );
+	                            instance.width, instance.height );
 	        }
 	    };
 

@@ -1,6 +1,7 @@
 var util = require("./util");
 var hitCanvas = document.createElement('canvas'),
     hitTester = hitCanvas.getContext('2d');
+    // document.body.appendChild(hitCanvas);
 
 // @TODO: 客製化特征
 function Sprite(args, eventList, settings, renderer) {
@@ -87,7 +88,7 @@ Sprite.prototype.touched = function(){
         hitTester.globalCompositeOperation = 'source-over';
         hitTester.drawImage(    renderer.getImgFromCache(this.getCurrentCostume()),
                                 this.x-this.width/2, this.y-this.height/2,
-                                this.width*this.scale, this.height*this.scale );
+                                this.width, this.height );
 
         hitTester.globalCompositeOperation = 'source-in';
         if( arguments[0] instanceof Sprite ){
@@ -95,8 +96,12 @@ Sprite.prototype.touched = function(){
             hitTester.drawImage(    renderer.getImgFromCache(target.getCurrentCostume()),
                                     target.x-target.width/2, target.y-target.height/2,
                                     target.width*target.scale, target.height*target.scale );
+        } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
+            hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
         } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
             hitTester.fillRect(arguments[0],arguments[1],1,1);
+        } else {
+            return false
         }
 
         // 只要對 sprite 的大小範圍取樣即可，不需對整張 canvas 取樣

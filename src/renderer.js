@@ -33,7 +33,7 @@ function Renderer(ctx, settings, debugMode){
             instance.width = img.width * instance.scale;
             instance.height = img.height * instance.scale;
             ctx.drawImage(  img, instance.x-instance.width/2, instance.y-instance.height/2,
-                            instance.width*instance.scale, instance.height*instance.scale );
+                            instance.width, instance.height );
         }
     };
 

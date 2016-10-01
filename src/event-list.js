@@ -48,12 +48,10 @@ EventList.prototype.register = function(event, target, handler){
 
 
 function hoverJudger(sprite, handler, cursor, debugMode){
-    var crossX = ( sprite.x+sprite.width/2)>cursor.x  && cursor.x>(sprite.x-sprite.width/2 ),
-        crossY = ( sprite.y+sprite.height/2)>cursor.y && cursor.y>(sprite.y-sprite.height/2 );
-    if(crossX && crossY){
+    if(sprite.touched(cursor)){
         handler.call(sprite);
         if(debugMode){
-            console.log("Just fired a hover handler at: "+JSON.stringify(io.clicked));
+            console.log("Just fired a hover handler at: ("+cursor.x+","+cursor.y+")");
         }
     }
 }

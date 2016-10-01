@@ -2,12 +2,14 @@ window.Game = {};
 var tdScript = require("raw!./examples/_td.js"),
     flappyBirdScript = require("raw!./examples/_flappy-bird.js"),
     starsScript = require("raw!./examples/_stars.js"),
-    scrollingScript = require("raw!./examples/_scrolling.js");
+    scrollingScript = require("raw!./examples/_scrolling.js"),
+    pumpScript = require("raw!./examples/_pump.js");
 
 $("textarea#TD").val(tdScript);
 $("textarea#flappy-bird").val(flappyBirdScript);
 $("textarea#stars").val(starsScript);
 $("textarea#scrolling").val(scrollingScript);
+$("textarea#pump").val(pumpScript);
 
 var editor = CodeMirror.fromTextArea(document.getElementById("script-box"), {
     lineNumbers: true,

@@ -48,12 +48,14 @@
 	var tdScript = __webpack_require__(11),
 	    flappyBirdScript = __webpack_require__(12),
 	    starsScript = __webpack_require__(13),
-	    scrollingScript = __webpack_require__(14);
+	    scrollingScript = __webpack_require__(14),
+	    pumpScript = __webpack_require__(15);
 
 	$("textarea#TD").val(tdScript);
 	$("textarea#flappy-bird").val(flappyBirdScript);
 	$("textarea#stars").val(starsScript);
 	$("textarea#scrolling").val(scrollingScript);
+	$("textarea#pump").val(pumpScript);
 
 	var editor = CodeMirror.fromTextArea(document.getElementById("script-box"), {
 	    lineNumbers: true,
@@ -145,6 +147,12 @@
 /***/ function(module, exports) {
 
 	module.exports = "var bird = Game.sprites.bird = Game.createSprite({\n    x: 160,\n    y: 240,\n    costumes: \"./images/flappy-bird/bird.png\"\n});\nvar bgPosition = {x:0, y:0};\n\nGame.on(\"holding\", \"right\", function(){\n    bgPosition.x -= 4;\n});\nGame.on(\"holding\", \"left\", function(){\n    bgPosition.x += 4;\n});\nGame.set({\n    width: 320,\n    height: 480\n});\n\nGame.update( function(){\n    Game.drawBackdrop(\"./images/scrolling/bg.jpg\",bgPosition.x,bgPosition.y)\n    Game.drawSprites();\n});\n\nGame.preloadImages(\n    [\n        \"./images/flappy-bird/bird.png\",\n        \"./images/scrolling/bg.jpg\"\n    ],\n    function(){\n        Game.start();\n    }\n);\n\nGame.print(\"Loading....\", 100, 240);"
+
+/***/ },
+/* 15 */
+/***/ function(module, exports) {
+
+	module.exports = "Game.set({\n    width: 640,\n    height: 480\n});\n\nvar slime = Game.createSprite({\n\tx: 320,\n  \ty: 240,\n  \tcostumes:[\"images/slime.gif\"]\n});\n\nGame.sprites.slime = slime;\n\nslime.when(\"hover\",function(){\n\tslime.scale+=0.1;\n});\n\nGame.update(function(){\n    Game.drawBackdrop(\"#ffffff\");\n\tGame.drawSprites();\n})\n\nGame.start()"
 
 /***/ }
 /******/ ]);
