@@ -46,10 +46,11 @@
 
 	var Sprite = __webpack_require__(1);
 	var Sprites = __webpack_require__(3);
-	var EventList = __webpack_require__(7);
-	var Inspector = __webpack_require__(4);
-	var Clock = __webpack_require__(10);
-	var Renderer = __webpack_require__(8);
+	var EventList = __webpack_require__(4);
+	var Inspector = __webpack_require__(5);
+	var Clock = __webpack_require__(6);
+	var Renderer = __webpack_require__(7);
+	var Sound = __webpack_require__(19);
 
 	function engine(stageId, debugMode){
 
@@ -66,9 +67,10 @@
 
 	    var sprites = new Sprites();
 	    var inspector = new Inspector();
-	    var io = __webpack_require__(5)(canvas, debugMode);
+	    var io = __webpack_require__(11)(canvas, debugMode);
 	    var eventList = new EventList(io, debugMode);
 	    var renderer = new Renderer(ctx, settings, debugMode);
+	    var sound = new Sound();
 	    var clock = new Clock(function(){
 	        eventList.traverse();
 	        settings.update();
@@ -106,12 +108,13 @@
 	        on: function(event, target, handler){ eventList.register(event, target, handler) },
 	        when: function(event, target, handler){ eventList.register(event, target, handler) },
 	        set: set,
-	        stop: function(){ clock.stop(); },
+	        stop: function(){ clock.stop(); sound.stop(); },
 	        start: function(){ clock.start(); },
 	        update: function(func){ settings.update=func; },
 	        ctx: ctx,
 	        clear: function(){ renderer.clear(); },
-	        preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); }
+	        preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); },
+	        sound: sound
 	    };
 	    return proxy;
 	}
@@ -382,6 +385,142 @@
 /* 4 */
 /***/ function(module, exports) {
 
+	function EventList(io, debugMode){
+	    this.pool=[];
+	    this.io=io;
+	    this.debugMode = debugMode || false;
+	}
+
+	EventList.prototype.traverse = function (){
+	    var pool = this.pool,
+	        io = this.io,
+	        debugMode = this.debugMode;
+	    for(var i=0; i<pool.length; i++){
+	        if (pool[i].sprite && pool[i].sprite.constructor.name=="Sprite" && pool[i].sprite._deleted){ pool.splice(i,1); }
+	        else if (pool[i].event=="hover")    { hoverJudger(   pool[i].sprite,  pool[i].handler, io.cursor,  debugMode ); }
+	        else if (pool[i].event=="click")    { clickJudger(   pool[i].sprite,  pool[i].handler, io.clicked, debugMode ); }
+	        else if (pool[i].event=="keydown")  { keydownJudger( pool[i].key,     pool[i].handler, io.keydown, debugMode ); }
+	        else if (pool[i].event=="keyup")    { keydownJudger( pool[i].key,     pool[i].handler, io.keyup,   debugMode ); }
+	        else if (pool[i].event=="holding")  { holdingJudger( pool[i].key,     pool[i].handler, io.holding, debugMode ); }
+	        else if (pool[i].event=="touch")    {
+	            if(!pool[i].sprites.length || pool[i].sprites.length<2){
+	                console.log("You must pass a sprites array which length is bigger than 1 as the second argument!");
+	                return;
+	            }
+	            touchJudger( pool[i].sprites, pool[i].handler, debugMode );
+	        }
+	    }
+	    clearEventRecord(this.io);
+	}
+
+	EventList.prototype.clear = function(){
+	    this.pool=[];
+	}
+
+	EventList.prototype.register = function(event, target, handler){
+	    var eventObj = {
+	        event:event,
+	        handler:handler
+	    }
+	    // @TODO: target 型別偵測
+	    if (event=="touch"){
+	        eventObj.sprites = target;
+	    } else if (event=="keydown" || event=="keyup" || event=="holding"){
+	        eventObj.key = target;
+	    } else if (event=="hover" || event=="click") {
+	        eventObj.sprite = target;
+	    }
+	    this.pool.push(eventObj);
+	};
+
+
+	function hoverJudger(sprite, handler, cursor, debugMode){
+	    if(sprite.touched(cursor)){
+	        handler.call(sprite);
+	        if(debugMode){
+	            console.log("Just fired a hover handler at: ("+cursor.x+","+cursor.y+")");
+	        }
+	    }
+	}
+
+	function clickJudger(sprite, handler, clicked, debugMode){
+	    if(clicked.x && clicked.y){ // 如果有點擊記錄才檢查
+	        if(sprite){
+	            // 如果是 Sprite, 則對其做判定
+	            var crossX = (sprite.x+sprite.width/2)>clicked.x && clicked.x>(sprite.x-sprite.width/2),
+	                crossY = (sprite.y+sprite.height/2)>clicked.y && clicked.y>(sprite.y-sprite.height/2);
+	            if(crossX && crossY){
+	                handler.call(sprite);
+	                if(debugMode){
+	                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(clicked)+")");
+	                }
+	            }
+	        } else {
+	            // 如果為 null, 則對整個遊戲舞台做判定
+	            handler();
+	            if(debugMode){
+	                console.log("Just fired a click handler on stage! ("+JSON.stringify(clicked)+")");
+	            }
+	        }
+	    }
+	}
+
+	function keydownJudger(key, handler, keydown, debugMode){
+	    if(keydown[key]){
+	        handler();
+	        if(debugMode){
+	            console.log("Just fired a keydown handler on: "+key);
+	        }
+	    }
+	}
+
+	function keyupJudger(key, handler, keyup, debugMode){
+	    if(keyup[key]){
+	        handler();
+	        if(debugMode){
+	            console.log("Just fired a keyup handler on: "+key);
+	        }
+	    }
+	}
+
+	function holdingJudger(key, handler, holding, debugMode){
+	    if(holding[key]){
+	        handler();
+	        if(debugMode){
+	            console.log("Just fired a holding handler on: "+key);
+	        }
+	    }
+	}
+
+	// @TODO: Now we could only detect Sprite instance, not include cursor.
+	function touchJudger(sprites, handler, debugMode){
+	    for(var i=1; i<sprites.length; i++){
+	        if(!sprites[i-1].touched(sprites[i])){
+	            return false;
+	        }
+	    }
+	    handler();
+	    if(debugMode){
+	        console.log("Just fired a touch handler on: "+sprites);
+	    }
+	    return true; // we do not need this.
+	}
+
+	function clearEventRecord(io){
+	    io.clicked.x=null;
+	    io.clicked.y=null;
+	    for(var key in io.keydown){
+	        io.keydown[key]=false;
+	        io.keyup[key]=false;
+	    }
+	}
+
+	module.exports = EventList;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
 	function Inspector(){
 	    this.fps = 0;
 	    this._lastFrameUpdatedTime = (new Date()).getTime();
@@ -396,10 +535,182 @@
 	module.exports = Inspector;
 
 /***/ },
-/* 5 */
+/* 6 */
+/***/ function(module, exports) {
+
+	//  state 用來表達 renderer 的以下狀態：
+	//
+	//   1. readyToStart:
+	//      初始狀態，此時執行 start 會直接開始 cycling(不斷執行 onTick)，並將狀態切換為 "running"。
+	//   2. running:
+	//      不停 cycling，此時可執行 stop 將狀態切換為 "stopping"。
+	//      但是執行 start 則不會有任何反應
+	//      執行 stop 則不會有任何反應。
+	//   3. stopping:
+	//      此時雖然已接受到停止訊息，但是最後一次的 rendering 尚未結束，
+	//      因此若在此時執行 start，會每隔一小段時間檢查 state 是否回復到 "readyToStart"。
+	//
+	//  狀態變化流程如下：
+	//  (1) -> (2) -> (3) -> (1)
+
+	var FPS = 60
+
+	function Clock(update){
+	    this._state = "readyToStart"; //"readyToStart", "stopping", "running";
+	    this._update = update;
+	}
+
+	Clock.prototype.start = function(){
+	    if(this._state==="readyToStart"){
+	        var onTick;
+	        this._state = "running";
+	        onTick = (function(){
+	            if(this._state==="running"){
+	                this._update();
+	                setTimeout(function(){
+	                    requestAnimationFrame(onTick);
+	                },1000/FPS);
+	            } else {
+	                this._state = "readyToStart";
+	            }
+	        }).bind(this);
+	        setTimeout( onTick, 0 ); // 必須 Async，否則會產生微妙的時間差
+	    } else if (this._state==="stopping") {
+	        setTimeout( start, 10 );
+	    }
+	}
+
+	Clock.prototype.stop = function(){
+	    if(this._state==="running"){
+	        this._state = "stopping";
+	    }
+	}
+
+	module.exports = Clock;
+
+/***/ },
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var keycode = __webpack_require__(6);
+	var loader = new (__webpack_require__(18))();
+
+	function Renderer(ctx, settings, debugMode){
+
+	    // 不可以這麼做，因為當我們要取 canvas 大小時，他可能已經變了
+	    // var stageWidth = settings.width,
+	    //     stageHeight = settings.height;
+
+	    var imageCache = {};
+
+	    this.clear = function() {
+	        ctx.clearRect(0,0,settings.width,settings.height);
+	    };
+
+	    this.print = function(words, x, y, color, size, font) {
+	        x = x || 20;
+	        y = y || 20;
+	        size = size || 16; // Set or default
+	        font = font || "Arial";
+	        ctx.font = size+"px " + font;
+	        ctx.fillStyle = color || "black";
+	        ctx.fillText(words,x,y);
+	    };
+
+	    this.drawSprites = function(sprites){
+	        sprites.each(this.drawInstance);
+	    };
+
+	    this.drawInstance = function(instance){
+	        if(!instance.hidden){
+	            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
+	            var img = getImgFromCache(instance.getCurrentCostume());
+	            instance.width = img.width * instance.scale;
+	            instance.height = img.height * instance.scale;
+	            ctx.drawImage(  img, instance.x-instance.width/2, instance.y-instance.height/2,
+	                            instance.width, instance.height );
+	        }
+	    };
+
+	    this.getImgFromCache = getImgFromCache;
+
+	    // @Params:
+	    // - src: backdrop image location
+	    // - options: {x:number, y:number, width:number, height:number}
+	    this.drawBackdrop = function(src, x, y, width, height){
+	        if(src[0]=='#'){
+	            ctx.fillStyle=src;
+	            ctx.fillRect(0,0,settings.width,settings.height);
+	        } else {
+	            var img = imageCache[src];
+	            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
+	            if( !img ){
+	                img=new Image();
+	                img.src=src;
+	                imageCache[src]=img;
+	            }
+	            ctx.drawImage( img, x||0, y||0, width||img.width, height||img.height );
+	        }
+	    };
+
+	    this.preload = function(images, completeFunc, progressFunc){
+	        var loaderProxy = {};
+	        if(completeFunc){
+	            onComplete(completeFunc);
+	        }
+	        if(progressFunc){
+	            onProgress(progressFunc);
+	        }
+	        for(var i=0; i<images.length; i++){
+	            var path = images[i];
+	            imageCache[path] = loader.addImage(path);
+	        }
+	        function onComplete(callback){
+	            loader.addCompletionListener(function(){
+	                callback();
+	            });
+	        };
+	        function onProgress(callback){
+	            loader.addProgressListener(function(e) {
+	                // e.completedCount, e.totalCount, e.resource.imageNumber
+	                callback(e);
+	            });
+	        }
+	        loaderProxy.complete = onComplete;
+	        loaderProxy.progress = onProgress;
+	        loader.start();
+	        if(debugMode){
+	            console.log("Start loading "+images.length+" images...");
+	            loader.addProgressListener(function(e) {
+	                console.log("Preloading progressing...");
+	            });
+	            loader.addCompletionListener(function(){
+	                console.log("Preloading completed!");
+	            });
+	        }
+	        return loaderProxy;
+	    };
+
+	    function getImgFromCache(path){
+	        var img = imageCache[path];
+	        if( !img ){
+	            img=new Image();
+	            img.src=path;
+	            imageCache[path]=img;
+	        }
+	        return img;
+	    }
+	}
+
+	module.exports = Renderer;
+
+/***/ },
+/* 8 */,
+/* 9 */,
+/* 10 */,
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var keycode = __webpack_require__(12);
 
 	var io = function(canvas, debugMode){
 	    
@@ -459,7 +770,7 @@
 	module.exports = io;
 
 /***/ },
-/* 6 */
+/* 12 */
 /***/ function(module, exports) {
 
 	// Source: http://jsfiddle.net/vWx8V/
@@ -611,258 +922,12 @@
 
 
 /***/ },
-/* 7 */
-/***/ function(module, exports) {
-
-	function EventList(io, debugMode){
-	    this.pool=[];
-	    this.io=io;
-	    this.debugMode = debugMode || false;
-	}
-
-	EventList.prototype.traverse = function (){
-	    var pool = this.pool,
-	        io = this.io,
-	        debugMode = this.debugMode;
-	    for(var i=0; i<pool.length; i++){
-	        if (pool[i].sprite && pool[i].sprite.constructor.name=="Sprite" && pool[i].sprite._deleted){ pool.splice(i,1); }
-	        else if (pool[i].event=="hover")    { hoverJudger(   pool[i].sprite,  pool[i].handler, io.cursor,  debugMode ); }
-	        else if (pool[i].event=="click")    { clickJudger(   pool[i].sprite,  pool[i].handler, io.clicked, debugMode ); }
-	        else if (pool[i].event=="keydown")  { keydownJudger( pool[i].key,     pool[i].handler, io.keydown, debugMode ); }
-	        else if (pool[i].event=="keyup")    { keydownJudger( pool[i].key,     pool[i].handler, io.keyup,   debugMode ); }
-	        else if (pool[i].event=="holding")  { holdingJudger( pool[i].key,     pool[i].handler, io.holding, debugMode ); }
-	        else if (pool[i].event=="touch")    {
-	            if(!pool[i].sprites.length || pool[i].sprites.length<2){
-	                console.log("You must pass a sprites array which length is bigger than 1 as the second argument!");
-	                return;
-	            }
-	            touchJudger( pool[i].sprites, pool[i].handler, debugMode );
-	        }
-	    }
-	    clearEventRecord(this.io);
-	}
-
-	EventList.prototype.clear = function(){
-	    this.pool=[];
-	}
-
-	EventList.prototype.register = function(event, target, handler){
-	    var eventObj = {
-	        event:event,
-	        handler:handler
-	    }
-	    // @TODO: target 型別偵測
-	    if (event=="touch"){
-	        eventObj.sprites = target;
-	    } else if (event=="keydown" || event=="keyup" || event=="holding"){
-	        eventObj.key = target;
-	    } else if (event=="hover" || event=="click") {
-	        eventObj.sprite = target;
-	    }
-	    this.pool.push(eventObj);
-	};
-
-
-	function hoverJudger(sprite, handler, cursor, debugMode){
-	    if(sprite.touched(cursor)){
-	        handler.call(sprite);
-	        if(debugMode){
-	            console.log("Just fired a hover handler at: ("+cursor.x+","+cursor.y+")");
-	        }
-	    }
-	}
-
-	function clickJudger(sprite, handler, clicked, debugMode){
-	    if(clicked.x && clicked.y){ // 如果有點擊記錄才檢查
-	        if(sprite){
-	            // 如果是 Sprite, 則對其做判定
-	            var crossX = (sprite.x+sprite.width/2)>clicked.x && clicked.x>(sprite.x-sprite.width/2),
-	                crossY = (sprite.y+sprite.height/2)>clicked.y && clicked.y>(sprite.y-sprite.height/2);
-	            if(crossX && crossY){
-	                handler.call(sprite);
-	                if(debugMode){
-	                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(clicked)+")");
-	                }
-	            }
-	        } else {
-	            // 如果為 null, 則對整個遊戲舞台做判定
-	            handler();
-	            if(debugMode){
-	                console.log("Just fired a click handler on stage! ("+JSON.stringify(clicked)+")");
-	            }
-	        }
-	    }
-	}
-
-	function keydownJudger(key, handler, keydown, debugMode){
-	    if(keydown[key]){
-	        handler();
-	        if(debugMode){
-	            console.log("Just fired a keydown handler on: "+key);
-	        }
-	    }
-	}
-
-	function keyupJudger(key, handler, keyup, debugMode){
-	    if(keyup[key]){
-	        handler();
-	        if(debugMode){
-	            console.log("Just fired a keyup handler on: "+key);
-	        }
-	    }
-	}
-
-	function holdingJudger(key, handler, holding, debugMode){
-	    if(holding[key]){
-	        handler();
-	        if(debugMode){
-	            console.log("Just fired a holding handler on: "+key);
-	        }
-	    }
-	}
-
-	// @TODO: Now we could only detect Sprite instance, not include cursor.
-	function touchJudger(sprites, handler, debugMode){
-	    for(var i=1; i<sprites.length; i++){
-	        if(!sprites[i-1].touched(sprites[i])){
-	            return false;
-	        }
-	    }
-	    handler();
-	    if(debugMode){
-	        console.log("Just fired a touch handler on: "+sprites);
-	    }
-	    return true; // we do not need this.
-	}
-
-	function clearEventRecord(io){
-	    io.clicked.x=null;
-	    io.clicked.y=null;
-	    for(var key in io.keydown){
-	        io.keydown[key]=false;
-	        io.keyup[key]=false;
-	    }
-	}
-
-	module.exports = EventList;
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var loader = new (__webpack_require__(9))();
-
-	function Renderer(ctx, settings, debugMode){
-
-	    // 不可以這麼做，因為當我們要取 canvas 大小時，他可能已經變了
-	    // var stageWidth = settings.width,
-	    //     stageHeight = settings.height;
-
-	    var imageCache = {};
-
-	    this.clear = function() {
-	        ctx.clearRect(0,0,settings.width,settings.height);
-	    };
-
-	    this.print = function(words, x, y, color, size, font) {
-	        x = x || 20;
-	        y = y || 20;
-	        size = size || 16; // Set or default
-	        font = font || "Arial";
-	        ctx.font = size+"px " + font;
-	        ctx.fillStyle = color || "black";
-	        ctx.fillText(words,x,y);
-	    };
-
-	    this.drawSprites = function(sprites){
-	        sprites.each(this.drawInstance);
-	    };
-
-	    this.drawInstance = function(instance){
-	        if(!instance.hidden){
-	            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
-	            var img = getImgFromCache(instance.getCurrentCostume());
-	            instance.width = img.width * instance.scale;
-	            instance.height = img.height * instance.scale;
-	            ctx.drawImage(  img, instance.x-instance.width/2, instance.y-instance.height/2,
-	                            instance.width, instance.height );
-	        }
-	    };
-
-	    this.getImgFromCache = getImgFromCache;
-
-	    // @Params:
-	    // - src: backdrop image location
-	    // - options: {x:number, y:number, width:number, height:number}
-	    this.drawBackdrop = function(src, x, y, width, height){
-	        if(src[0]=='#'){
-	            ctx.fillStyle=src;
-	            ctx.fillRect(0,0,settings.width,settings.height);
-	        } else {
-	            var img = imageCache[src];
-	            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
-	            if( !img ){
-	                img=new Image();
-	                img.src=src;
-	                imageCache[src]=img;
-	            }
-	            ctx.drawImage( img, x||0, y||0, width||img.width, height||img.height );
-	        }
-	    };
-
-	    this.preload = function(images, completeFunc, progressFunc){
-	        var loaderProxy = {};
-	        if(completeFunc){
-	            onComplete(completeFunc);
-	        }
-	        if(progressFunc){
-	            onProgress(progressFunc);
-	        }
-	        for(var i=0; i<images.length; i++){
-	            var path = images[i];
-	            imageCache[path] = loader.addImage(path);
-	        }
-	        function onComplete(callback){
-	            loader.addCompletionListener(function(){
-	                callback();
-	            });
-	        };
-	        function onProgress(callback){
-	            loader.addProgressListener(function(e) {
-	                // e.completedCount, e.totalCount, e.resource.imageNumber
-	                callback(e);
-	            });
-	        }
-	        loaderProxy.complete = onComplete;
-	        loaderProxy.progress = onProgress;
-	        loader.start();
-	        if(debugMode){
-	            console.log("Start loading "+images.length+" images...");
-	            loader.addProgressListener(function(e) {
-	                console.log("Preloading progressing...");
-	            });
-	            loader.addCompletionListener(function(){
-	                console.log("Preloading completed!");
-	            });
-	        }
-	        return loaderProxy;
-	    };
-
-	    function getImgFromCache(path){
-	        var img = imageCache[path];
-	        if( !img ){
-	            img=new Image();
-	            img.src=path;
-	            imageCache[path]=img;
-	        }
-	        return img;
-	    }
-	}
-
-	module.exports = Renderer;
-
-/***/ },
-/* 9 */
+/* 13 */,
+/* 14 */,
+/* 15 */,
+/* 16 */,
+/* 17 */,
+/* 18 */
 /***/ function(module, exports) {
 
 	/*!  | http://thinkpixellab.com/PxLoader */
@@ -1370,58 +1435,51 @@
 	module.exports = PxLoader;
 
 /***/ },
-/* 10 */
+/* 19 */
 /***/ function(module, exports) {
 
-	//  state 用來表達 renderer 的以下狀態：
-	//
-	//   1. readyToStart:
-	//      初始狀態，此時執行 start 會直接開始 cycling(不斷執行 onTick)，並將狀態切換為 "running"。
-	//   2. running:
-	//      不停 cycling，此時可執行 stop 將狀態切換為 "stopping"。
-	//      但是執行 start 則不會有任何反應
-	//      執行 stop 則不會有任何反應。
-	//   3. stopping:
-	//      此時雖然已接受到停止訊息，但是最後一次的 rendering 尚未結束，
-	//      因此若在此時執行 start，會每隔一小段時間檢查 state 是否回復到 "readyToStart"。
-	//
-	//  狀態變化流程如下：
-	//  (1) -> (2) -> (3) -> (1)
-
-	var FPS = 60
-
-	function Clock(update){
-	    this._state = "readyToStart"; //"readyToStart", "stopping", "running";
-	    this._update = update;
-	}
-
-	Clock.prototype.start = function(){
-	    if(this._state==="readyToStart"){
-	        var onTick;
-	        this._state = "running";
-	        onTick = (function(){
-	            if(this._state==="running"){
-	                this._update();
-	                setTimeout(function(){
-	                    requestAnimationFrame(onTick);
-	                },1000/FPS);
-	            } else {
-	                this._state = "readyToStart";
+	function Sound(debugMode){
+	    this.sounds = [];
+	    // this.generate = function(url){
+	    //     return (function(){
+	    //         var sound = new Audio(url),
+	    //             obj = {};
+	    //         sounds.push(sound);
+	    //         obj.play = function(url){
+	    //             sound.load();
+	    //             sound.play();
+	    //         };
+	    //         obj.stop = function(){
+	    //             sound.pause();
+	    //             sound.currentTime = 0;
+	    //         };
+	    //         return obj;
+	    //     })()
+	    // }
+	    this.play = function(url){
+	        var sounds = this.sounds;
+	        return (function(){
+	            var sound = new Audio(url);
+	            var index = sounds.length;
+	            sounds.push(sound);
+	            sound.play();
+	            sound.addEventListener('ended', function(){
+	                sounds[index] = null;
+	                sound = null;
+	            });
+	            return sound;
+	        })();
+	    }
+	    this.stop = function(){
+	        for(var i=0; i<this.sounds.length; i++){
+	            if(this.sounds[i]){
+	                this.sounds[i].pause();
 	            }
-	        }).bind(this);
-	        setTimeout( onTick, 0 ); // 必須 Async，否則會產生微妙的時間差
-	    } else if (this._state==="stopping") {
-	        setTimeout( start, 10 );
+	        }
 	    }
 	}
 
-	Clock.prototype.stop = function(){
-	    if(this._state==="running"){
-	        this._state = "stopping";
-	    }
-	}
-
-	module.exports = Clock;
+	module.exports = Sound;
 
 /***/ }
 /******/ ]);

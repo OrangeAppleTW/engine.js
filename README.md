@@ -44,7 +44,7 @@ slime.costumes;
 slime.currentCostumeId;
 slime.width;
 slime.height;
-slime.hidden; // Notice: Sprite could still be touched or clicked when it's hidden. 
+slime.hidden; // Notice: Sprite could still be touched or clicked when it's hidden.
 ```
 
 ### 角色的方法
@@ -118,6 +118,21 @@ Game.stop();
 
 Game.clear();
 ```
+
+
+## Sounds
+
+```javascript
+// 直接播放音效
+Game.sound.play("shoot.wav");
+// 將 audio 物件存下來，以便後續的操作
+var BgMusic = Game.sound.play("music.mp3");
+// 暫停音樂
+BgMusic.pause();
+// 停止所有音效
+Game.sound.stop();
+```
+
 
 你也可以拿 context 物件自由畫出你要畫的東西
 可以查看 CanvasRenderingContext2D 的 [API](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)

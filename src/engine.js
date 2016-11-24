@@ -4,6 +4,7 @@ var EventList = require("./event-list");
 var Inspector = require("./inspector");
 var Clock = require("./clock");
 var Renderer = require("./renderer");
+var Sound = require("./sound");
 
 function engine(stageId, debugMode){
 
@@ -23,6 +24,7 @@ function engine(stageId, debugMode){
     var io = require("./io")(canvas, debugMode);
     var eventList = new EventList(io, debugMode);
     var renderer = new Renderer(ctx, settings, debugMode);
+    var sound = new Sound();
     var clock = new Clock(function(){
         eventList.traverse();
         settings.update();
@@ -60,12 +62,13 @@ function engine(stageId, debugMode){
         on: function(event, target, handler){ eventList.register(event, target, handler) },
         when: function(event, target, handler){ eventList.register(event, target, handler) },
         set: set,
-        stop: function(){ clock.stop(); },
+        stop: function(){ clock.stop(); sound.stop(); },
         start: function(){ clock.start(); },
         update: function(func){ settings.update=func; },
         ctx: ctx,
         clear: function(){ renderer.clear(); },
-        preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); }
+        preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); },
+        sound: sound
     };
     return proxy;
 }
