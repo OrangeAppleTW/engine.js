@@ -14,7 +14,7 @@ function engine(stageId, debugMode){
     var settings = {
         width: canvas.width,
         height: canvas.height,
-        ratio: 1, //@TODO: set ratio
+        zoom: 1,
         // gravity: 0, //@TODO: set gravity
         update: function(){}
     };
@@ -36,13 +36,13 @@ function engine(stageId, debugMode){
     debugMode = debugMode || false;
 
     function set(args){
-        settings.ratio      = args.ratio || settings.ratio;
+        settings.zoom      = args.zoom || settings.zoom;
         settings.width      = args.width || settings.width;
         settings.height     = args.height || settings.height;
         settings.gravity    = args.gravity || settings.gravity;
         settings.update     = args.update || settings.update;
-        if(args.width || args.ratio){ canvas.width = settings.width*settings.ratio;}
-        if(args.height || args.ratio){ canvas.height = settings.height*settings.ratio;}
+        if(args.width || args.zoom){ canvas.width = settings.width*settings.zoom;}
+        if(args.height || args.zoom){ canvas.height = settings.height*settings.zoom;}
         return this;
     }
 

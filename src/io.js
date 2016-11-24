@@ -17,13 +17,13 @@ var io = function(canvas, settings, debugMode){
     canvas.style.outline = "none";
 
     canvas.addEventListener("mousemove", function(e){
-        cursor.x = e.offsetX / settings.ratio;
-        cursor.y = e.offsetY / settings.ratio;
+        cursor.x = e.offsetX / settings.zoom;
+        cursor.y = e.offsetY / settings.zoom;
     });
 
     canvas.addEventListener("click", function(e){
-        clicked.x = e.offsetX / settings.ratio;
-        clicked.y = e.offsetY / settings.ratio;
+        clicked.x = e.offsetX / settings.zoom;
+        clicked.y = e.offsetY / settings.zoom;
         if(debugMode){
             console.log( "Clicked! cursor:"+JSON.stringify(cursor) );
         }

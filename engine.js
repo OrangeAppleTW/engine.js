@@ -60,7 +60,7 @@
 	    var settings = {
 	        width: canvas.width,
 	        height: canvas.height,
-	        ratio: 1, //@TODO: set ratio
+	        zoom: 1,
 	        // gravity: 0, //@TODO: set gravity
 	        update: function(){}
 	    };
@@ -82,13 +82,13 @@
 	    debugMode = debugMode || false;
 
 	    function set(args){
-	        settings.ratio      = args.ratio || settings.ratio;
+	        settings.zoom      = args.zoom || settings.zoom;
 	        settings.width      = args.width || settings.width;
 	        settings.height     = args.height || settings.height;
 	        settings.gravity    = args.gravity || settings.gravity;
 	        settings.update     = args.update || settings.update;
-	        if(args.width || args.ratio){ canvas.width = settings.width*settings.ratio;}
-	        if(args.height || args.ratio){ canvas.height = settings.height*settings.ratio;}
+	        if(args.width || args.zoom){ canvas.width = settings.width*settings.zoom;}
+	        if(args.height || args.zoom){ canvas.height = settings.height*settings.zoom;}
 	        return this;
 	    }
 
@@ -128,7 +128,7 @@
 	var util = __webpack_require__(2);
 	var hitCanvas = document.createElement('canvas'),
 	    hitTester = hitCanvas.getContext('2d');
-	    document.body.appendChild(hitCanvas);
+	    // document.body.appendChild(hitCanvas);
 
 	// @TODO: 客製化特征
 	function Sprite(args, eventList, settings, renderer) {
@@ -611,9 +611,9 @@
 	        y = y || 20;
 	        size = size || 16; // Set or default
 	        font = font || "Arial";
-	        ctx.font = (size*settings.ratio)+"px " + font;
+	        ctx.font = (size*settings.zoom)+"px " + font;
 	        ctx.fillStyle = color || "black";
-	        ctx.fillText(words, x * settings.ratio, y * settings.ratio);
+	        ctx.fillText(words, x * settings.zoom, y * settings.zoom);
 	    };
 
 	    this.drawSprites = function(sprites){
@@ -627,10 +627,10 @@
 	            instance.width = img.width * instance.scale;
 	            instance.height = img.height * instance.scale;
 	            ctx.drawImage(  img,
-	                            (instance.x-instance.width/2) * settings.ratio,
-	                            (instance.y-instance.height/2) * settings.ratio,
-	                            instance.width * settings.ratio,
-	                            instance.height * settings.ratio
+	                            (instance.x-instance.width/2) * settings.zoom,
+	                            (instance.y-instance.height/2) * settings.zoom,
+	                            instance.width * settings.zoom,
+	                            instance.height * settings.zoom
 	            );
 	        }
 	    };
@@ -643,7 +643,7 @@
 	    this.drawBackdrop = function(src, x, y, width, height){
 	        if(src[0]=='#'){
 	            ctx.fillStyle=src;
-	            ctx.fillRect(0,0,settings.width*settings.ratio,settings.height*settings.ratio);
+	            ctx.fillRect(0,0,settings.width*settings.zoom,settings.height*settings.zoom);
 	        } else {
 	            var img = imageCache[src];
 	            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
@@ -654,10 +654,10 @@
 	            }
 	            ctx.drawImage(
 	                img,
-	                (x||0)*settings.ratio,
-	                (y||0)*settings.ratio,
-	                (width||img.width)*settings.ratio,
-	                (height||img.height)*settings.ratio
+	                (x||0)*settings.zoom,
+	                (y||0)*settings.zoom,
+	                (width||img.width)*settings.zoom,
+	                (height||img.height)*settings.zoom
 	            );
 	        }
 	    };
@@ -1291,13 +1291,13 @@
 	    canvas.style.outline = "none";
 
 	    canvas.addEventListener("mousemove", function(e){
-	        cursor.x = e.offsetX / settings.ratio;
-	        cursor.y = e.offsetY / settings.ratio;
+	        cursor.x = e.offsetX / settings.zoom;
+	        cursor.y = e.offsetY / settings.zoom;
 	    });
 
 	    canvas.addEventListener("click", function(e){
-	        clicked.x = e.offsetX / settings.ratio;
-	        clicked.y = e.offsetY / settings.ratio;
+	        clicked.x = e.offsetX / settings.zoom;
+	        clicked.y = e.offsetY / settings.zoom;
 	        if(debugMode){
 	            console.log( "Clicked! cursor:"+JSON.stringify(cursor) );
 	        }

@@ -8,7 +8,7 @@ var Game = Engine("canvas-id");
 Game.set({
     width: 400, // Default: 640px
     height: 400, // Default: 480px
-    ratio: 0.8, // Default: 1
+    zoom: 0.8, // Default: 1
     update: function(){}, // 每次刷新畫面都要做的事放這裡
     debugMode: true // Default: false
 });

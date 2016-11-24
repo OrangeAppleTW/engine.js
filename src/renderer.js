@@ -17,9 +17,9 @@ function Renderer(ctx, settings, debugMode){
         y = y || 20;
         size = size || 16; // Set or default
         font = font || "Arial";
-        ctx.font = (size*settings.ratio)+"px " + font;
+        ctx.font = (size*settings.zoom)+"px " + font;
         ctx.fillStyle = color || "black";
-        ctx.fillText(words, x * settings.ratio, y * settings.ratio);
+        ctx.fillText(words, x * settings.zoom, y * settings.zoom);
     };
 
     this.drawSprites = function(sprites){
@@ -33,10 +33,10 @@ function Renderer(ctx, settings, debugMode){
             instance.width = img.width * instance.scale;
             instance.height = img.height * instance.scale;
             ctx.drawImage(  img,
-                            (instance.x-instance.width/2) * settings.ratio,
-                            (instance.y-instance.height/2) * settings.ratio,
-                            instance.width * settings.ratio,
-                            instance.height * settings.ratio
+                            (instance.x-instance.width/2) * settings.zoom,
+                            (instance.y-instance.height/2) * settings.zoom,
+                            instance.width * settings.zoom,
+                            instance.height * settings.zoom
             );
         }
     };
@@ -49,7 +49,7 @@ function Renderer(ctx, settings, debugMode){
     this.drawBackdrop = function(src, x, y, width, height){
         if(src[0]=='#'){
             ctx.fillStyle=src;
-            ctx.fillRect(0,0,settings.width*settings.ratio,settings.height*settings.ratio);
+            ctx.fillRect(0,0,settings.width*settings.zoom,settings.height*settings.zoom);
         } else {
             var img = imageCache[src];
             // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
@@ -60,10 +60,10 @@ function Renderer(ctx, settings, debugMode){
             }
             ctx.drawImage(
                 img,
-                (x||0)*settings.ratio,
-                (y||0)*settings.ratio,
-                (width||img.width)*settings.ratio,
-                (height||img.height)*settings.ratio
+                (x||0)*settings.zoom,
+                (y||0)*settings.zoom,
+                (width||img.width)*settings.zoom,
+                (height||img.height)*settings.zoom
             );
         }
     };
