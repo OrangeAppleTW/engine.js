@@ -1,7 +1,7 @@
 var keycode = require('keycode');
 
-var io = function(canvas, debugMode){
-    
+var io = function(canvas, settings, debugMode){
+
     var exports={},
         cursor={x:0, y:0},
         key=[],
@@ -17,13 +17,13 @@ var io = function(canvas, debugMode){
     canvas.style.outline = "none";
 
     canvas.addEventListener("mousemove", function(e){
-        cursor.x = e.offsetX;
-        cursor.y = e.offsetY;
+        cursor.x = e.offsetX / settings.ratio;
+        cursor.y = e.offsetY / settings.ratio;
     });
 
     canvas.addEventListener("click", function(e){
-        clicked.x = e.offsetX;
-        clicked.y = e.offsetY;
+        clicked.x = e.offsetX / settings.ratio;
+        clicked.y = e.offsetY / settings.ratio;
         if(debugMode){
             console.log( "Clicked! cursor:"+JSON.stringify(cursor) );
         }

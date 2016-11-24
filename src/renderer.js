@@ -17,9 +17,9 @@ function Renderer(ctx, settings, debugMode){
         y = y || 20;
         size = size || 16; // Set or default
         font = font || "Arial";
-        ctx.font = size+"px " + font;
+        ctx.font = (size*settings.ratio)+"px " + font;
         ctx.fillStyle = color || "black";
-        ctx.fillText(words,x,y);
+        ctx.fillText(words, x * settings.ratio, y * settings.ratio);
     };
 
     this.drawSprites = function(sprites){
@@ -32,8 +32,12 @@ function Renderer(ctx, settings, debugMode){
             var img = getImgFromCache(instance.getCurrentCostume());
             instance.width = img.width * instance.scale;
             instance.height = img.height * instance.scale;
-            ctx.drawImage(  img, instance.x-instance.width/2, instance.y-instance.height/2,
-                            instance.width, instance.height );
+            ctx.drawImage(  img,
+                            (instance.x-instance.width/2) * settings.ratio,
+                            (instance.y-instance.height/2) * settings.ratio,
+                            instance.width * settings.ratio,
+                            instance.height * settings.ratio
+            );
         }
     };
 
@@ -45,7 +49,7 @@ function Renderer(ctx, settings, debugMode){
     this.drawBackdrop = function(src, x, y, width, height){
         if(src[0]=='#'){
             ctx.fillStyle=src;
-            ctx.fillRect(0,0,settings.width,settings.height);
+            ctx.fillRect(0,0,settings.width*settings.ratio,settings.height*settings.ratio);
         } else {
             var img = imageCache[src];
             // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
@@ -54,7 +58,13 @@ function Renderer(ctx, settings, debugMode){
                 img.src=src;
                 imageCache[src]=img;
             }
-            ctx.drawImage( img, x||0, y||0, width||img.width, height||img.height );
+            ctx.drawImage(
+                img,
+                (x||0)*settings.ratio,
+                (y||0)*settings.ratio,
+                (width||img.width)*settings.ratio,
+                (height||img.height)*settings.ratio
+            );
         }
     };
 

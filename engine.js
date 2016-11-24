@@ -50,7 +50,7 @@
 	var Inspector = __webpack_require__(5);
 	var Clock = __webpack_require__(6);
 	var Renderer = __webpack_require__(7);
-	var Sound = __webpack_require__(19);
+	var Sound = __webpack_require__(9);
 
 	function engine(stageId, debugMode){
 
@@ -60,14 +60,14 @@
 	    var settings = {
 	        width: canvas.width,
 	        height: canvas.height,
-	        // ratio: 1, //@TODO: set ratio
+	        ratio: 1, //@TODO: set ratio
 	        // gravity: 0, //@TODO: set gravity
 	        update: function(){}
 	    };
 
 	    var sprites = new Sprites();
 	    var inspector = new Inspector();
-	    var io = __webpack_require__(11)(canvas, debugMode);
+	    var io = __webpack_require__(10)(canvas, settings, debugMode);
 	    var eventList = new EventList(io, debugMode);
 	    var renderer = new Renderer(ctx, settings, debugMode);
 	    var sound = new Sound();
@@ -82,13 +82,13 @@
 	    debugMode = debugMode || false;
 
 	    function set(args){
-	        if(args.width){canvas.width = args.width;}
-	        if(args.height){canvas.height = args.height;}
+	        settings.ratio      = args.ratio || settings.ratio;
 	        settings.width      = args.width || settings.width;
 	        settings.height     = args.height || settings.height;
-	        settings.ratio      = args.ratio || settings.ratio;
 	        settings.gravity    = args.gravity || settings.gravity;
 	        settings.update     = args.update || settings.update;
+	        if(args.width || args.ratio){ canvas.width = settings.width*settings.ratio;}
+	        if(args.height || args.ratio){ canvas.height = settings.height*settings.ratio;}
 	        return this;
 	    }
 
@@ -128,7 +128,7 @@
 	var util = __webpack_require__(2);
 	var hitCanvas = document.createElement('canvas'),
 	    hitTester = hitCanvas.getContext('2d');
-	    // document.body.appendChild(hitCanvas);
+	    document.body.appendChild(hitCanvas);
 
 	// @TODO: 客製化特征
 	function Sprite(args, eventList, settings, renderer) {
@@ -592,7 +592,7 @@
 /* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var loader = new (__webpack_require__(18))();
+	var loader = new (__webpack_require__(8))();
 
 	function Renderer(ctx, settings, debugMode){
 
@@ -611,9 +611,9 @@
 	        y = y || 20;
 	        size = size || 16; // Set or default
 	        font = font || "Arial";
-	        ctx.font = size+"px " + font;
+	        ctx.font = (size*settings.ratio)+"px " + font;
 	        ctx.fillStyle = color || "black";
-	        ctx.fillText(words,x,y);
+	        ctx.fillText(words, x * settings.ratio, y * settings.ratio);
 	    };
 
 	    this.drawSprites = function(sprites){
@@ -626,8 +626,12 @@
 	            var img = getImgFromCache(instance.getCurrentCostume());
 	            instance.width = img.width * instance.scale;
 	            instance.height = img.height * instance.scale;
-	            ctx.drawImage(  img, instance.x-instance.width/2, instance.y-instance.height/2,
-	                            instance.width, instance.height );
+	            ctx.drawImage(  img,
+	                            (instance.x-instance.width/2) * settings.ratio,
+	                            (instance.y-instance.height/2) * settings.ratio,
+	                            instance.width * settings.ratio,
+	                            instance.height * settings.ratio
+	            );
 	        }
 	    };
 
@@ -639,7 +643,7 @@
 	    this.drawBackdrop = function(src, x, y, width, height){
 	        if(src[0]=='#'){
 	            ctx.fillStyle=src;
-	            ctx.fillRect(0,0,settings.width,settings.height);
+	            ctx.fillRect(0,0,settings.width*settings.ratio,settings.height*settings.ratio);
 	        } else {
 	            var img = imageCache[src];
 	            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
@@ -648,7 +652,13 @@
 	                img.src=src;
 	                imageCache[src]=img;
 	            }
-	            ctx.drawImage( img, x||0, y||0, width||img.width, height||img.height );
+	            ctx.drawImage(
+	                img,
+	                (x||0)*settings.ratio,
+	                (y||0)*settings.ratio,
+	                (width||img.width)*settings.ratio,
+	                (height||img.height)*settings.ratio
+	            );
 	        }
 	    };
 
@@ -704,230 +714,7 @@
 	module.exports = Renderer;
 
 /***/ },
-/* 8 */,
-/* 9 */,
-/* 10 */,
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var keycode = __webpack_require__(12);
-
-	var io = function(canvas, debugMode){
-	    
-	    var exports={},
-	        cursor={x:0, y:0},
-	        key=[],
-	        clicked={x:null, y:null},
-	        keyup={},
-	        keydown={},
-	        holding={};
-
-	    debugMode = debugMode || false;
-
-	    // Make any element focusable for keydown event.
-	    canvas.setAttribute("tabindex",'1');
-	    canvas.style.outline = "none";
-
-	    canvas.addEventListener("mousemove", function(e){
-	        cursor.x = e.offsetX;
-	        cursor.y = e.offsetY;
-	    });
-
-	    canvas.addEventListener("click", function(e){
-	        clicked.x = e.offsetX;
-	        clicked.y = e.offsetY;
-	        if(debugMode){
-	            console.log( "Clicked! cursor:"+JSON.stringify(cursor) );
-	        }
-	    });
-
-	    canvas.addEventListener("keydown", function(e){
-	        var key = keycode(e.keyCode);
-	        keydown[key] = true;
-	        holding[key] = true;
-	        if(debugMode){
-	            console.log( "Keydown! key:"+key );
-	        }
-	    });
-
-	    canvas.addEventListener("keyup", function(e){
-	        var key = keycode(e.keyCode);
-	        keyup[key] = true;
-	        holding[key] = false;
-	        if(debugMode){
-	            console.log( "Keyup! key:"+key );
-	        }
-	    });
-
-	    exports.cursor = cursor;
-	    exports.clicked = clicked;
-	    exports.keyup = keyup;
-	    exports.keydown = keydown;
-	    exports.holding = holding;
-	    return exports;
-	};
-
-	module.exports = io;
-
-/***/ },
-/* 12 */
-/***/ function(module, exports) {
-
-	// Source: http://jsfiddle.net/vWx8V/
-	// http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
-
-	/**
-	 * Conenience method returns corresponding value for given keyName or keyCode.
-	 *
-	 * @param {Mixed} keyCode {Number} or keyName {String}
-	 * @return {Mixed}
-	 * @api public
-	 */
-
-	exports = module.exports = function(searchInput) {
-	  // Keyboard Events
-	  if (searchInput && 'object' === typeof searchInput) {
-	    var hasKeyCode = searchInput.which || searchInput.keyCode || searchInput.charCode
-	    if (hasKeyCode) searchInput = hasKeyCode
-	  }
-
-	  // Numbers
-	  if ('number' === typeof searchInput) return names[searchInput]
-
-	  // Everything else (cast to string)
-	  var search = String(searchInput)
-
-	  // check codes
-	  var foundNamedKey = codes[search.toLowerCase()]
-	  if (foundNamedKey) return foundNamedKey
-
-	  // check aliases
-	  var foundNamedKey = aliases[search.toLowerCase()]
-	  if (foundNamedKey) return foundNamedKey
-
-	  // weird character?
-	  if (search.length === 1) return search.charCodeAt(0)
-
-	  return undefined
-	}
-
-	/**
-	 * Get by name
-	 *
-	 *   exports.code['enter'] // => 13
-	 */
-
-	var codes = exports.code = exports.codes = {
-	  'backspace': 8,
-	  'tab': 9,
-	  'enter': 13,
-	  'shift': 16,
-	  'ctrl': 17,
-	  'alt': 18,
-	  'pause/break': 19,
-	  'caps lock': 20,
-	  'esc': 27,
-	  'space': 32,
-	  'page up': 33,
-	  'page down': 34,
-	  'end': 35,
-	  'home': 36,
-	  'left': 37,
-	  'up': 38,
-	  'right': 39,
-	  'down': 40,
-	  'insert': 45,
-	  'delete': 46,
-	  'command': 91,
-	  'left command': 91,
-	  'right command': 93,
-	  'numpad *': 106,
-	  'numpad +': 107,
-	  'numpad -': 109,
-	  'numpad .': 110,
-	  'numpad /': 111,
-	  'num lock': 144,
-	  'scroll lock': 145,
-	  'my computer': 182,
-	  'my calculator': 183,
-	  ';': 186,
-	  '=': 187,
-	  ',': 188,
-	  '-': 189,
-	  '.': 190,
-	  '/': 191,
-	  '`': 192,
-	  '[': 219,
-	  '\\': 220,
-	  ']': 221,
-	  "'": 222
-	}
-
-	// Helper aliases
-
-	var aliases = exports.aliases = {
-	  'windows': 91,
-	  '⇧': 16,
-	  '⌥': 18,
-	  '⌃': 17,
-	  '⌘': 91,
-	  'ctl': 17,
-	  'control': 17,
-	  'option': 18,
-	  'pause': 19,
-	  'break': 19,
-	  'caps': 20,
-	  'return': 13,
-	  'escape': 27,
-	  'spc': 32,
-	  'pgup': 33,
-	  'pgdn': 34,
-	  'ins': 45,
-	  'del': 46,
-	  'cmd': 91
-	}
-
-
-	/*!
-	 * Programatically add the following
-	 */
-
-	// lower case chars
-	for (i = 97; i < 123; i++) codes[String.fromCharCode(i)] = i - 32
-
-	// numbers
-	for (var i = 48; i < 58; i++) codes[i - 48] = i
-
-	// function keys
-	for (i = 1; i < 13; i++) codes['f'+i] = i + 111
-
-	// numpad keys
-	for (i = 0; i < 10; i++) codes['numpad '+i] = i + 96
-
-	/**
-	 * Get by code
-	 *
-	 *   exports.name[13] // => 'Enter'
-	 */
-
-	var names = exports.names = exports.title = {} // title for backward compat
-
-	// Create reverse mapping
-	for (i in codes) names[codes[i]] = i
-
-	// Add aliases
-	for (var alias in aliases) {
-	  codes[alias] = aliases[alias]
-	}
-
-
-/***/ },
-/* 13 */,
-/* 14 */,
-/* 15 */,
-/* 16 */,
-/* 17 */,
-/* 18 */
+/* 8 */
 /***/ function(module, exports) {
 
 	/*!  | http://thinkpixellab.com/PxLoader */
@@ -1435,7 +1222,7 @@
 	module.exports = PxLoader;
 
 /***/ },
-/* 19 */
+/* 9 */
 /***/ function(module, exports) {
 
 	function Sound(debugMode){
@@ -1480,6 +1267,221 @@
 	}
 
 	module.exports = Sound;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var keycode = __webpack_require__(11);
+
+	var io = function(canvas, settings, debugMode){
+
+	    var exports={},
+	        cursor={x:0, y:0},
+	        key=[],
+	        clicked={x:null, y:null},
+	        keyup={},
+	        keydown={},
+	        holding={};
+
+	    debugMode = debugMode || false;
+
+	    // Make any element focusable for keydown event.
+	    canvas.setAttribute("tabindex",'1');
+	    canvas.style.outline = "none";
+
+	    canvas.addEventListener("mousemove", function(e){
+	        cursor.x = e.offsetX / settings.ratio;
+	        cursor.y = e.offsetY / settings.ratio;
+	    });
+
+	    canvas.addEventListener("click", function(e){
+	        clicked.x = e.offsetX / settings.ratio;
+	        clicked.y = e.offsetY / settings.ratio;
+	        if(debugMode){
+	            console.log( "Clicked! cursor:"+JSON.stringify(cursor) );
+	        }
+	    });
+
+	    canvas.addEventListener("keydown", function(e){
+	        var key = keycode(e.keyCode);
+	        keydown[key] = true;
+	        holding[key] = true;
+	        if(debugMode){
+	            console.log( "Keydown! key:"+key );
+	        }
+	    });
+
+	    canvas.addEventListener("keyup", function(e){
+	        var key = keycode(e.keyCode);
+	        keyup[key] = true;
+	        holding[key] = false;
+	        if(debugMode){
+	            console.log( "Keyup! key:"+key );
+	        }
+	    });
+
+	    exports.cursor = cursor;
+	    exports.clicked = clicked;
+	    exports.keyup = keyup;
+	    exports.keydown = keydown;
+	    exports.holding = holding;
+	    return exports;
+	};
+
+	module.exports = io;
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	// Source: http://jsfiddle.net/vWx8V/
+	// http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
+
+	/**
+	 * Conenience method returns corresponding value for given keyName or keyCode.
+	 *
+	 * @param {Mixed} keyCode {Number} or keyName {String}
+	 * @return {Mixed}
+	 * @api public
+	 */
+
+	exports = module.exports = function(searchInput) {
+	  // Keyboard Events
+	  if (searchInput && 'object' === typeof searchInput) {
+	    var hasKeyCode = searchInput.which || searchInput.keyCode || searchInput.charCode
+	    if (hasKeyCode) searchInput = hasKeyCode
+	  }
+
+	  // Numbers
+	  if ('number' === typeof searchInput) return names[searchInput]
+
+	  // Everything else (cast to string)
+	  var search = String(searchInput)
+
+	  // check codes
+	  var foundNamedKey = codes[search.toLowerCase()]
+	  if (foundNamedKey) return foundNamedKey
+
+	  // check aliases
+	  var foundNamedKey = aliases[search.toLowerCase()]
+	  if (foundNamedKey) return foundNamedKey
+
+	  // weird character?
+	  if (search.length === 1) return search.charCodeAt(0)
+
+	  return undefined
+	}
+
+	/**
+	 * Get by name
+	 *
+	 *   exports.code['enter'] // => 13
+	 */
+
+	var codes = exports.code = exports.codes = {
+	  'backspace': 8,
+	  'tab': 9,
+	  'enter': 13,
+	  'shift': 16,
+	  'ctrl': 17,
+	  'alt': 18,
+	  'pause/break': 19,
+	  'caps lock': 20,
+	  'esc': 27,
+	  'space': 32,
+	  'page up': 33,
+	  'page down': 34,
+	  'end': 35,
+	  'home': 36,
+	  'left': 37,
+	  'up': 38,
+	  'right': 39,
+	  'down': 40,
+	  'insert': 45,
+	  'delete': 46,
+	  'command': 91,
+	  'left command': 91,
+	  'right command': 93,
+	  'numpad *': 106,
+	  'numpad +': 107,
+	  'numpad -': 109,
+	  'numpad .': 110,
+	  'numpad /': 111,
+	  'num lock': 144,
+	  'scroll lock': 145,
+	  'my computer': 182,
+	  'my calculator': 183,
+	  ';': 186,
+	  '=': 187,
+	  ',': 188,
+	  '-': 189,
+	  '.': 190,
+	  '/': 191,
+	  '`': 192,
+	  '[': 219,
+	  '\\': 220,
+	  ']': 221,
+	  "'": 222
+	}
+
+	// Helper aliases
+
+	var aliases = exports.aliases = {
+	  'windows': 91,
+	  '⇧': 16,
+	  '⌥': 18,
+	  '⌃': 17,
+	  '⌘': 91,
+	  'ctl': 17,
+	  'control': 17,
+	  'option': 18,
+	  'pause': 19,
+	  'break': 19,
+	  'caps': 20,
+	  'return': 13,
+	  'escape': 27,
+	  'spc': 32,
+	  'pgup': 33,
+	  'pgdn': 34,
+	  'ins': 45,
+	  'del': 46,
+	  'cmd': 91
+	}
+
+
+	/*!
+	 * Programatically add the following
+	 */
+
+	// lower case chars
+	for (i = 97; i < 123; i++) codes[String.fromCharCode(i)] = i - 32
+
+	// numbers
+	for (var i = 48; i < 58; i++) codes[i - 48] = i
+
+	// function keys
+	for (i = 1; i < 13; i++) codes['f'+i] = i + 111
+
+	// numpad keys
+	for (i = 0; i < 10; i++) codes['numpad '+i] = i + 96
+
+	/**
+	 * Get by code
+	 *
+	 *   exports.name[13] // => 'Enter'
+	 */
+
+	var names = exports.names = exports.title = {} // title for backward compat
+
+	// Create reverse mapping
+	for (i in codes) names[codes[i]] = i
+
+	// Add aliases
+	for (var alias in aliases) {
+	  codes[alias] = aliases[alias]
+	}
+
 
 /***/ }
 /******/ ]);

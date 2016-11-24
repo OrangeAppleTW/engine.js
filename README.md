@@ -119,6 +119,14 @@ Game.stop();
 Game.clear();
 ```
 
+你也可以拿 context 物件自由畫出你要畫的東西
+可以查看 CanvasRenderingContext2D 的 [API](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)  
+但是請注意：**當對整個遊戲做倍率縮放的時候，操作ctx時需要自己調整座標，因為在網頁上的座標並非實際的座標**。
+(例如：當放大為2倍時，螢幕上看到的2px其實是遊戲中的1px)
+```javascript
+Game.ctx;
+```
+
 
 ## Sounds
 
@@ -131,11 +139,4 @@ var BgMusic = Game.sound.play("music.mp3");
 BgMusic.pause();
 // 停止所有音效
 Game.sound.stop();
-```
-
-
-你也可以拿 context 物件自由畫出你要畫的東西
-可以查看 CanvasRenderingContext2D 的 [API](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)
-```javascript
-Game.ctx;
 ```

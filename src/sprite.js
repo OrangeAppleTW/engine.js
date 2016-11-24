@@ -1,7 +1,7 @@
 var util = require("./util");
 var hitCanvas = document.createElement('canvas'),
     hitTester = hitCanvas.getContext('2d');
-    // document.body.appendChild(hitCanvas);
+    document.body.appendChild(hitCanvas);
 
 // @TODO: 客製化特征
 function Sprite(args, eventList, settings, renderer) {

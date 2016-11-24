@@ -14,14 +14,14 @@ function engine(stageId, debugMode){
     var settings = {
         width: canvas.width,
         height: canvas.height,
-        // ratio: 1, //@TODO: set ratio
+        ratio: 1, //@TODO: set ratio
         // gravity: 0, //@TODO: set gravity
         update: function(){}
     };
 
     var sprites = new Sprites();
     var inspector = new Inspector();
-    var io = require("./io")(canvas, debugMode);
+    var io = require("./io")(canvas, settings, debugMode);
     var eventList = new EventList(io, debugMode);
     var renderer = new Renderer(ctx, settings, debugMode);
     var sound = new Sound();
@@ -36,13 +36,13 @@ function engine(stageId, debugMode){
     debugMode = debugMode || false;
 
     function set(args){
-        if(args.width){canvas.width = args.width;}
-        if(args.height){canvas.height = args.height;}
+        settings.ratio      = args.ratio || settings.ratio;
         settings.width      = args.width || settings.width;
         settings.height     = args.height || settings.height;
-        settings.ratio      = args.ratio || settings.ratio;
         settings.gravity    = args.gravity || settings.gravity;
         settings.update     = args.update || settings.update;
+        if(args.width || args.ratio){ canvas.width = settings.width*settings.ratio;}
+        if(args.height || args.ratio){ canvas.height = settings.height*settings.ratio;}
         return this;
     }
 
