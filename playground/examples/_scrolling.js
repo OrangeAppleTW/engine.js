@@ -1,4 +1,4 @@
-var bird = Game.sprites.bird = Game.createSprite({
+var bird = Game.createSprite({
     x: 160,
     y: 240,
     costumes: "./images/flappy-bird/bird.png"

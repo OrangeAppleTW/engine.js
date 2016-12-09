@@ -52,8 +52,12 @@ function engine(stageId, debugMode){
     // }
 
     var proxy = {
-        sprites: sprites,
-        createSprite: function(args){ return new Sprite(args, eventList, settings, renderer) }, // Pass io object into it because the sprite need to hear from events
+        // sprites: sprites,
+        createSprite: function(args){
+            var newSprite = new Sprite(args, eventList, settings, renderer)
+            sprites._sprites.push(newSprite);
+            return newSprite;
+        }, // Pass io object into it because the sprite need to hear from events
         print: renderer.print,
         drawSprites: function(){ renderer.drawSprites(sprites); },
         drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },

@@ -9,8 +9,6 @@ var slime = Game.createSprite({
   	costumes:["images/slime.gif"]
 });
 
-Game.sprites.slime = slime;
-
 slime.when("hover",function(){
 	slime.scale+=0.1;
 });

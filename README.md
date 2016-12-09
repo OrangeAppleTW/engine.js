@@ -25,11 +25,6 @@ var slime = Game.createSprite({
     costumes: ["./slime.gif"]
 });
 
-// 存放所有角色的物件
-Game.sprites; // {}
-
-Game.sprites.slime = slime;
-
 // 移除遊戲中的所有角色
 // Game.clearSprites();
 ```

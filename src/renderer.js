@@ -27,6 +27,7 @@ function Renderer(ctx, settings, debugMode){
     };
 
     this.drawInstance = function(instance){
+        // console.log(instance);
         if(!instance.hidden){
             // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
             var img = getImgFromCache(instance.getCurrentCostume());

@@ -14,13 +14,13 @@ var enemyPath = [
     {x:544+16, y:96}
 ];
 
-var enemies = Game.sprites.enemies=[];
-var towers = Game.sprites.towers=[];
-var towerButton = Game.sprites.towerButton = Game.createSprite({
+var enemies = [];
+var towers = [];
+var towerButton = Game.createSprite({
     x:608, y:448,
     costumes:"./images/tower-btn.png"
 });
-var towerTemplate = Game.sprites.towerTemplate = Game.createSprite({
+var towerTemplate = Game.createSprite({
     x:0, y:0,
     costumes: "./images/tower.png",
     hidden: true
@@ -75,6 +75,7 @@ function buildTower() {
             var distance = this.distanceTo(enemies[i]);
             if (distance<=this.range) {
                 this.shoot(enemies[i]);
+                enemies.splice(i,1);
                 return;
             }
         }

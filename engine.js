@@ -98,8 +98,12 @@
 	    // }
 
 	    var proxy = {
-	        sprites: sprites,
-	        createSprite: function(args){ return new Sprite(args, eventList, settings, renderer) }, // Pass io object into it because the sprite need to hear from events
+	        // sprites: sprites,
+	        createSprite: function(args){
+	            var newSprite = new Sprite(args, eventList, settings, renderer)
+	            sprites._sprites.push(newSprite);
+	            return newSprite;
+	        }, // Pass io object into it because the sprite need to hear from events
 	        print: renderer.print,
 	        drawSprites: function(){ renderer.drawSprites(sprites); },
 	        drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
@@ -336,7 +340,9 @@
 /* 3 */
 /***/ function(module, exports) {
 
-	function Sprites(){}
+	function Sprites(){
+	    this._sprites = [];
+	}
 
 	Sprites.prototype.runOnTick = function(){
 	    this.each(function(){
@@ -345,38 +351,24 @@
 	}
 
 	Sprites.prototype.each = function(func){
-	    for(var key in this){
-	        if (this[key].constructor.name === "Sprite") {
-	            func.call(this[key],this[key]);
-	        } else if (this[key] instanceof Array) {
-	            var instances = this[key];
-	            for(var i=0; i<instances.length; i++){
-	                var instance = instances[i];
-	                func.call(instance,instance);
-	            }
-	        }
+	    var sprites = this._sprites;
+	    // console.log(func);
+	    for(var i=0; i<sprites.length; i++){
+	        func.call(sprites[i],sprites[i]);
 	    }
 	}
 
 	Sprites.prototype.removeDeletedSprites = function(){
-	    for(var key in this){
-	        if (this[key].constructor.name === "Sprite") {
-	            if(this[key]._deleted){ delete this[key]; }
-	        } else if (this[key] instanceof Array) {
-	            var instances = this[key];
-	            for(var i=0; i<instances.length; i++){
-	                if(instances[i]._deleted){
-	                    instances.splice(i,1);
-	                }
-	            }
+	    var sprites = this._sprites;
+	    for(var i=0; i<sprites.length; i++){
+	        if(sprites[i]._deleted){
+	            sprites.splice(i,1);
 	        }
 	    }
 	}
 
 	Sprites.prototype.clear = function(){
-	    for(var key in this){
-	        delete this[key];
-	    }
+	    this._sprites = [];
 	};
 
 	module.exports = Sprites;
@@ -621,6 +613,7 @@
 	    };
 
 	    this.drawInstance = function(instance){
+	        // console.log(instance);
 	        if(!instance.hidden){
 	            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
 	            var img = getImgFromCache(instance.getCurrentCostume());

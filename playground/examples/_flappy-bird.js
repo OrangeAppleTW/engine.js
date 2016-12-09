@@ -1,19 +1,19 @@
-var bird = Game.sprites.bird = Game.createSprite({
+var bird = Game.createSprite({
     x: 160,
     y: 240,
     costumes: "./images/flappy-bird/bird.png"
 });
-var upTube = Game.sprites.upTube = Game.createSprite({
+var upTube = Game.createSprite({
     x: 320,
     y: 0,
     costumes: "./images/flappy-bird/up-tube.png"
 });
-var downTube = Game.sprites.downTube = Game.createSprite({
+var downTube = Game.createSprite({
     x: 320,
     y: 440,
     costumes: "./images/flappy-bird/down-tube.png"
 });
-var ground = Game.sprites.ground = Game.createSprite({
+var ground = Game.createSprite({
     x: 160,
     y: 460,
     costumes: "./images/flappy-bird/ground.png"

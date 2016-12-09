@@ -1,11 +1,10 @@
 var clock = 0;
+var stars = []
 
 Game.set({
     width: 640,
     height: 480
 });
-
-Game.sprites.stars = [];
 
 for(let i=0; i<100; i++){
     var newStar = Game.createSprite({
@@ -17,14 +16,14 @@ for(let i=0; i<100; i++){
     newStar.on("click",function(){
         this.destroy();
     });
-  	Game.sprites.stars.push(newStar);
+  	stars.push(newStar);
 }
 
 Game.update(function(){
   	Game.drawBackdrop("#000000");
     if(clock%30===0){
-        for(let i=0; i<Game.sprites.stars.length; i++){
-            var star = Game.sprites.stars[i];
+        for(let i=0; i<stars.length; i++){
+            var star = stars[i];
             if(Math.random()>0.2){
                 star.hidden=true;
             } else {
