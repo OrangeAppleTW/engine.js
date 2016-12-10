@@ -96,6 +96,7 @@ Game.preloadImages(
     progressCallback
 );
 
+// 每個 Tick 要執行的程式，在一個程式中可以有好幾個
 Game.update(function(){
 
   Game.drawBackdrop("./images/backGround.jpg", x, y, width, height);
@@ -106,6 +107,10 @@ Game.update(function(){
   // Draw all sprites in Game.sprites on canvas
   Game.drawSprites();
 });
+
+//Alias to update:
+Game.forever();
+Game.always();
 
 Game.start();
 

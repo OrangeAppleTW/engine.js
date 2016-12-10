@@ -62,7 +62,7 @@
 	        height: canvas.height,
 	        zoom: 1,
 	        // gravity: 0, //@TODO: set gravity
-	        update: function(){}
+	        updateFunctions: []
 	    };
 
 	    var sprites = new Sprites();
@@ -73,7 +73,9 @@
 	    var sound = new Sound();
 	    var clock = new Clock(function(){
 	        eventList.traverse();
-	        settings.update();
+	        for(var i=0; i<settings.updateFunctions.length; i++){
+	            settings.updateFunctions[i]();
+	        };
 	        sprites.runOnTick();
 	        sprites.removeDeletedSprites();
 	        inspector.updateFPS();
@@ -114,7 +116,9 @@
 	        set: set,
 	        stop: function(){ clock.stop(); sound.stop(); },
 	        start: function(){ clock.start(); },
-	        update: function(func){ settings.update=func; },
+	        update: function(func){ settings.updateFunctions.push(func); },
+	        always: function(func){ settings.updateFunctions.push(func); },
+	        forever: function(func){ settings.updateFunctions.push(func); },
 	        ctx: ctx,
 	        clear: function(){ renderer.clear(); },
 	        preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); },

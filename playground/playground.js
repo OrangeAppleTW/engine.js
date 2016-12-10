@@ -141,7 +141,7 @@
 /* 14 */
 /***/ function(module, exports) {
 
-	module.exports = "var clock = 0;\nvar stars = []\n\nGame.set({\n    width: 640,\n    height: 480\n});\n\nfor(let i=0; i<100; i++){\n    var newStar = Game.createSprite({\n    \tx: Math.random()*640,\n      \ty: Math.random()*480,\n        scale: 0.8 + Math.random()*0.4,\n      \tcostumes: \"./images/slime.gif\"\n    });\n    newStar.on(\"click\",function(){\n        this.destroy();\n    });\n  \tstars.push(newStar);\n}\n\nGame.update(function(){\n  \tGame.drawBackdrop(\"#000000\");\n    if(clock%30===0){\n        for(let i=0; i<stars.length; i++){\n            var star = stars[i];\n            if(Math.random()>0.2){\n                star.hidden=true;\n            } else {\n                star.hidden=false;\n            }\n        }\n    }\n    clock++;\n  \tGame.drawSprites();\n});\n\nGame.start();"
+	module.exports = "var clock = 0;\nvar stars = []\n\nGame.set({\n    width: 640,\n    height: 480\n});\n\nfor(let i=0; i<100; i++){\n    var newStar = Game.createSprite({\n    \tx: Math.random()*640,\n      \ty: Math.random()*480,\n        scale: 0.8 + Math.random()*0.4,\n      \tcostumes: \"./images/slime.gif\"\n    });\n    newStar.on(\"click\",function(){\n        this.destroy();\n    });\n  \tstars.push(newStar);\n}\n\nGame.update(function(){\n  \tGame.drawBackdrop(\"#000000\");\n});\n\nGame.forever(function(){\n    if(clock%30===0){\n        for(let i=0; i<stars.length; i++){\n            var star = stars[i];\n            if(Math.random()>0.2){\n                star.hidden=true;\n            } else {\n                star.hidden=false;\n            }\n        }\n    }\n    clock++;\n  \tGame.drawSprites();\n});\n\nGame.start();"
 
 /***/ },
 /* 15 */
@@ -153,7 +153,7 @@
 /* 16 */
 /***/ function(module, exports) {
 
-	module.exports = "Game.set({\n    width: 640,\n    height: 480\n});\n\nvar slime = Game.createSprite({\n\tx: 320,\n  \ty: 240,\n  \tcostumes:[\"images/slime.gif\"]\n});\n\nslime.when(\"hover\",function(){\n\tslime.scale+=0.1;\n});\n\nGame.update(function(){\n    Game.drawBackdrop(\"#ffffff\");\n\tGame.drawSprites();\n})\n\nGame.start()"
+	module.exports = "Game.set({\n    width: 640,\n    height: 480\n});\n\nvar slime = Game.createSprite({\n\tx: 320,\n  \ty: 240,\n  \tcostumes:[\"images/slime.gif\"]\n});\n\nslime.when(\"hover\",function(){\n\tslime.scale+=0.1;\n});\n\n// 可以使用 always\nGame.always(function(){\n    Game.drawBackdrop(\"#ffffff\");\n})\n// 或是 forever 來運行重複迴圈\nGame.forever(function(){\n\tGame.drawSprites();\n})\n\nGame.start()"
 
 /***/ }
 /******/ ]);

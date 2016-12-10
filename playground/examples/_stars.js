@@ -21,6 +21,9 @@ for(let i=0; i<100; i++){
 
 Game.update(function(){
   	Game.drawBackdrop("#000000");
+});
+
+Game.forever(function(){
     if(clock%30===0){
         for(let i=0; i<stars.length; i++){
             var star = stars[i];
