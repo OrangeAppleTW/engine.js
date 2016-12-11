@@ -38,4 +38,7 @@ Game.forever(function(){
   	Game.drawSprites();
 });
 
+// 測試空陣列能否正常執行
+Game.preloadImages([],function(){alert("Start!");})
+
 Game.start();

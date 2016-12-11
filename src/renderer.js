@@ -71,38 +71,44 @@ function Renderer(ctx, settings, debugMode){
 
     this.preload = function(images, completeFunc, progressFunc){
         var loaderProxy = {};
-        if(completeFunc){
-            onComplete(completeFunc);
-        }
-        if(progressFunc){
-            onProgress(progressFunc);
-        }
-        for(var i=0; i<images.length; i++){
-            var path = images[i];
-            imageCache[path] = loader.addImage(path);
-        }
-        function onComplete(callback){
-            loader.addCompletionListener(function(){
-                callback();
-            });
-        };
-        function onProgress(callback){
-            loader.addProgressListener(function(e) {
-                // e.completedCount, e.totalCount, e.resource.imageNumber
-                callback(e);
-            });
-        }
-        loaderProxy.complete = onComplete;
-        loaderProxy.progress = onProgress;
-        loader.start();
-        if(debugMode){
-            console.log("Start loading "+images.length+" images...");
-            loader.addProgressListener(function(e) {
-                console.log("Preloading progressing...");
-            });
-            loader.addCompletionListener(function(){
-                console.log("Preloading completed!");
-            });
+        if(images.length>0){
+            if(completeFunc){
+                onComplete(completeFunc);
+            }
+            if(progressFunc){
+                onProgress(progressFunc);
+            }
+            for(var i=0; i<images.length; i++){
+                var path = images[i];
+                imageCache[path] = loader.addImage(path);
+            }
+            function onComplete(callback){
+                loader.addCompletionListener(function(){
+                    callback();
+                });
+            };
+            function onProgress(callback){
+                loader.addProgressListener(function(e) {
+                    // e.completedCount, e.totalCount, e.resource.imageNumber
+                    callback(e);
+                });
+            }
+            loaderProxy.complete = onComplete;
+            loaderProxy.progress = onProgress;
+            loader.start();
+            if(debugMode){
+                console.log("Start loading "+images.length+" images...");
+                loader.addProgressListener(function(e) {
+                    console.log("Preloading progressing...");
+                });
+                loader.addCompletionListener(function(){
+                    console.log("Preloading completed!");
+                });
+            }
+        } else {
+            if(completeFunc){
+                completeFunc();
+            }
         }
         return loaderProxy;
     };
