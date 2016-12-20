@@ -62,6 +62,9 @@ Sprite.prototype.touched = function(){
     var crossX = crossY = false;
     if( arguments[0] instanceof Sprite ){
         var target = arguments[0];
+        if(target._deleted){
+            return false;
+        }
         crossX = (this.x+this.width/2)>(target.x-target.width/2) && (target.x+target.width/2)>(this.x-this.width/2);
         crossY = (this.y+this.height/2)>(target.y-target.height/2) && (target.y+target.height/2)>(this.y-this.height/2);
     } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
