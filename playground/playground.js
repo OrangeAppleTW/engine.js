@@ -49,12 +49,14 @@
 	    flappyBirdScript = __webpack_require__(13),
 	    starsScript = __webpack_require__(14),
 	    scrollingScript = __webpack_require__(15),
+	    touchTestScript = __webpack_require__(17),
 	    pumpScript = __webpack_require__(16);
 
 	$("textarea#TD").val(tdScript);
 	$("textarea#flappy-bird").val(flappyBirdScript);
 	$("textarea#stars").val(starsScript);
 	$("textarea#scrolling").val(scrollingScript);
+	$("textarea#touch-test").val(touchTestScript);
 	$("textarea#pump").val(pumpScript);
 
 	var editor = CodeMirror.fromTextArea(document.getElementById("script-box"), {
@@ -154,6 +156,12 @@
 /***/ function(module, exports) {
 
 	module.exports = "Game.set({\n    width: 640,\n    height: 480\n});\n\nvar slime = Game.createSprite({\n\tx: 320,\n  \ty: 240,\n  \tcostumes:[\"images/slime.gif\"]\n});\n\nslime.when(\"hover\",function(){\n\tslime.scale+=0.1;\n});\n\n// 可以使用 always\nGame.always(function(){\n    Game.drawBackdrop(\"#ffffff\");\n})\n// 或是 forever 來運行重複迴圈\nGame.forever(function(){\n\tGame.drawSprites();\n})\n\nGame.start()"
+
+/***/ },
+/* 17 */
+/***/ function(module, exports) {
+
+	module.exports = "Game.set({\n    width: 640,\n    height: 480\n});\n\nvar robot = Game.createSprite({\n  \tscale: 0.3,\n  \tx: 400,\n  \ty: 300,\n\tcostumes: \"images/robot.png\"\n});\n\nvar monster = Game.createSprite({\n  \tscale: 0.4,\n  \tx: 80,\n  \ty: 300,\n\tcostumes: \"images/monster.png\"\n});\nmonster.hp=100;\n\nmonster.forever(function(){\n    this.x = Game.cursor.x;\n    this.y = Game.cursor.y;\n});\n\nvar attack = function(){\n    console.log(\"Hey!\");\n  \tmonster.hp -= 50;\n};\n\nrobot.when(\"touch\", monster, attack);\n\nGame.forever(function(){\n\tGame.drawBackdrop(\"#ffffff\");\n  \tGame.drawSprites();\n});\n\nGame.start();"
 
 /***/ }
 /******/ ]);
