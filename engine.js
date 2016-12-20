@@ -233,7 +233,7 @@
 	            var target = arguments[0];
 	            hitTester.drawImage(    renderer.getImgFromCache(target.getCurrentCostume()),
 	                                    target.x-target.width/2, target.y-target.height/2,
-	                                    target.width*target.scale, target.height*target.scale );
+	                                    target.width, target.height );
 	        } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
 	            hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
 	        } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
