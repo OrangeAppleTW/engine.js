@@ -161,7 +161,7 @@
 /* 17 */
 /***/ function(module, exports) {
 
-	module.exports = "Game.set({\n    width: 640,\n    height: 480\n});\n\nvar robot = Game.createSprite({\n  \tscale: 0.3,\n  \tx: 400,\n  \ty: 300,\n\tcostumes: \"images/robot.png\"\n});\n\nvar monster = Game.createSprite({\n  \tscale: 0.4,\n  \tx: 80,\n  \ty: 300,\n\tcostumes: \"images/monster.png\"\n});\nmonster.hp=100;\n\nmonster.forever(function(){\n    this.x = Game.cursor.x;\n    this.y = Game.cursor.y;\n});\n\nvar attack = function(){\n    console.log(\"Hey!\");\n  \tmonster.hp -= 50;\n};\n\nrobot.when(\"touch\", monster, attack);\n\nGame.forever(function(){\n\tGame.drawBackdrop(\"#ffffff\");\n  \tGame.drawSprites();\n});\n\nGame.start();"
+	module.exports = "Game.set({\n    width: 640,\n    height: 480\n});\n\nvar robot = Game.createSprite({\n  \tscale: 0.3,\n  \tx: 400,\n  \ty: 300,\n\tcostumes: \"images/robot.png\"\n});\n\nvar monster = Game.createSprite({\n  \tscale: 0.4,\n  \tx: 80,\n  \ty: 300,\n\tcostumes: \"images/monster.png\"\n});\nmonster.hp=100;\n\nmonster.forever(function(){\n    this.x = Game.cursor.x;\n    this.y = Game.cursor.y;\n});\n\nvar attack = function(){\n  \t// 碰撞時執行的function會在 object 的 scope\n    console.log(this);\n  \tmonster.hp -= 50;\n};\n\nrobot.when(\"touch\", monster, attack);\n\nGame.forever(function(){\n\tGame.drawBackdrop(\"#ffffff\");\n  \tGame.drawSprites();\n});\n\nGame.start();"
 
 /***/ }
 /******/ ]);

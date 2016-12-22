@@ -262,6 +262,8 @@
 	    }
 	};
 
+	// @TODO: 應該要能綁定多個 function
+	// @TODO: function 的 scope 應該是 sprite 本身
 	Sprite.prototype.always = Sprite.prototype.forever = function(func){
 	    this._onTick = func;
 	};
@@ -498,7 +500,7 @@
 	            return false;
 	        }
 	    }
-	    handler();
+	    handler.call(sprites[0]);
 	    if(debugMode){
 	        console.log("Just fired a touch handler on: "+sprites);
 	    }

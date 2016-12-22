@@ -112,7 +112,7 @@ function touchJudger(sprites, handler, debugMode){
             return false;
         }
     }
-    handler();
+    handler.call(sprites[0]);
     if(debugMode){
         console.log("Just fired a touch handler on: "+sprites);
     }

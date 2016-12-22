@@ -24,7 +24,8 @@ monster.forever(function(){
 });
 
 var attack = function(){
-    console.log("Hey!");
+  	// 碰撞時執行的function會在 object 的 scope
+    console.log(this);
   	monster.hp -= 50;
 };
 
