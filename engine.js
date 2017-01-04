@@ -150,7 +150,7 @@
 	    this.height = 1;
 	    this.hidden = args.hidden;
 
-	    this._onTick = null;
+	    this._onTickFuncs = [];
 	    this._deleted = false;
 
 	    this._eventList = eventList;
@@ -262,10 +262,8 @@
 	    }
 	};
 
-	// @TODO: 應該要能綁定多個 function
-	// @TODO: function 的 scope 應該是 sprite 本身
 	Sprite.prototype.always = Sprite.prototype.forever = function(func){
-	    this._onTick = func;
+	    this._onTickFuncs.push(func);
 	};
 
 	Sprite.prototype.when = Sprite.prototype.on = function(){
@@ -355,7 +353,9 @@
 
 	Sprites.prototype.runOnTick = function(){
 	    this.each(function(){
-	        if(this._onTick){ this._onTick(); }
+	        for(var i=0; i<this._onTickFuncs.length; i++){
+	            this._onTickFuncs[i].call(this);
+	        }
 	    });
 	}
 

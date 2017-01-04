@@ -4,7 +4,9 @@ function Sprites(){
 
 Sprites.prototype.runOnTick = function(){
     this.each(function(){
-        if(this._onTick){ this._onTick(); }
+        for(var i=0; i<this._onTickFuncs.length; i++){
+            this._onTickFuncs[i].call(this);
+        }
     });
 }
 

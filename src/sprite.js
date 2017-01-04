@@ -15,7 +15,7 @@ function Sprite(args, eventList, settings, renderer) {
     this.height = 1;
     this.hidden = args.hidden;
 
-    this._onTick = null;
+    this._onTickFuncs = [];
     this._deleted = false;
 
     this._eventList = eventList;
@@ -127,10 +127,8 @@ Sprite.prototype.distanceTo = function(){
     }
 };
 
-// @TODO: 應該要能綁定多個 function
-// @TODO: function 的 scope 應該是 sprite 本身
 Sprite.prototype.always = Sprite.prototype.forever = function(func){
-    this._onTick = func;
+    this._onTickFuncs.push(func);
 };
 
 Sprite.prototype.when = Sprite.prototype.on = function(){
