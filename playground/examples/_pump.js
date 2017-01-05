@@ -3,11 +3,9 @@ Game.set({
     height: 480
 });
 
-var slime = Game.createSprite({
-	x: 320,
-  	y: 240,
-  	costumes:["images/slime.gif"]
-});
+var slime = Game.createSprite("images/slime.gif");
+slime.x = 320;
+slime.y = 240;
 
 slime.when("hover",function(){
 	slime.scale+=0.1;

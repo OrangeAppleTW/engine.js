@@ -161,7 +161,7 @@
 /* 17 */
 /***/ function(module, exports) {
 
-	module.exports = "Game.set({\n    width: 640,\n    height: 480\n});\n\nvar slime = Game.createSprite({\n\tx: 320,\n  \ty: 240,\n  \tcostumes:[\"images/slime.gif\"]\n});\n\nslime.when(\"hover\",function(){\n\tslime.scale+=0.1;\n});\n\n// 可以使用 always\nGame.always(function(){\n    Game.drawBackdrop(\"#ffffff\");\n})\n// 或是 forever 來運行重複迴圈\nGame.forever(function(){\n\tGame.drawSprites();\n})\n\nGame.start()"
+	module.exports = "Game.set({\n    width: 640,\n    height: 480\n});\n\nvar slime = Game.createSprite(\"images/slime.gif\");\nslime.x = 320;\nslime.y = 240;\n\nslime.when(\"hover\",function(){\n\tslime.scale+=0.1;\n});\n\n// 可以使用 always\nGame.always(function(){\n    Game.drawBackdrop(\"#ffffff\");\n})\n// 或是 forever 來運行重複迴圈\nGame.forever(function(){\n\tGame.drawSprites();\n})\n\nGame.start()"
 
 /***/ }
 /******/ ]);

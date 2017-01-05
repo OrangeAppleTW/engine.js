@@ -5,11 +5,19 @@ var hitCanvas = document.createElement('canvas'),
 
 // @TODO: 客製化特征
 function Sprite(args, eventList, settings, renderer) {
-    this.x = args.x;
-    this.y = args.y;
-    this.direction = args.direction || 0;
-    this.scale = args.scale || 1;
-    this.costumes = [].concat(args.costumes); // Deal with single string
+    if (typeof args == "string") {
+        this.x = settings.width/2;
+        this.y = settings.height/2;
+        this.direction = 0;
+        this.scale = 1;
+        this.costumes = [args];
+    } else {
+        this.x = args.x;
+        this.y = args.y;
+        this.direction = args.direction || 0;
+        this.scale = args.scale || 1;
+        this.costumes = [].concat(args.costumes); // Deal with single string
+    }
     this.currentCostumeId = 0;
     this.width = 1;
     this.height = 1;

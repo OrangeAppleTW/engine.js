@@ -17,7 +17,11 @@ Game.set({
 ## 角色
 ### 創造新角色
 ```javascript
-// 創造新角色
+
+// 創造新角色 (簡易版)
+var slime = Game.createSprite("./slime.gif");
+
+// 創造新角色 (進階設定)
 var slime = Game.createSprite({
     x: 200,
     y: 200,
