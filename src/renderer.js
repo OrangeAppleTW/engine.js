@@ -17,6 +17,7 @@ function Renderer(ctx, settings, debugMode){
         y = y || 20;
         size = size || 16; // Set or default
         font = font || "Arial";
+        ctx.textBaseline = "top";
         ctx.font = (size*settings.zoom)+"px " + font;
         ctx.fillStyle = color || "black";
         ctx.fillText(words, x * settings.zoom, y * settings.zoom);
