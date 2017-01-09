@@ -18,7 +18,6 @@ var ground = Game.createSprite({
     y: 460,
     costumes: "./images/flappy-bird/ground.png"
 });
-var bgMusic = Game.sound.play("./assets/happy.mp3");
 bird.speed = 1;
 bird.forever(function(){
     bird.y += bird.speed;
@@ -34,7 +33,7 @@ downTube.forever(function(){
 bird.when("touch", ground, Game.stop);
 Game.when("touch", [bird, upTube], Game.stop);
 Game.on("touch", [bird, downTube], Game.stop);
-Game.on("click", null, function(){
+Game.on("click", function(){
     Game.sound.play("./assets/laser1.wav");
     bird.speed = -4;
 });
@@ -64,6 +63,7 @@ Game.preloadImages(
     function(){
         console.log("Preloading complete");
         Game.start();
+        var bgMusic = Game.sound.play("./assets/happy.mp3");
     }
 );
 

@@ -53,6 +53,15 @@ function engine(stageId, debugMode){
     //     sprites.clear();
     // }
 
+    // for proxy.on / when: 
+    var when = function(event, target, handler){
+        if(typeof target === "function"){ // 如果不指定對象，直接傳入 handler
+            eventList.register(event, null, target);
+        } else {
+            eventList.register(event, target, handler);
+        }
+    }
+
     var proxy = {
         // sprites: sprites,
         createSprite: function(args){
@@ -65,8 +74,8 @@ function engine(stageId, debugMode){
         drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
         cursor: io.cursor,
         inspector: inspector,
-        on: function(event, target, handler){ eventList.register(event, target, handler) },
-        when: function(event, target, handler){ eventList.register(event, target, handler) },
+        when: when,
+        on: when,
         set: set,
         stop: function(){ clock.stop(); sound.stop(); },
         start: function(){ clock.start(); },
