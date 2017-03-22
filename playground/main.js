@@ -1,10 +1,10 @@
 window.Game = {};
-var tdScript = require("raw!./examples/_td.js"),
-    flappyBirdScript = require("raw!./examples/_flappy-bird.js"),
-    starsScript = require("raw!./examples/_stars.js"),
-    scrollingScript = require("raw!./examples/_scrolling.js"),
-    touchTestScript = require("raw!./examples/_touch-test.js"),
-    pumpScript = require("raw!./examples/_pump.js");
+var tdScript = require("raw-loader!./examples/_td.js"),
+    flappyBirdScript = require("raw-loader!./examples/_flappy-bird.js"),
+    starsScript = require("raw-loader!./examples/_stars.js"),
+    scrollingScript = require("raw-loader!./examples/_scrolling.js"),
+    touchTestScript = require("raw-loader!./examples/_touch-test.js"),
+    pumpScript = require("raw-loader!./examples/_pump.js");
 
 $("textarea#TD").val(tdScript);
 $("textarea#flappy-bird").val(flappyBirdScript);
