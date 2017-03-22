@@ -1,3 +1,4 @@
+var util = require("./util");
 var loader = new (require("../lib/pxloader-images"))();
 
 function Renderer(ctx, settings, debugMode){
@@ -34,12 +35,18 @@ function Renderer(ctx, settings, debugMode){
             var img = getImgFromCache(instance.getCurrentCostume());
             instance.width = img.width * instance.scale;
             instance.height = img.height * instance.scale;
-            ctx.drawImage(  img,
-                            (instance.x-instance.width/2) * settings.zoom,
-                            (instance.y-instance.height/2) * settings.zoom,
-                            instance.width * settings.zoom,
-                            instance.height * settings.zoom
+
+            var rad = util.degreeToRad(instance.direction);
+            ctx.translate(instance.x, instance.y);
+            ctx.rotate(rad);
+            ctx.drawImage( img, 
+                           -instance.width / 2 * settings.zoom,
+                           -instance.height / 2 * settings.zoom,
+                           instance.width,
+                           instance.height
             );
+            ctx.rotate(-rad);
+            ctx.translate(-instance.x, -instance.y);
         }
     };
 
