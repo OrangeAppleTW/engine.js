@@ -12,6 +12,7 @@ function Sprite(args, eventList, settings, renderer) {
         this.scale = 1;
         this.costumes = [args];
         this.hidden = false;
+        this.layer = 0;
     } else {
         this.x = args.x;
         this.y = args.y;
@@ -19,6 +20,7 @@ function Sprite(args, eventList, settings, renderer) {
         this.scale = args.scale || 1;
         this.costumes = [].concat(args.costumes); // Deal with single string
         this.hidden = args.hidden || false;
+        this.layer = args.layer || 0;;
     }
     this.currentCostumeId = 0;
     this.width = 1;
