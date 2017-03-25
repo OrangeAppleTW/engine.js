@@ -213,9 +213,18 @@
 	}
 
 	Sprite.prototype.touched = function(){
+
+	    // 如果此角色為隱藏，不進行檢驗，直接回傳 false
+	    if (this.hidden) { return false; }
+
 	    // 由於效能考量，先用成本最小的「座標範圍演算法」判斷是否有機會「像素重疊」
 	    var crossX = crossY = false;
+
 	    if( arguments[0] instanceof Sprite ){
+
+	        // 如果目標角色為隱藏，不進行檢驗，直接回傳 false
+	        if (arguments[0].hidden) { return false; }
+
 	        var target = arguments[0];
 	        if(target._deleted){
 	            return false;
@@ -466,18 +475,16 @@
 
 	function clickJudger(sprite, handler, clicked, debugMode){
 	    if(clicked.x && clicked.y){ // 如果有點擊記錄才檢查
-	        if(sprite){
-	            // 如果是 Sprite, 則對其做判定
+	        if(sprite){ // 如果是 Sprite, 則對其做判定
 	            var crossX = (sprite.x+sprite.width/2)>clicked.x && clicked.x>(sprite.x-sprite.width/2),
 	                crossY = (sprite.y+sprite.height/2)>clicked.y && clicked.y>(sprite.y-sprite.height/2);
-	            if(crossX && crossY){
+	            if( sprite.touched(clicked.x,clicked.y) ){
 	                handler.call(sprite);
 	                if(debugMode){
 	                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(clicked)+")");
 	                }
 	            }
-	        } else {
-	            // 如果為 null, 則對整個遊戲舞台做判定
+	        } else { // 如果為 null, 則對整個遊戲舞台做判定
 	            handler();
 	            if(debugMode){
 	                console.log("Just fired a click handler on stage! ("+JSON.stringify(clicked)+")");
