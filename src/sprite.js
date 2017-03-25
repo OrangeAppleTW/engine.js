@@ -11,17 +11,18 @@ function Sprite(args, eventList, settings, renderer) {
         this.direction = 0;
         this.scale = 1;
         this.costumes = [args];
+        this.hidden = false;
     } else {
         this.x = args.x;
         this.y = args.y;
         this.direction = args.direction || 0;
         this.scale = args.scale || 1;
         this.costumes = [].concat(args.costumes); // Deal with single string
+        this.hidden = args.hidden || false;
     }
     this.currentCostumeId = 0;
     this.width = 1;
     this.height = 1;
-    this.hidden = args.hidden;
 
     this._onTickFuncs = [];
     this._deleted = false;
