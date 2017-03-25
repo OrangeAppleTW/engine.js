@@ -15,6 +15,7 @@ function Sprite(args, eventList, settings, renderer) {
         this.x = args.x;
         this.y = args.y;
         this.direction = args.direction || 0;
+        this.rotationstyle = "full"; // "full", "flip" and "fixed"
         this.scale = args.scale || 1;
         this.costumes = [].concat(args.costumes); // Deal with single string
     }

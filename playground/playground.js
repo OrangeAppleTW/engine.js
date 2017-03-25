@@ -145,7 +145,7 @@ $("#run-code-button").click(
         if(Game.stop){Game.stop();}
         Game = Engine("stage",true)
         editor.save();
-        eval(document.getElementById("script-box").value);
+        eval.call(window,document.getElementById("script-box").value);
         arrangeLayout();
     }
 )

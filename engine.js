@@ -63,11 +63,57 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 10);
+/******/ 	return __webpack_require__(__webpack_require__.s = 11);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+var util = {};
+
+util.isNumeric = function(n){
+    return !isNaN(parseFloat(n)) && isFinite(n);
+}
+util.radToDegree = function(rad){
+    if(rad<0){rad += 2 * Math.PI;}
+    return rad*180/Math.PI;
+}
+util.degreeToRad = function(degree){
+    return degree/180*Math.PI
+}
+util.distanceBetween = function(){
+    var from = {x:0,y:0},
+        to   = {x:0,y:0};
+    if( util.isNumeric(arguments[0].x) &&
+        util.isNumeric(arguments[0].y) &&
+        util.isNumeric(arguments[1].x) &&
+        util.isNumeric(arguments[1].y)
+    ){
+        from.x = arguments[0].x;
+        from.y = arguments[0].y;
+        to.x = arguments[1].x;
+        to.y = arguments[1].y;
+    } else if (
+        util.isNumeric(arguments[0]) &&
+        util.isNumeric(arguments[1]) &&
+        util.isNumeric(arguments[2]) &&
+        util.isNumeric(arguments[3])
+    ) {
+        from.x = arguments[0];
+        from.y = arguments[1];
+        to.x   = arguments[2];
+        to.y   = arguments[3];
+    } else {
+        throw "請傳入角色(Sprite)或是 X, Y 坐標值";
+    }
+    return Math.sqrt( Math.pow(to.x-from.x,2) + Math.pow(to.y-from.y,2) )
+}
+
+module.exports = util;
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports) {
 
 //  state 用來表達 renderer 的以下狀態：
@@ -121,7 +167,7 @@ Clock.prototype.stop = function(){
 module.exports = Clock;
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports) {
 
 function EventList(io, debugMode){
@@ -257,7 +303,7 @@ function clearEventRecord(io){
 module.exports = EventList;
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports) {
 
 function Inspector(){
@@ -274,10 +320,10 @@ Inspector.prototype.updateFPS = function(){
 module.exports = Inspector;
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var keycode = __webpack_require__(9);
+var keycode = __webpack_require__(10);
 
 var io = function(canvas, settings, debugMode){
 
@@ -337,11 +383,11 @@ var io = function(canvas, settings, debugMode){
 module.exports = io;
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var util = __webpack_require__(11);
-var loader = new (__webpack_require__(8))();
+var util = __webpack_require__(0);
+var loader = new (__webpack_require__(9))();
 
 function Renderer(ctx, settings, debugMode){
 
@@ -378,19 +424,54 @@ function Renderer(ctx, settings, debugMode){
             instance.width = img.width * instance.scale;
             instance.height = img.height * instance.scale;
 
-            var rad = util.degreeToRad(instance.direction);
-            ctx.translate(instance.x, instance.y);
+            var rad = util.degreeToRad(instance.direction);;
+
+            if (instance.rotationstyle === 'flip') {
+                if(instance.direction%360 > 180) {
+                    translate(instance.x*2, 0);
+                    ctx.scale(-1, 1);
+                    drawImage(  img,
+                                    (instance.x-instance.width/2),
+                                    (instance.y-instance.height/2),
+                                    instance.width,
+                                    instance.height
+                    )
+                    ctx.scale(-1, 1);
+                    translate(-instance.x*2, 0);
+                    return;
+                } else {
+                    var rad = 0;
+                }
+            }
+
+            if(instance.rotationstyle === 'fixed') {
+                var rad = 0;
+            }
+            translate(instance.x, instance.y);
             ctx.rotate(rad);
-            ctx.drawImage( img, 
-                           -instance.width / 2 * settings.zoom,
-                           -instance.height / 2 * settings.zoom,
-                           instance.width,
-                           instance.height
+            drawImage( img, 
+                        (-instance.width / 2),
+                        (-instance.height / 2),
+                        instance.width,
+                        instance.height
             );
             ctx.rotate(-rad);
-            ctx.translate(-instance.x, -instance.y);
+            translate(-instance.x, -instance.y);
         }
     };
+
+    function translate (x, y) {
+        ctx.translate(x * settings.zoom, y * settings.zoom);
+    }
+
+    function drawImage (img, x, y, width, height) {
+        ctx.drawImage( img, 
+            x * settings.zoom,
+            y * settings.zoom,
+            width * settings.zoom,
+            height * settings.zoom
+        )
+    }
 
     this.getImgFromCache = getImgFromCache;
 
@@ -477,7 +558,7 @@ function Renderer(ctx, settings, debugMode){
 module.exports = Renderer;
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports) {
 
 function Sound(debugMode){
@@ -524,10 +605,10 @@ function Sound(debugMode){
 module.exports = Sound;
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var util = __webpack_require__(11);
+var util = __webpack_require__(0);
 var hitCanvas = document.createElement('canvas'),
     hitTester = hitCanvas.getContext('2d');
     // document.body.appendChild(hitCanvas);
@@ -544,6 +625,7 @@ function Sprite(args, eventList, settings, renderer) {
         this.x = args.x;
         this.y = args.y;
         this.direction = args.direction || 0;
+        this.rotationstyle = "full"; // "full", "flip" and "fixed"
         this.scale = args.scale || 1;
         this.costumes = [].concat(args.costumes); // Deal with single string
     }
@@ -700,7 +782,7 @@ Sprite.prototype.getCurrentCostume = function(){
 module.exports = Sprite;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports) {
 
 function Sprites(){
@@ -739,7 +821,7 @@ Sprites.prototype.clear = function(){
 module.exports = Sprites;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports) {
 
 /*!  | http://thinkpixellab.com/PxLoader */
@@ -1247,7 +1329,7 @@ PxLoader.prototype.addImage = function(url, tags, priority, options) {
 module.exports = PxLoader;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 // Source: http://jsfiddle.net/vWx8V/
@@ -1399,16 +1481,16 @@ for (var alias in aliases) {
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Sprite = __webpack_require__(6);
-var Sprites = __webpack_require__(7);
-var EventList = __webpack_require__(1);
-var Inspector = __webpack_require__(2);
-var Clock = __webpack_require__(0);
-var Renderer = __webpack_require__(4);
-var Sound = __webpack_require__(5);
+var Sprite = __webpack_require__(7);
+var Sprites = __webpack_require__(8);
+var EventList = __webpack_require__(2);
+var Inspector = __webpack_require__(3);
+var Clock = __webpack_require__(1);
+var Renderer = __webpack_require__(5);
+var Sound = __webpack_require__(6);
 
 function engine(stageId, debugMode){
 
@@ -1425,7 +1507,7 @@ function engine(stageId, debugMode){
 
     var sprites = new Sprites();
     var inspector = new Inspector();
-    var io = __webpack_require__(3)(canvas, settings, debugMode);
+    var io = __webpack_require__(4)(canvas, settings, debugMode);
     var eventList = new EventList(io, debugMode);
     var renderer = new Renderer(ctx, settings, debugMode);
     var sound = new Sound();
@@ -1495,52 +1577,6 @@ function engine(stageId, debugMode){
 }
 
 window.Engine = engine;
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports) {
-
-var util = {};
-
-util.isNumeric = function(n){
-    return !isNaN(parseFloat(n)) && isFinite(n);
-}
-util.radToDegree = function(rad){
-    if(rad<0){rad += 2 * Math.PI;}
-    return rad*180/Math.PI;
-}
-util.degreeToRad = function(degree){
-    return degree/180*Math.PI
-}
-util.distanceBetween = function(){
-    var from = {x:0,y:0},
-        to   = {x:0,y:0};
-    if( util.isNumeric(arguments[0].x) &&
-        util.isNumeric(arguments[0].y) &&
-        util.isNumeric(arguments[1].x) &&
-        util.isNumeric(arguments[1].y)
-    ){
-        from.x = arguments[0].x;
-        from.y = arguments[0].y;
-        to.x = arguments[1].x;
-        to.y = arguments[1].y;
-    } else if (
-        util.isNumeric(arguments[0]) &&
-        util.isNumeric(arguments[1]) &&
-        util.isNumeric(arguments[2]) &&
-        util.isNumeric(arguments[3])
-    ) {
-        from.x = arguments[0];
-        from.y = arguments[1];
-        to.x   = arguments[2];
-        to.y   = arguments[3];
-    } else {
-        throw "請傳入角色(Sprite)或是 X, Y 坐標值";
-    }
-    return Math.sqrt( Math.pow(to.x-from.x,2) + Math.pow(to.y-from.y,2) )
-}
-
-module.exports = util;
 
 /***/ })
 /******/ ]);
