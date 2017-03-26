@@ -23,7 +23,8 @@ var towerButton = Game.createSprite({
 var towerTemplate = Game.createSprite({
     x:0, y:0,
     costumes: "./images/tower.png",
-    hidden: true
+    hidden: true,
+    layer: 999
 });
 
 Game.set({

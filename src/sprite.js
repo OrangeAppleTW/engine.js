@@ -11,6 +11,8 @@ function Sprite(args, eventList, settings, renderer) {
         this.direction = 0;
         this.scale = 1;
         this.costumes = [args];
+        this.hidden = false;
+        this.layer = 0;
     } else {
         this.x = args.x;
         this.y = args.y;
@@ -18,11 +20,12 @@ function Sprite(args, eventList, settings, renderer) {
         this.rotationstyle = "full"; // "full", "flip" and "fixed"
         this.scale = args.scale || 1;
         this.costumes = [].concat(args.costumes); // Deal with single string
+        this.hidden = args.hidden || false;
+        this.layer = args.layer || 0;;
     }
     this.currentCostumeId = 0;
     this.width = 1;
     this.height = 1;
-    this.hidden = args.hidden;
 
     this._onTickFuncs = [];
     this._deleted = false;
@@ -67,9 +70,18 @@ Sprite.prototype.toward = function(){
 }
 
 Sprite.prototype.touched = function(){
+
+    // 如果此角色為隱藏，不進行檢驗，直接回傳 false
+    if (this.hidden) { return false; }
+
     // 由於效能考量，先用成本最小的「座標範圍演算法」判斷是否有機會「像素重疊」
     var crossX = crossY = false;
+
     if( arguments[0] instanceof Sprite ){
+
+        // 如果目標角色為隱藏，不進行檢驗，直接回傳 false
+        if (arguments[0].hidden) { return false; }
+
         var target = arguments[0];
         if(target._deleted){
             return false;

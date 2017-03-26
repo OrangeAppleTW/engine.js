@@ -58,18 +58,16 @@ function hoverJudger(sprite, handler, cursor, debugMode){
 
 function clickJudger(sprite, handler, clicked, debugMode){
     if(clicked.x && clicked.y){ // 如果有點擊記錄才檢查
-        if(sprite){
-            // 如果是 Sprite, 則對其做判定
+        if(sprite){ // 如果是 Sprite, 則對其做判定
             var crossX = (sprite.x+sprite.width/2)>clicked.x && clicked.x>(sprite.x-sprite.width/2),
                 crossY = (sprite.y+sprite.height/2)>clicked.y && clicked.y>(sprite.y-sprite.height/2);
-            if(crossX && crossY){
+            if( sprite.touched(clicked.x,clicked.y) ){
                 handler.call(sprite);
                 if(debugMode){
                     console.log("Just fired a click handler on a sprite! ("+JSON.stringify(clicked)+")");
                 }
             }
-        } else {
-            // 如果為 null, 則對整個遊戲舞台做判定
+        } else { // 如果為 null, 則對整個遊戲舞台做判定
             handler();
             if(debugMode){
                 console.log("Just fired a click handler on stage! ("+JSON.stringify(clicked)+")");

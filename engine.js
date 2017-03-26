@@ -76,11 +76,14 @@ util.isNumeric = function(n){
     return !isNaN(parseFloat(n)) && isFinite(n);
 }
 util.radToDegree = function(rad){
-    if(rad<0){rad += 2 * Math.PI;}
+    rad = rad%(Math.PI*2);
+    if(rad<0) rad += Math.PI*2;
     return rad*180/Math.PI;
 }
 util.degreeToRad = function(degree){
-    return degree/180*Math.PI
+    degree = degree%360;
+    if(degree<0) degree += 360;
+    return degree/180*Math.PI;
 }
 util.distanceBetween = function(){
     var from = {x:0,y:0},
@@ -230,18 +233,16 @@ function hoverJudger(sprite, handler, cursor, debugMode){
 
 function clickJudger(sprite, handler, clicked, debugMode){
     if(clicked.x && clicked.y){ // 如果有點擊記錄才檢查
-        if(sprite){
-            // 如果是 Sprite, 則對其做判定
+        if(sprite){ // 如果是 Sprite, 則對其做判定
             var crossX = (sprite.x+sprite.width/2)>clicked.x && clicked.x>(sprite.x-sprite.width/2),
                 crossY = (sprite.y+sprite.height/2)>clicked.y && clicked.y>(sprite.y-sprite.height/2);
-            if(crossX && crossY){
+            if( sprite.touched(clicked.x,clicked.y) ){
                 handler.call(sprite);
                 if(debugMode){
                     console.log("Just fired a click handler on a sprite! ("+JSON.stringify(clicked)+")");
                 }
             }
-        } else {
-            // 如果為 null, 則對整個遊戲舞台做判定
+        } else { // 如果為 null, 則對整個遊戲舞台做判定
             handler();
             if(debugMode){
                 console.log("Just fired a click handler on stage! ("+JSON.stringify(clicked)+")");
@@ -280,15 +281,13 @@ function holdingJudger(key, handler, holding, debugMode){
 // @TODO: Now we could only detect Sprite instance, not include cursor.
 function touchJudger(sprites, handler, debugMode){
     for(var i=1; i<sprites.length; i++){
-        if(!sprites[i-1].touched(sprites[i])){
-            return false;
+        if(sprites[0].touched(sprites[i])) {
+            handler.call(sprites[0], sprites[i]);
+            if(debugMode){
+                console.log("Just fired a touch handler on: "+sprites);
+            }
         }
     }
-    handler.call(sprites[0]);
-    if(debugMode){
-        console.log("Just fired a touch handler on: "+sprites);
-    }
-    return true; // we do not need this.
 }
 
 function clearEventRecord(io){
@@ -424,54 +423,42 @@ function Renderer(ctx, settings, debugMode){
             instance.width = img.width * instance.scale;
             instance.height = img.height * instance.scale;
 
-            var rad = util.degreeToRad(instance.direction);;
-
+            var rad = util.degreeToRad(instance.direction);
+            ctx.scale(settings.zoom,settings.zoom);
             if (instance.rotationstyle === 'flip') {
-                if(instance.direction%360 > 180) {
-                    translate(instance.x*2, 0);
+                if(rad >= Math.PI) {
+                    ctx.translate(instance.x*2, 0);
                     ctx.scale(-1, 1);
-                    drawImage(  img,
+                    ctx.drawImage(  img,
                                     (instance.x-instance.width/2),
                                     (instance.y-instance.height/2),
                                     instance.width,
                                     instance.height
                     )
                     ctx.scale(-1, 1);
-                    translate(-instance.x*2, 0);
+                    ctx.translate(-instance.x*2, 0);
+                    ctx.scale(1/settings.zoom,1/settings.zoom);
                     return;
                 } else {
                     var rad = 0;
                 }
             }
-
             if(instance.rotationstyle === 'fixed') {
                 var rad = 0;
             }
-            translate(instance.x, instance.y);
+            ctx.translate(instance.x, instance.y);
             ctx.rotate(rad);
-            drawImage( img, 
+            ctx.drawImage( img,
                         (-instance.width / 2),
                         (-instance.height / 2),
                         instance.width,
                         instance.height
             );
             ctx.rotate(-rad);
-            translate(-instance.x, -instance.y);
+            ctx.translate(-instance.x, -instance.y);
+            ctx.scale(1/settings.zoom,1/settings.zoom);
         }
     };
-
-    function translate (x, y) {
-        ctx.translate(x * settings.zoom, y * settings.zoom);
-    }
-
-    function drawImage (img, x, y, width, height) {
-        ctx.drawImage( img, 
-            x * settings.zoom,
-            y * settings.zoom,
-            width * settings.zoom,
-            height * settings.zoom
-        )
-    }
 
     this.getImgFromCache = getImgFromCache;
 
@@ -621,6 +608,8 @@ function Sprite(args, eventList, settings, renderer) {
         this.direction = 0;
         this.scale = 1;
         this.costumes = [args];
+        this.hidden = false;
+        this.layer = 0;
     } else {
         this.x = args.x;
         this.y = args.y;
@@ -628,11 +617,12 @@ function Sprite(args, eventList, settings, renderer) {
         this.rotationstyle = "full"; // "full", "flip" and "fixed"
         this.scale = args.scale || 1;
         this.costumes = [].concat(args.costumes); // Deal with single string
+        this.hidden = args.hidden || false;
+        this.layer = args.layer || 0;;
     }
     this.currentCostumeId = 0;
     this.width = 1;
     this.height = 1;
-    this.hidden = args.hidden;
 
     this._onTickFuncs = [];
     this._deleted = false;
@@ -677,9 +667,18 @@ Sprite.prototype.toward = function(){
 }
 
 Sprite.prototype.touched = function(){
+
+    // 如果此角色為隱藏，不進行檢驗，直接回傳 false
+    if (this.hidden) { return false; }
+
     // 由於效能考量，先用成本最小的「座標範圍演算法」判斷是否有機會「像素重疊」
     var crossX = crossY = false;
+
     if( arguments[0] instanceof Sprite ){
+
+        // 如果目標角色為隱藏，不進行檢驗，直接回傳 false
+        if (arguments[0].hidden) { return false; }
+
         var target = arguments[0];
         if(target._deleted){
             return false;
@@ -1549,12 +1548,12 @@ function engine(stageId, debugMode){
     }
 
     var proxy = {
-        // sprites: sprites,
         createSprite: function(args){
             var newSprite = new Sprite(args, eventList, settings, renderer)
             sprites._sprites.push(newSprite);
+            sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
             return newSprite;
-        }, // Pass io object into it because the sprite need to hear from events
+        },
         print: renderer.print,
         drawSprites: function(){ renderer.drawSprites(sprites); },
         drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
