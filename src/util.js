@@ -4,11 +4,14 @@ util.isNumeric = function(n){
     return !isNaN(parseFloat(n)) && isFinite(n);
 }
 util.radToDegree = function(rad){
-    if(rad<0){rad += 2 * Math.PI;}
+    rad = rad%(Math.PI*2);
+    if(rad<0) rad += Math.PI*2;
     return rad*180/Math.PI;
 }
 util.degreeToRad = function(degree){
-    return degree/180*Math.PI
+    degree = degree%360;
+    if(degree<0) degree += 360;
+    return degree/180*Math.PI;
 }
 util.distanceBetween = function(){
     var from = {x:0,y:0},

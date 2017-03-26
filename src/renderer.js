@@ -39,7 +39,7 @@ function Renderer(ctx, settings, debugMode){
             var rad = util.degreeToRad(instance.direction);
             ctx.scale(settings.zoom,settings.zoom);
             if (instance.rotationstyle === 'flip') {
-                if(instance.direction%360 > 180) {
+                if(rad >= Math.PI) {
                     ctx.translate(instance.x*2, 0);
                     ctx.scale(-1, 1);
                     ctx.drawImage(  img,
