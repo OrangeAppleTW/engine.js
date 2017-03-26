@@ -36,54 +36,42 @@ function Renderer(ctx, settings, debugMode){
             instance.width = img.width * instance.scale;
             instance.height = img.height * instance.scale;
 
-            var rad = util.degreeToRad(instance.direction);;
-
+            var rad = util.degreeToRad(instance.direction);
+            ctx.scale(settings.zoom,settings.zoom);
             if (instance.rotationstyle === 'flip') {
                 if(instance.direction%360 > 180) {
-                    translate(instance.x*2, 0);
+                    ctx.translate(instance.x*2, 0);
                     ctx.scale(-1, 1);
-                    drawImage(  img,
+                    ctx.drawImage(  img,
                                     (instance.x-instance.width/2),
                                     (instance.y-instance.height/2),
                                     instance.width,
                                     instance.height
                     )
                     ctx.scale(-1, 1);
-                    translate(-instance.x*2, 0);
+                    ctx.translate(-instance.x*2, 0);
+                    ctx.scale(1/settings.zoom,1/settings.zoom);
                     return;
                 } else {
                     var rad = 0;
                 }
             }
-
             if(instance.rotationstyle === 'fixed') {
                 var rad = 0;
             }
-            translate(instance.x, instance.y);
+            ctx.translate(instance.x, instance.y);
             ctx.rotate(rad);
-            drawImage( img, 
+            ctx.drawImage( img,
                         (-instance.width / 2),
                         (-instance.height / 2),
                         instance.width,
                         instance.height
             );
             ctx.rotate(-rad);
-            translate(-instance.x, -instance.y);
+            ctx.translate(-instance.x, -instance.y);
+            ctx.scale(1/settings.zoom,1/settings.zoom);
         }
     };
-
-    function translate (x, y) {
-        ctx.translate(x * settings.zoom, y * settings.zoom);
-    }
-
-    function drawImage (img, x, y, width, height) {
-        ctx.drawImage( img, 
-            x * settings.zoom,
-            y * settings.zoom,
-            width * settings.zoom,
-            height * settings.zoom
-        )
-    }
 
     this.getImgFromCache = getImgFromCache;
 
