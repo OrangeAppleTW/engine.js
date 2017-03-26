@@ -38,7 +38,8 @@ function Renderer(ctx, settings, debugMode){
 
             var rad = util.degreeToRad(instance.direction);
             ctx.scale(settings.zoom,settings.zoom);
-            if (instance.rotationstyle === 'flip') {
+            ctx.globalAlpha = instance.opacity;
+            if (instance.rotationstyle === 'flipped') {
                 if(rad >= Math.PI) {
                     ctx.translate(instance.x*2, 0);
                     ctx.scale(-1, 1);
@@ -50,6 +51,7 @@ function Renderer(ctx, settings, debugMode){
                     )
                     ctx.scale(-1, 1);
                     ctx.translate(-instance.x*2, 0);
+                    ctx.globalAlpha = 1;
                     ctx.scale(1/settings.zoom,1/settings.zoom);
                     return;
                 } else {
@@ -69,6 +71,7 @@ function Renderer(ctx, settings, debugMode){
             );
             ctx.rotate(-rad);
             ctx.translate(-instance.x, -instance.y);
+            ctx.globalAlpha = 1;
             ctx.scale(1/settings.zoom,1/settings.zoom);
         }
     };

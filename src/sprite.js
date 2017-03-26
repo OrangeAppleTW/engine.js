@@ -9,19 +9,22 @@ function Sprite(args, eventList, settings, renderer) {
         this.x = settings.width/2;
         this.y = settings.height/2;
         this.direction = 0;
+        this.rotationstyle = "full";
         this.scale = 1;
         this.costumes = [args];
         this.hidden = false;
         this.layer = 0;
+        this.opacity = 1
     } else {
         this.x = args.x;
         this.y = args.y;
         this.direction = args.direction || 0;
-        this.rotationstyle = "full"; // "full", "flip" and "fixed"
+        this.rotationstyle = args.rotationstyle || "full"; // "full", "flipped" and "fixed"
         this.scale = args.scale || 1;
         this.costumes = [].concat(args.costumes); // Deal with single string
         this.hidden = args.hidden || false;
-        this.layer = args.layer || 0;;
+        this.layer = args.layer || 0;
+        this.opacity = args.opacity || 1;
     }
     this.currentCostumeId = 0;
     this.width = 1;
