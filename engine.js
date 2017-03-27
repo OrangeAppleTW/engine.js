@@ -425,7 +425,8 @@ function Renderer(ctx, settings, debugMode){
 
             var rad = util.degreeToRad(instance.direction);
             ctx.scale(settings.zoom,settings.zoom);
-            if (instance.rotationstyle === 'flip') {
+            ctx.globalAlpha = instance.opacity;
+            if (instance.rotationstyle === 'flipped') {
                 if(rad >= Math.PI) {
                     ctx.translate(instance.x*2, 0);
                     ctx.scale(-1, 1);
@@ -437,6 +438,7 @@ function Renderer(ctx, settings, debugMode){
                     )
                     ctx.scale(-1, 1);
                     ctx.translate(-instance.x*2, 0);
+                    ctx.globalAlpha = 1;
                     ctx.scale(1/settings.zoom,1/settings.zoom);
                     return;
                 } else {
@@ -456,6 +458,7 @@ function Renderer(ctx, settings, debugMode){
             );
             ctx.rotate(-rad);
             ctx.translate(-instance.x, -instance.y);
+            ctx.globalAlpha = 1;
             ctx.scale(1/settings.zoom,1/settings.zoom);
         }
     };
@@ -602,27 +605,21 @@ var hitCanvas = document.createElement('canvas'),
 
 // @TODO: 客製化特征
 function Sprite(args, eventList, settings, renderer) {
-    if (typeof args == "string") {
-        this.x = settings.width/2;
-        this.y = settings.height/2;
-        this.direction = 0;
-        this.scale = 1;
-        this.costumes = [args];
-        this.hidden = false;
-        this.layer = 0;
-    } else {
-        this.x = args.x;
-        this.y = args.y;
-        this.direction = args.direction || 0;
-        this.rotationstyle = "full"; // "full", "flip" and "fixed"
-        this.scale = args.scale || 1;
-        this.costumes = [].concat(args.costumes); // Deal with single string
-        this.hidden = args.hidden || false;
-        this.layer = args.layer || 0;;
-    }
-    this.currentCostumeId = 0;
+
+    if (typeof args === 'string') args = { costumes: [args] }
+
+    this.x = args.x || settings.width/2;
+    this.y = args.y || settings.height/2;
     this.width = 1;
     this.height = 1;
+    this.direction = args.direction || 0;
+    this.rotationstyle = args.rotationstyle || "full"; // "full", "flipped" and "fixed"
+    this.scale = args.scale || 1;
+    this.costumes = [].concat(args.costumes); // Deal with single string
+    this.hidden = args.hidden || false;
+    this.layer = args.layer || 0;
+    this.opacity = args.opacity || 1;
+    this.currentCostumeId = 0;
 
     this._onTickFuncs = [];
     this._deleted = false;
@@ -630,6 +627,20 @@ function Sprite(args, eventList, settings, renderer) {
     this._eventList = eventList;
     this._settings = settings;
     this._renderer = renderer;
+
+
+    this._frames = [];
+    this._frameRate = 5;
+    this._frameTime = 0;
+    this._onTickFuncs.push(function() {
+        if(this._frames.length > 0) {
+            var now = new Date().getTime();
+            if(now >= this._frameTime + 1000 / this._frameRate) {
+                this._frameTime = now;
+                this.currentCostumeId = this._frames.shift();
+            }
+        }
+    })
 }
 
 Sprite.prototype.moveTo = function(x, y){
@@ -777,6 +788,11 @@ Sprite.prototype.getCurrentCostume = function(){
     var id = this.currentCostumeId;
     return this.costumes[id];
 };
+
+Sprite.prototype.animate = function (frames, frameRate) {
+    this._frames = frames;
+    this._frameRate = frameRate || 5;
+}
 
 module.exports = Sprite;
 
