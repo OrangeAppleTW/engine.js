@@ -27,6 +27,20 @@ function Sprite(args, eventList, settings, renderer) {
     this._eventList = eventList;
     this._settings = settings;
     this._renderer = renderer;
+
+
+    this._frames = [];
+    this._frameRate = 5;
+    this._frameTime = 0;
+    this._onTickFuncs.push(function() {
+        if(this._frames.length > 0) {
+            var now = new Date().getTime();
+            if(now >= this._frameTime + 1000 / this._frameRate) {
+                this._frameTime = now;
+                this.currentCostumeId = this._frames.shift();
+            }
+        }
+    })
 }
 
 Sprite.prototype.moveTo = function(x, y){
@@ -174,5 +188,10 @@ Sprite.prototype.getCurrentCostume = function(){
     var id = this.currentCostumeId;
     return this.costumes[id];
 };
+
+Sprite.prototype.animate = function (frames, frameRate) {
+    this._frames = frames;
+    this._frameRate = frameRate || 5;
+}
 
 module.exports = Sprite;
