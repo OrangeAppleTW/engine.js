@@ -192,6 +192,9 @@
 	    	if(this.direction>=360){
 	    		this.direction=0;
 	    	}
+	    	else if(this.direction<0){
+	    	    this.direction=360;
+	    	}
 	    };
 	}
 
