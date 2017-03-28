@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OA Game Engine</title>
+  <script src="../engine.js"></script>
+  <link rel="stylesheet" href="assets/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/codemirror/codemirror.css">
+  <link rel="stylesheet" href="assets/codemirror/theme/mbo.css">
+  <script src="assets/jquery/dist/jquery.js"></script>
+  <script src="assets/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="assets/codemirror/codemirror.js"></script>
+  <script src="assets/codemirror/mode/javascript/javascript.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+</head>
+<body>
+  <nav class="navbar navbar-default">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Brand</a>
+      </div>
+
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+          <li><a href="#">Link</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#">Link</a></li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">範例程式 <span class="caret"></span></a>
+            <ul id="demo-selector" class="dropdown-menu">
+              <li><a href="#TD">塔防遊戲</a></li>
+              <li><a href="#stars">一閃一閃亮晶晶</a></li>
+              <li><a href="#flappy-bird">Flappy Bird</a></li>
+              <li><a href="#scrolling">橫向捲軸遊戲</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="#">自由發揮</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+  </nav>
+  <div class="container-fluid">
+    <!-- <div class="row"> -->
+      <div class="pull-left left-part">
+        <canvas id="stage1" width="640" height="480" style="border:1px solid gray;"></canvas>
+        <canvas id="stage2" width="640" height="480" style="border:1px solid gray;"></canvas>
+      </div>
+      <div class="pull-left right-part">
+        <textarea id="script-box"></textarea>
+        <button id="run-code-button" class="btn btn-primary"> Run </button>
+        <button id="start-code-button" class="btn btn-success" style="display:none;"> Continue </button>
+        <button id="stop-code-button" class="btn btn-danger"> Stop </button>
+      </div>
+    </div>
+  <!-- </div> -->
+  <textarea id="stars" style="display:none;"></textarea>
+  <textarea id="TD" style="display:none;"></textarea>
+  <textarea id="flappy-bird" style="display:none;"></textarea>
+  <textarea id="scrolling" style="display:none;"></textarea>
+
+  <script>
+  Game1 = Engine("stage1",true);
+  Game2 = Engine("stage2",true);
+
+  var bird = Game1.sprites.bird = Game1.createSprite({
+      x: 160,
+      y: 240,
+      costumes: "./images/flappy-bird/bird.png"
+  });
+  var upTube = Game1.sprites.upTube = Game1.createSprite({
+      x: 320,
+      y: 0,
+      costumes: "./images/flappy-bird/up-tube.png"
+  });
+  var downTube = Game1.sprites.downTube = Game1.createSprite({
+      x: 320,
+      y: 440,
+      costumes: "./images/flappy-bird/down-tube.png"
+  });
+  var ground = Game1.sprites.ground = Game1.createSprite({
+      x: 160,
+      y: 460,
+      costumes: "./images/flappy-bird/ground.png"
+  });
+  bird.speed = 1;
+
+  Game1.on("click", null, function(){
+      bird.speed = -4;
+  });
+
+  Game1.set({
+      width: 320,
+      height: 480
+  });
+
+  Game1.preloadImages(
+      [
+          "./images/flappy-bird/bird.png",
+          "./images/flappy-bird/up-tube.png",
+          "./images/flappy-bird/down-tube.png"
+      ],
+      function(){
+          console.log("Preloading complete");
+      }
+  );
+
+  Game1.update( function(){
+      Game1.drawBackdrop("./images/flappy-bird/bg.jpg",0,0,320)
+      if(downTube.x<-30){
+          downTube.x = 330;
+      }
+      upTube.x = downTube.x = downTube.x-2;
+      bird.y += bird.speed;
+      bird.speed += 0.15;
+      Game1.drawSprites();
+      if( bird.touched(ground) || bird.touched(upTube) || bird.touched(downTube)){
+          Game1.stop();
+      }
+  });
+
+  Game1.start();
+
+  var ctx = Game2.ctx;
+
+  var clock = 0,
+      hp = 100,
+      score = 0,
+      isBuilding = false;
+  var enemyPath = [
+      {x:96+16, y:64},
+      {x:384+32, y:64+16},
+      {x:384+16, y:192+32},
+      {x:224, y:192+16},
+      {x:224+16, y:320+32},
+      {x:544+32, y:320+16},
+      {x:544+16, y:96}
+  ];
+
+  var enemies = Game2.sprites.enemies=[];
+  var towers = Game2.sprites.towers=[];
+  var towerButton = Game2.sprites.towerButton = Game2.createSprite({
+      x:608, y:448,
+      costumes:"./images/tower-btn.png"
+  });
+  var towerTemplate = Game2.sprites.towerTemplate = Game2.createSprite({
+      x:0, y:0,
+      costumes: "./images/tower.png",
+      hidden: true
+  });
+
+  Game2.on("click", null, function(){
+      if(isBuilding){
+          if(!towerButton.touched(Game2.cursor.x,Game2.cursor.y)){
+              isBuilding = !isBuilding;
+              towerTemplate.hidden = !isBuilding;
+              buildTower()
+          }
+      }
+  });
+
+  Game2.on("click", towerButton, function(){
+      isBuilding = !isBuilding;
+      towerTemplate.hidden = !isBuilding;
+  });
+
+  Game2.on("keydown", "s", function(){
+      score += 100;
+  });
+
+  Game2.update( function(){
+      Game2.drawBackdrop("./images/map.png")
+      Game2.drawSprites();
+      if(clock%30===0){
+          var newEnemy = Game2.createSprite({
+              x: 112,
+              y: 480,
+              costumes:"./images/slime.gif"
+          });
+          newEnemy.pathIndex = 0;
+          newEnemy.hp = 10;
+          enemies.push(newEnemy);
+      }
+      for(let i=0; i<enemies.length; i++){
+          var enemy = enemies[i]
+          if(enemy.hp<=0){
+              enemies.splice(i,1);
+              score += 10;
+          } else {
+              var destination = {
+                  x:enemyPath[enemy.pathIndex].x,
+                  y:enemyPath[enemy.pathIndex].y
+              }
+              enemy.toward(destination.x, destination.y);
+              enemy.stepForward(3);
+              if( enemy.touched(destination.x, destination.y) ){
+                  enemy.pathIndex++;
+                  if(enemy.pathIndex>=enemyPath.length){
+                      enemies.splice(i,1);
+                      hp-=10;
+                  }
+              }
+          }
+      }
+      for(let i=0; i<towers.length; i++){
+          if(clock%30<=0){
+              towers[i].searchEnemy();
+          }
+      }
+      towerTemplate.moveTo(Game2.cursor.x, Game2.cursor.y);
+      Game2.print("HP: "+hp, 20, 40, "white", 20);
+      Game2.print("Score: "+score, 20, 60, "white", 20);
+      Game2.print("FPS: "+Game2.inspector.fps, 20, 80, "red", 20);
+      clock++;
+  });
+
+  function buildTower() {
+      var newTower = Game2.createSprite({
+          x: Game2.cursor.x,
+          y: Game2.cursor.y,
+          costumes:"./images/tower.png"
+      });
+      newTower.range = 96;
+      newTower.searchEnemy = function(){
+          for(let i=0; i<enemies.length; i++){
+              var distance = this.distanceTo(enemies[i]);
+              if (distance<=this.range) {
+                  this.shoot(enemies[i]);
+                  return;
+              }
+          }
+      };
+      newTower.shoot = function(enemy){
+          ctx.beginPath();
+          ctx.moveTo(this.x,this.y-16);
+          ctx.lineTo(enemy.x+16,enemy.y+16);
+          ctx.strokeStyle = 'red';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          enemy.hp -= 10;
+      };
+      towers.push(newTower);
+  }
+
+  Game2.start();
+
+
+  </script>
+
+</body>
+</html>
