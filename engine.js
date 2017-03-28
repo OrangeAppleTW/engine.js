@@ -1,1597 +1,1583 @@
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-/******/
+
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-/******/
+
 /******/ 		// Check if module is in cache
 /******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-/******/
+
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
 /******/ 		};
-/******/
+
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
+
 /******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
+/******/ 		module.loaded = true;
+
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/
-/******/
+
+
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-/******/
+
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// identity function for calling harmony imports with the correct context
-/******/ 	__webpack_require__.i = function(value) { return value; };
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__webpack_require__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__webpack_require__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
+
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-/******/
+
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 11);
+/******/ 	return __webpack_require__(0);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-var util = {};
+	var Sprite = __webpack_require__(1);
+	var Sprites = __webpack_require__(3);
+	var EventList = __webpack_require__(4);
+	var Inspector = __webpack_require__(5);
+	var Clock = __webpack_require__(6);
+	var Renderer = __webpack_require__(7);
+	var Sound = __webpack_require__(9);
 
-util.isNumeric = function(n){
-    return !isNaN(parseFloat(n)) && isFinite(n);
-}
-util.radToDegree = function(rad){
-    rad = rad%(Math.PI*2);
-    if(rad<0) rad += Math.PI*2;
-    return rad*180/Math.PI;
-}
-util.degreeToRad = function(degree){
-    degree = degree%360;
-    if(degree<0) degree += 360;
-    return degree/180*Math.PI;
-}
-util.distanceBetween = function(){
-    var from = {x:0,y:0},
-        to   = {x:0,y:0};
-    if( util.isNumeric(arguments[0].x) &&
-        util.isNumeric(arguments[0].y) &&
-        util.isNumeric(arguments[1].x) &&
-        util.isNumeric(arguments[1].y)
-    ){
-        from.x = arguments[0].x;
-        from.y = arguments[0].y;
-        to.x = arguments[1].x;
-        to.y = arguments[1].y;
-    } else if (
-        util.isNumeric(arguments[0]) &&
-        util.isNumeric(arguments[1]) &&
-        util.isNumeric(arguments[2]) &&
-        util.isNumeric(arguments[3])
-    ) {
-        from.x = arguments[0];
-        from.y = arguments[1];
-        to.x   = arguments[2];
-        to.y   = arguments[3];
-    } else {
-        throw "請傳入角色(Sprite)或是 X, Y 坐標值";
-    }
-    return Math.sqrt( Math.pow(to.x-from.x,2) + Math.pow(to.y-from.y,2) )
-}
+	function engine(stageId, debugMode){
 
-module.exports = util;
+	    var canvas= document.getElementById(stageId);
+	    var ctx = canvas.getContext("2d");
 
-/***/ }),
+	    var settings = {
+	        width: canvas.width,
+	        height: canvas.height,
+	        zoom: 1,
+	        // gravity: 0, //@TODO: set gravity
+	        updateFunctions: []
+	    };
+
+	    var sprites = new Sprites();
+	    var inspector = new Inspector();
+	    var io = __webpack_require__(10)(canvas, settings, debugMode);
+	    var eventList = new EventList(io, debugMode);
+	    var renderer = new Renderer(ctx, settings, debugMode);
+	    var sound = new Sound();
+	    var clock = new Clock(function(){
+	        eventList.traverse();
+	        for(var i=0; i<settings.updateFunctions.length; i++){
+	            settings.updateFunctions[i]();
+	        };
+	        sprites.runOnTick();
+	        sprites.removeDeletedSprites();
+	        inspector.updateFPS();
+	    });
+
+	    debugMode = debugMode || false;
+
+	    function set(args){
+	        settings.zoom      = args.zoom || settings.zoom;
+	        settings.width      = args.width || settings.width;
+	        settings.height     = args.height || settings.height;
+	        settings.gravity    = args.gravity || settings.gravity;
+	        settings.update     = args.update || settings.update;
+	        if(args.width || args.zoom){ canvas.width = settings.width*settings.zoom;}
+	        if(args.height || args.zoom){ canvas.height = settings.height*settings.zoom;}
+	        return this;
+	    }
+
+	    // function reset(){
+	    //     eventList.clear();
+	    //     sprites.clear();
+	    // }
+
+	    // for proxy.on / when: 
+	    var when = function(event, target, handler){
+	        if(typeof target === "function"){ // 如果不指定對象，直接傳入 handler
+	            eventList.register(event, null, target);
+	        } else {
+	            eventList.register(event, target, handler);
+	        }
+	    }
+
+	    var proxy = {
+	        createSprite: function(args){
+	            var newSprite = new Sprite(args, eventList, settings, renderer)
+	            sprites._sprites.push(newSprite);
+	            sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
+	            return newSprite;
+	        },
+	        print: renderer.print,
+	        drawSprites: function(){ renderer.drawSprites(sprites); },
+	        drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
+	        cursor: io.cursor,
+	        inspector: inspector,
+	        when: when,
+	        on: when,
+	        set: set,
+	        stop: function(){ clock.stop(); sound.stop(); },
+	        start: function(){ clock.start(); },
+	        update: function(func){ settings.updateFunctions.push(func); },
+	        always: function(func){ settings.updateFunctions.push(func); },
+	        forever: function(func){ settings.updateFunctions.push(func); },
+	        ctx: ctx,
+	        clear: function(){ renderer.clear(); },
+	        preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); },
+	        sound: sound
+	    };
+	    return proxy;
+	}
+
+	window.Engine = engine;
+
+/***/ },
 /* 1 */
-/***/ (function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-//  state 用來表達 renderer 的以下狀態：
-//
-//   1. readyToStart:
-//      初始狀態，此時執行 start 會直接開始 cycling(不斷執行 onTick)，並將狀態切換為 "running"。
-//   2. running:
-//      不停 cycling，此時可執行 stop 將狀態切換為 "stopping"。
-//      但是執行 start 則不會有任何反應
-//      執行 stop 則不會有任何反應。
-//   3. stopping:
-//      此時雖然已接受到停止訊息，但是最後一次的 rendering 尚未結束，
-//      因此若在此時執行 start，會每隔一小段時間檢查 state 是否回復到 "readyToStart"。
-//
-//  狀態變化流程如下：
-//  (1) -> (2) -> (3) -> (1)
+	var util = __webpack_require__(2);
+	var hitCanvas = document.createElement('canvas'),
+	    hitTester = hitCanvas.getContext('2d');
+	    // document.body.appendChild(hitCanvas);
 
-var FPS = 60
+	// @TODO: 客製化特征
+	function Sprite(args, eventList, settings, renderer) {
 
-function Clock(update){
-    this._state = "readyToStart"; //"readyToStart", "stopping", "running";
-    this._update = update;
-}
+	    if (typeof args === 'string') args = { costumes: [args] }
 
-Clock.prototype.start = function(){
-    if(this._state==="readyToStart"){
-        var onTick;
-        this._state = "running";
-        onTick = (function(){
-            if(this._state==="running"){
-                this._update();
-                setTimeout(function(){
-                    requestAnimationFrame(onTick);
-                },1000/FPS);
-            } else {
-                this._state = "readyToStart";
-            }
-        }).bind(this);
-        setTimeout( onTick, 0 ); // 必須 Async，否則會產生微妙的時間差
-    } else if (this._state==="stopping") {
-        setTimeout( start, 10 );
-    }
-}
+	    this.x = args.x || settings.width/2;
+	    this.y = args.y || settings.height/2;
+	    this.width = 1;
+	    this.height = 1;
+	    this.direction = args.direction || 0;
+	    this.rotationstyle = args.rotationstyle || "full"; // "full", "flipped" and "fixed"
+	    this.scale = args.scale || 1;
+	    this.costumes = [].concat(args.costumes); // Deal with single string
+	    this.hidden = args.hidden || false;
+	    this.layer = args.layer || 0;
+	    this.opacity = args.opacity || 1;
+	    this.currentCostumeId = 0;
 
-Clock.prototype.stop = function(){
-    if(this._state==="running"){
-        this._state = "stopping";
-    }
-}
+	    this._onTickFuncs = [];
+	    this._deleted = false;
 
-module.exports = Clock;
+	    this._eventList = eventList;
+	    this._settings = settings;
+	    this._renderer = renderer;
 
-/***/ }),
+
+	    this._frames = [];
+	    this._frameRate = 5;
+	    this._frameTime = 0;
+	    this._onTickFuncs.push(function() {
+	        if(this._frames.length > 0) {
+	            var now = new Date().getTime();
+	            if(now >= this._frameTime + 1000 / this._frameRate) {
+	                this._frameTime = now;
+	                this.currentCostumeId = this._frames.shift();
+	            }
+	        }
+	    })
+	}
+
+	Sprite.prototype.moveTo = function(x, y){
+	    this.x = x;
+	    this.y = y;
+	};
+
+	Sprite.prototype.move = function(x, y){
+	    this.x += x;
+	    this.y += y;
+	};
+
+	Sprite.prototype.stepForward = function(distance){
+	    var rad = util.degreeToRad(this.direction)
+	    this.x += Math.cos(rad)*distance;
+	    this.y -= Math.sin(rad)*distance;
+	};
+
+	Sprite.prototype.toward = function(){
+	    var targetX, targetY, offsetX, offsetY, rad;
+	    if(util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)){
+	        targetX = arguments[0].x,
+	        targetY = arguments[0].y;
+	    } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
+	        targetX = arguments[0],
+	        targetY = arguments[1];
+	    } else {
+	        throw "請傳入角色(Sprite)或是 X, Y 坐標值";
+	    }
+	    offsetX = targetX - this.x;
+	    offsetY = targetY - this.y;
+	    rad = Math.atan2(-offsetY, offsetX); // 這裡的 offsetY 和數學坐標是反過來的
+	    this.direction = util.radToDegree(rad);
+	    // console.log(this.direction);
+	}
+
+	Sprite.prototype.touched = function(){
+	    if (arguments[0].constructor === Array) {
+	        for(var i=0; i<arguments[0].length; i++){
+	            isTouched(this, arguments[0][i]);
+	        }
+	    } else {
+	        isTouched(this, arguments);
+	    }
+	    
+	};
+
+	Sprite.prototype.distanceTo = function(){
+	    if( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ){
+	        return util.distanceBetween( this, arguments[0] );
+	    } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ){
+	        return util.distanceBetween( this.x, this.y, arguments[0], arguments[1] );
+	    }
+	};
+
+	Sprite.prototype.always = Sprite.prototype.forever = function(func){
+	    this._onTickFuncs.push(func);
+	};
+
+	Sprite.prototype.when = Sprite.prototype.on = function(){
+	    var event = arguments[0],
+	        target, handler;
+	    if(event=="hover" || event=="click"){
+	        target = this;
+	        handler = arguments[1];
+	    } else if (event=="touch"){
+	        if(Array.isArray(arguments[1])){
+	            target = [this].concat(arguments[1]);
+	        } else {
+	            target = [this].concat([arguments[1]]);
+	        }
+	        handler = arguments[2];
+	    } else {
+	        console.log('Sprite.on() does only support "click", "hover" and "touch" events');
+	        return false;
+	    }
+	    this._eventList.register(event, target, handler);
+	};
+
+	Sprite.prototype.destroy = function(){
+	    this._deleted = true;
+	};
+
+	Sprite.prototype.getCurrentCostume = function(){
+	    var id = this.currentCostumeId;
+	    return this.costumes[id];
+	};
+
+	Sprite.prototype.animate = function (frames, frameRate) {
+	    this._frames = frames;
+	    this._frameRate = frameRate || 5;
+	}
+
+	function isTouched(sprite, args){
+	    (function(){
+	        // 如果此角色為隱藏，不進行檢驗，直接回傳 false
+	        if (this.hidden) { return false; }
+
+	        // 由於效能考量，先用成本最小的「座標範圍演算法」判斷是否有機會「像素重疊」
+	        var crossX = crossY = false;
+
+	        if( arguments[0] instanceof Sprite ){
+
+	            // 如果目標角色為隱藏，不進行檢驗，直接回傳 false
+	            if (arguments[0].hidden) { return false; }
+
+	            var target = arguments[0];
+	            if(target._deleted){
+	                return false;
+	            }
+	            crossX = (this.x+this.width/2)>(target.x-target.width/2) && (target.x+target.width/2)>(this.x-this.width/2);
+	            crossY = (this.y+this.height/2)>(target.y-target.height/2) && (target.y+target.height/2)>(this.y-this.height/2);
+	        } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
+	            var targetX = arguments[0].x,
+	                targetY = arguments[0].y;
+	            crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
+	            crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
+	        } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
+	            var targetX = arguments[0],
+	                targetY = arguments[1];
+	            crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
+	            crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
+	        } else {
+	            throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
+	        }
+
+	        // 如果經過「座標範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
+	        if (crossX && crossY) {
+	            var renderer = this._renderer;
+	            var settings = this._settings;
+	            hitCanvas.width = settings.width;
+	            hitCanvas.height = settings.height;
+
+	            hitTester.globalCompositeOperation = 'source-over';
+	            hitTester.drawImage(    renderer.getImgFromCache(this.getCurrentCostume()),
+	                                    this.x-this.width/2, this.y-this.height/2,
+	                                    this.width, this.height );
+
+	            hitTester.globalCompositeOperation = 'source-in';
+	            if( arguments[0] instanceof Sprite ){
+	                var target = arguments[0];
+	                hitTester.drawImage(    renderer.getImgFromCache(target.getCurrentCostume()),
+	                                        target.x-target.width/2, target.y-target.height/2,
+	                                        target.width, target.height );
+	            } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
+	                hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
+	            } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
+	                hitTester.fillRect(arguments[0],arguments[1],1,1);
+	            } else {
+	                return false
+	            }
+
+	            // 只要對 sprite 的大小範圍取樣即可，不需對整張 canvas 取樣
+	            var aData = hitTester.getImageData(this.x-this.width/2, this.y-this.height/2, this.width, this.height).data;
+	            var pxCount = aData.length;
+	            for (var i = 0; i < pxCount; i += 4) {
+	                if (aData[i+3] > 0) {
+	                    return true;
+	                }
+	            }
+	        }
+	        return false;
+	    }).call(sprite, args);
+	}
+
+	module.exports = Sprite;
+
+/***/ },
 /* 2 */
-/***/ (function(module, exports) {
+/***/ function(module, exports) {
 
-function EventList(io, debugMode){
-    this.pool=[];
-    this.io=io;
-    this.debugMode = debugMode || false;
-}
+	var util = {};
 
-EventList.prototype.traverse = function (){
-    var pool = this.pool,
-        io = this.io,
-        debugMode = this.debugMode;
-    for(var i=0; i<pool.length; i++){
-        if (pool[i].sprite && pool[i].sprite.constructor.name=="Sprite" && pool[i].sprite._deleted){ pool.splice(i,1); }
-        else if (pool[i].event=="hover")    { hoverJudger(   pool[i].sprite,  pool[i].handler, io.cursor,  debugMode ); }
-        else if (pool[i].event=="click")    { clickJudger(   pool[i].sprite,  pool[i].handler, io.clicked, debugMode ); }
-        else if (pool[i].event=="keydown")  { keydownJudger( pool[i].key,     pool[i].handler, io.keydown, debugMode ); }
-        else if (pool[i].event=="keyup")    { keydownJudger( pool[i].key,     pool[i].handler, io.keyup,   debugMode ); }
-        else if (pool[i].event=="holding")  { holdingJudger( pool[i].key,     pool[i].handler, io.holding, debugMode ); }
-        else if (pool[i].event=="touch")    {
-            if(!pool[i].sprites.length || pool[i].sprites.length<2){
-                console.log("You must pass a sprites array which length is bigger than 1 as the second argument!");
-                return;
-            }
-            touchJudger( pool[i].sprites, pool[i].handler, debugMode );
-        }
-    }
-    clearEventRecord(this.io);
-}
+	util.isNumeric = function(n){
+	    return !isNaN(parseFloat(n)) && isFinite(n);
+	}
+	util.radToDegree = function(rad){
+	    rad = rad%(Math.PI*2);
+	    if(rad<0) rad += Math.PI*2;
+	    return rad*180/Math.PI;
+	}
+	util.degreeToRad = function(degree){
+	    degree = degree%360;
+	    if(degree<0) degree += 360;
+	    return degree/180*Math.PI;
+	}
+	util.distanceBetween = function(){
+	    var from = {x:0,y:0},
+	        to   = {x:0,y:0};
+	    if( util.isNumeric(arguments[0].x) &&
+	        util.isNumeric(arguments[0].y) &&
+	        util.isNumeric(arguments[1].x) &&
+	        util.isNumeric(arguments[1].y)
+	    ){
+	        from.x = arguments[0].x;
+	        from.y = arguments[0].y;
+	        to.x = arguments[1].x;
+	        to.y = arguments[1].y;
+	    } else if (
+	        util.isNumeric(arguments[0]) &&
+	        util.isNumeric(arguments[1]) &&
+	        util.isNumeric(arguments[2]) &&
+	        util.isNumeric(arguments[3])
+	    ) {
+	        from.x = arguments[0];
+	        from.y = arguments[1];
+	        to.x   = arguments[2];
+	        to.y   = arguments[3];
+	    } else {
+	        throw "請傳入角色(Sprite)或是 X, Y 坐標值";
+	    }
+	    return Math.sqrt( Math.pow(to.x-from.x,2) + Math.pow(to.y-from.y,2) )
+	}
 
-EventList.prototype.clear = function(){
-    this.pool=[];
-}
+	module.exports = util;
 
-EventList.prototype.register = function(event, target, handler){
-    var eventObj = {
-        event:event,
-        handler:handler
-    }
-    // @TODO: target 型別偵測
-    if (event=="touch"){
-        eventObj.sprites = target;
-    } else if (event=="keydown" || event=="keyup" || event=="holding"){
-        eventObj.key = target;
-    } else if (event=="hover" || event=="click") {
-        eventObj.sprite = target;
-    }
-    this.pool.push(eventObj);
-};
-
-
-function hoverJudger(sprite, handler, cursor, debugMode){
-    if(sprite.touched(cursor)){
-        handler.call(sprite);
-        if(debugMode){
-            console.log("Just fired a hover handler at: ("+cursor.x+","+cursor.y+")");
-        }
-    }
-}
-
-function clickJudger(sprite, handler, clicked, debugMode){
-    if(clicked.x && clicked.y){ // 如果有點擊記錄才檢查
-        if(sprite){ // 如果是 Sprite, 則對其做判定
-            var crossX = (sprite.x+sprite.width/2)>clicked.x && clicked.x>(sprite.x-sprite.width/2),
-                crossY = (sprite.y+sprite.height/2)>clicked.y && clicked.y>(sprite.y-sprite.height/2);
-            if( sprite.touched(clicked.x,clicked.y) ){
-                handler.call(sprite);
-                if(debugMode){
-                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(clicked)+")");
-                }
-            }
-        } else { // 如果為 null, 則對整個遊戲舞台做判定
-            handler();
-            if(debugMode){
-                console.log("Just fired a click handler on stage! ("+JSON.stringify(clicked)+")");
-            }
-        }
-    }
-}
-
-function keydownJudger(key, handler, keydown, debugMode){
-    if(keydown[key]){
-        handler();
-        if(debugMode){
-            console.log("Just fired a keydown handler on: "+key);
-        }
-    }
-}
-
-function keyupJudger(key, handler, keyup, debugMode){
-    if(keyup[key]){
-        handler();
-        if(debugMode){
-            console.log("Just fired a keyup handler on: "+key);
-        }
-    }
-}
-
-function holdingJudger(key, handler, holding, debugMode){
-    if(holding[key]){
-        handler();
-        if(debugMode){
-            console.log("Just fired a holding handler on: "+key);
-        }
-    }
-}
-
-// @TODO: Now we could only detect Sprite instance, not include cursor.
-function touchJudger(sprites, handler, debugMode){
-    for(var i=1; i<sprites.length; i++){
-        if(sprites[0].touched(sprites[i])) {
-            handler.call(sprites[0], sprites[i]);
-            if(debugMode){
-                console.log("Just fired a touch handler on: "+sprites);
-            }
-        }
-    }
-}
-
-function clearEventRecord(io){
-    io.clicked.x=null;
-    io.clicked.y=null;
-    for(var key in io.keydown){
-        io.keydown[key]=false;
-        io.keyup[key]=false;
-    }
-}
-
-module.exports = EventList;
-
-/***/ }),
+/***/ },
 /* 3 */
-/***/ (function(module, exports) {
+/***/ function(module, exports) {
 
-function Inspector(){
-    this.fps = 0;
-    this._lastFrameUpdatedTime = (new Date()).getTime();
-}
+	function Sprites(){
+	    this._sprites = [];
+	}
 
-Inspector.prototype.updateFPS = function(){
-    var now = (new Date()).getTime();
-    this.fps = Math.round( 1000/(now-this._lastFrameUpdatedTime) );
-    this._lastFrameUpdatedTime = now;
-}
+	Sprites.prototype.runOnTick = function(){
+	    this.each(function(){
+	        for(var i=0; i<this._onTickFuncs.length; i++){
+	            this._onTickFuncs[i].call(this);
+	        }
+	    });
+	}
 
-module.exports = Inspector;
+	Sprites.prototype.each = function(func){
+	    var sprites = this._sprites;
+	    // console.log(func);
+	    for(var i=0; i<sprites.length; i++){
+	        func.call(sprites[i],sprites[i]);
+	    }
+	}
 
-/***/ }),
+	Sprites.prototype.removeDeletedSprites = function(){
+	    var sprites = this._sprites;
+	    for(var i=0; i<sprites.length; i++){
+	        if(sprites[i]._deleted){
+	            sprites.splice(i,1);
+	        }
+	    }
+	}
+
+	Sprites.prototype.clear = function(){
+	    this._sprites = [];
+	};
+
+	module.exports = Sprites;
+
+/***/ },
 /* 4 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-var keycode = __webpack_require__(10);
+	function EventList(io, debugMode){
+	    this.pool=[];
+	    this.io=io;
+	    this.debugMode = debugMode || false;
+	}
 
-var io = function(canvas, settings, debugMode){
+	EventList.prototype.traverse = function (){
+	    var pool = this.pool,
+	        io = this.io,
+	        debugMode = this.debugMode;
+	    for(var i=0; i<pool.length; i++){
+	        if (pool[i].sprite && pool[i].sprite.constructor.name=="Sprite" && pool[i].sprite._deleted){ pool.splice(i,1); }
+	        else if (pool[i].event=="hover")    { hoverJudger(   pool[i].sprite,  pool[i].handler, io.cursor,  debugMode ); }
+	        else if (pool[i].event=="click")    { clickJudger(   pool[i].sprite,  pool[i].handler, io.clicked, debugMode ); }
+	        else if (pool[i].event=="keydown")  { keydownJudger( pool[i].key,     pool[i].handler, io.keydown, debugMode ); }
+	        else if (pool[i].event=="keyup")    { keydownJudger( pool[i].key,     pool[i].handler, io.keyup,   debugMode ); }
+	        else if (pool[i].event=="holding")  { holdingJudger( pool[i].key,     pool[i].handler, io.holding, debugMode ); }
+	        else if (pool[i].event=="touch")    {
+	            if(!pool[i].sprites.length || pool[i].sprites.length<2){
+	                console.log("You must pass a sprites array which length is bigger than 1 as the second argument!");
+	                return;
+	            }
+	            touchJudger( pool[i].sprites, pool[i].handler, debugMode );
+	        }
+	    }
+	    clearEventRecord(this.io);
+	}
 
-    var exports={},
-        cursor={x:0, y:0},
-        key=[],
-        clicked={x:null, y:null},
-        keyup={},
-        keydown={},
-        holding={};
+	EventList.prototype.clear = function(){
+	    this.pool=[];
+	}
 
-    debugMode = debugMode || false;
+	EventList.prototype.register = function(event, target, handler){
+	    var eventObj = {
+	        event:event,
+	        handler:handler
+	    }
+	    // @TODO: target 型別偵測
+	    if (event=="touch"){
+	        eventObj.sprites = target;
+	    } else if (event=="keydown" || event=="keyup" || event=="holding"){
+	        eventObj.key = target;
+	    } else if (event=="hover" || event=="click") {
+	        eventObj.sprite = target;
+	    }
+	    this.pool.push(eventObj);
+	};
 
-    // Make any element focusable for keydown event.
-    canvas.setAttribute("tabindex",'1');
-    canvas.style.outline = "none";
 
-    canvas.addEventListener("mousemove", function(e){
-        cursor.x = e.offsetX / settings.zoom;
-        cursor.y = e.offsetY / settings.zoom;
-    });
+	function hoverJudger(sprite, handler, cursor, debugMode){
+	    if(sprite.touched(cursor)){
+	        handler.call(sprite);
+	        if(debugMode){
+	            console.log("Just fired a hover handler at: ("+cursor.x+","+cursor.y+")");
+	        }
+	    }
+	}
 
-    canvas.addEventListener("click", function(e){
-        clicked.x = e.offsetX / settings.zoom;
-        clicked.y = e.offsetY / settings.zoom;
-        if(debugMode){
-            console.log( "Clicked! cursor:"+JSON.stringify(cursor) );
-        }
-    });
+	function clickJudger(sprite, handler, clicked, debugMode){
+	    if(clicked.x && clicked.y){ // 如果有點擊記錄才檢查
+	        if(sprite){ // 如果是 Sprite, 則對其做判定
+	            var crossX = (sprite.x+sprite.width/2)>clicked.x && clicked.x>(sprite.x-sprite.width/2),
+	                crossY = (sprite.y+sprite.height/2)>clicked.y && clicked.y>(sprite.y-sprite.height/2);
+	            if( sprite.touched(clicked.x,clicked.y) ){
+	                handler.call(sprite);
+	                if(debugMode){
+	                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(clicked)+")");
+	                }
+	            }
+	        } else { // 如果為 null, 則對整個遊戲舞台做判定
+	            handler();
+	            if(debugMode){
+	                console.log("Just fired a click handler on stage! ("+JSON.stringify(clicked)+")");
+	            }
+	        }
+	    }
+	}
 
-    canvas.addEventListener("keydown", function(e){
-        var key = keycode(e.keyCode);
-        keydown[key] = true;
-        holding[key] = true;
-        if(debugMode){
-            console.log( "Keydown! key:"+key );
-        }
-    });
+	function keydownJudger(key, handler, keydown, debugMode){
+	    if(keydown[key]){
+	        handler();
+	        if(debugMode){
+	            console.log("Just fired a keydown handler on: "+key);
+	        }
+	    }
+	}
 
-    canvas.addEventListener("keyup", function(e){
-        var key = keycode(e.keyCode);
-        keyup[key] = true;
-        holding[key] = false;
-        if(debugMode){
-            console.log( "Keyup! key:"+key );
-        }
-    });
+	function keyupJudger(key, handler, keyup, debugMode){
+	    if(keyup[key]){
+	        handler();
+	        if(debugMode){
+	            console.log("Just fired a keyup handler on: "+key);
+	        }
+	    }
+	}
 
-    exports.cursor = cursor;
-    exports.clicked = clicked;
-    exports.keyup = keyup;
-    exports.keydown = keydown;
-    exports.holding = holding;
-    return exports;
-};
+	function holdingJudger(key, handler, holding, debugMode){
+	    if(holding[key]){
+	        handler();
+	        if(debugMode){
+	            console.log("Just fired a holding handler on: "+key);
+	        }
+	    }
+	}
 
-module.exports = io;
+	// @TODO: Now we could only detect Sprite instance, not include cursor.
+	function touchJudger(sprites, handler, debugMode){
+	    var sprite = sprites[0],
+	        targets = sprites.slice(1,-1);
+	    if (sprite.touched(targets)) {
+	        handler.call(sprite);
+	        if(debugMode){
+	            console.log("Just fired a touch handler on: "+sprite);
+	        }
+	    }
+	}
 
-/***/ }),
+	function clearEventRecord(io){
+	    io.clicked.x=null;
+	    io.clicked.y=null;
+	    for(var key in io.keydown){
+	        io.keydown[key]=false;
+	        io.keyup[key]=false;
+	    }
+	}
+
+	module.exports = EventList;
+
+/***/ },
 /* 5 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-var util = __webpack_require__(0);
-var loader = new (__webpack_require__(9))();
+	function Inspector(){
+	    this.fps = 0;
+	    this._lastFrameUpdatedTime = (new Date()).getTime();
+	}
 
-function Renderer(ctx, settings, debugMode){
+	Inspector.prototype.updateFPS = function(){
+	    var now = (new Date()).getTime();
+	    this.fps = Math.round( 1000/(now-this._lastFrameUpdatedTime) );
+	    this._lastFrameUpdatedTime = now;
+	}
 
-    // 不可以這麼做，因為當我們要取 canvas 大小時，他可能已經變了
-    // var stageWidth = settings.width,
-    //     stageHeight = settings.height;
+	module.exports = Inspector;
 
-    var imageCache = {};
-
-    this.clear = function() {
-        ctx.clearRect(0,0,settings.width,settings.height);
-    };
-
-    this.print = function(words, x, y, color, size, font) {
-        x = x || 20;
-        y = y || 20;
-        size = size || 16; // Set or default
-        font = font || "Arial";
-        ctx.textBaseline = "top";
-        ctx.font = (size*settings.zoom)+"px " + font;
-        ctx.fillStyle = color || "black";
-        ctx.fillText(words, x * settings.zoom, y * settings.zoom);
-    };
-
-    this.drawSprites = function(sprites){
-        sprites.each(this.drawInstance);
-    };
-
-    this.drawInstance = function(instance){
-        // console.log(instance);
-        if(!instance.hidden){
-            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
-            var img = getImgFromCache(instance.getCurrentCostume());
-            instance.width = img.width * instance.scale;
-            instance.height = img.height * instance.scale;
-
-            var rad = util.degreeToRad(instance.direction);
-            ctx.scale(settings.zoom,settings.zoom);
-            ctx.globalAlpha = instance.opacity;
-            if (instance.rotationstyle === 'flipped') {
-                if(rad >= Math.PI) {
-                    ctx.translate(instance.x*2, 0);
-                    ctx.scale(-1, 1);
-                    ctx.drawImage(  img,
-                                    (instance.x-instance.width/2),
-                                    (instance.y-instance.height/2),
-                                    instance.width,
-                                    instance.height
-                    )
-                    ctx.scale(-1, 1);
-                    ctx.translate(-instance.x*2, 0);
-                    ctx.globalAlpha = 1;
-                    ctx.scale(1/settings.zoom,1/settings.zoom);
-                    return;
-                } else {
-                    var rad = 0;
-                }
-            }
-            if(instance.rotationstyle === 'fixed') {
-                var rad = 0;
-            }
-            ctx.translate(instance.x, instance.y);
-            ctx.rotate(rad);
-            ctx.drawImage( img,
-                        (-instance.width / 2),
-                        (-instance.height / 2),
-                        instance.width,
-                        instance.height
-            );
-            ctx.rotate(-rad);
-            ctx.translate(-instance.x, -instance.y);
-            ctx.globalAlpha = 1;
-            ctx.scale(1/settings.zoom,1/settings.zoom);
-        }
-    };
-
-    this.getImgFromCache = getImgFromCache;
-
-    // @Params:
-    // - src: backdrop image location
-    // - options: {x:number, y:number, width:number, height:number}
-    this.drawBackdrop = function(src, x, y, width, height){
-        if(src[0]=='#'){
-            ctx.fillStyle=src;
-            ctx.fillRect(0,0,settings.width*settings.zoom,settings.height*settings.zoom);
-        } else {
-            var img = imageCache[src];
-            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
-            if( !img ){
-                img=new Image();
-                img.src=src;
-                imageCache[src]=img;
-            }
-            ctx.drawImage(
-                img,
-                (x||0)*settings.zoom,
-                (y||0)*settings.zoom,
-                (width||img.width)*settings.zoom,
-                (height||img.height)*settings.zoom
-            );
-        }
-    };
-
-    this.preload = function(images, completeFunc, progressFunc){
-        var loaderProxy = {};
-        if(images.length>0){
-            if(completeFunc){
-                onComplete(completeFunc);
-            }
-            if(progressFunc){
-                onProgress(progressFunc);
-            }
-            for(var i=0; i<images.length; i++){
-                var path = images[i];
-                imageCache[path] = loader.addImage(path);
-            }
-            function onComplete(callback){
-                loader.addCompletionListener(function(){
-                    callback();
-                });
-            };
-            function onProgress(callback){
-                loader.addProgressListener(function(e) {
-                    // e.completedCount, e.totalCount, e.resource.imageNumber
-                    callback(e);
-                });
-            }
-            loaderProxy.complete = onComplete;
-            loaderProxy.progress = onProgress;
-            loader.start();
-            if(debugMode){
-                console.log("Start loading "+images.length+" images...");
-                loader.addProgressListener(function(e) {
-                    console.log("Preloading progressing...");
-                });
-                loader.addCompletionListener(function(){
-                    console.log("Preloading completed!");
-                });
-            }
-        } else {
-            if(completeFunc){
-                completeFunc();
-            }
-        }
-        return loaderProxy;
-    };
-
-    function getImgFromCache(path){
-        var img = imageCache[path];
-        if( !img ){
-            img=new Image();
-            img.src=path;
-            imageCache[path]=img;
-        }
-        return img;
-    }
-}
-
-module.exports = Renderer;
-
-/***/ }),
+/***/ },
 /* 6 */
-/***/ (function(module, exports) {
+/***/ function(module, exports) {
 
-function Sound(debugMode){
-    this.sounds = [];
-    // this.generate = function(url){
-    //     return (function(){
-    //         var sound = new Audio(url),
-    //             obj = {};
-    //         sounds.push(sound);
-    //         obj.play = function(url){
-    //             sound.load();
-    //             sound.play();
-    //         };
-    //         obj.stop = function(){
-    //             sound.pause();
-    //             sound.currentTime = 0;
-    //         };
-    //         return obj;
-    //     })()
-    // }
-    this.play = function(url){
-        var sounds = this.sounds;
-        return (function(){
-            var sound = new Audio(url);
-            var index = sounds.length;
-            sounds.push(sound);
-            sound.play();
-            sound.addEventListener('ended', function(){
-                sounds[index] = null;
-                sound = null;
-            });
-            return sound;
-        })();
-    }
-    this.stop = function(){
-        for(var i=0; i<this.sounds.length; i++){
-            if(this.sounds[i]){
-                this.sounds[i].pause();
-            }
-        }
-    }
-}
+	//  state 用來表達 renderer 的以下狀態：
+	//
+	//   1. readyToStart:
+	//      初始狀態，此時執行 start 會直接開始 cycling(不斷執行 onTick)，並將狀態切換為 "running"。
+	//   2. running:
+	//      不停 cycling，此時可執行 stop 將狀態切換為 "stopping"。
+	//      但是執行 start 則不會有任何反應
+	//      執行 stop 則不會有任何反應。
+	//   3. stopping:
+	//      此時雖然已接受到停止訊息，但是最後一次的 rendering 尚未結束，
+	//      因此若在此時執行 start，會每隔一小段時間檢查 state 是否回復到 "readyToStart"。
+	//
+	//  狀態變化流程如下：
+	//  (1) -> (2) -> (3) -> (1)
 
-module.exports = Sound;
+	var FPS = 60
 
-/***/ }),
+	function Clock(update){
+	    this._state = "readyToStart"; //"readyToStart", "stopping", "running";
+	    this._update = update;
+	}
+
+	Clock.prototype.start = function(){
+	    if(this._state==="readyToStart"){
+	        var onTick;
+	        this._state = "running";
+	        onTick = (function(){
+	            if(this._state==="running"){
+	                this._update();
+	                setTimeout(function(){
+	                    requestAnimationFrame(onTick);
+	                },1000/FPS);
+	            } else {
+	                this._state = "readyToStart";
+	            }
+	        }).bind(this);
+	        setTimeout( onTick, 0 ); // 必須 Async，否則會產生微妙的時間差
+	    } else if (this._state==="stopping") {
+	        setTimeout( start, 10 );
+	    }
+	}
+
+	Clock.prototype.stop = function(){
+	    if(this._state==="running"){
+	        this._state = "stopping";
+	    }
+	}
+
+	module.exports = Clock;
+
+/***/ },
 /* 7 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ function(module, exports, __webpack_require__) {
 
-var util = __webpack_require__(0);
-var hitCanvas = document.createElement('canvas'),
-    hitTester = hitCanvas.getContext('2d');
-    // document.body.appendChild(hitCanvas);
+	var util = __webpack_require__(2);
+	var loader = new (__webpack_require__(8))();
 
-// @TODO: 客製化特征
-function Sprite(args, eventList, settings, renderer) {
+	function Renderer(ctx, settings, debugMode){
 
-    if (typeof args === 'string') args = { costumes: [args] }
+	    // 不可以這麼做，因為當我們要取 canvas 大小時，他可能已經變了
+	    // var stageWidth = settings.width,
+	    //     stageHeight = settings.height;
 
-    this.x = args.x || settings.width/2;
-    this.y = args.y || settings.height/2;
-    this.width = 1;
-    this.height = 1;
-    this.direction = args.direction || 0;
-    this.rotationstyle = args.rotationstyle || "full"; // "full", "flipped" and "fixed"
-    this.scale = args.scale || 1;
-    this.costumes = [].concat(args.costumes); // Deal with single string
-    this.hidden = args.hidden || false;
-    this.layer = args.layer || 0;
-    this.opacity = args.opacity || 1;
-    this.currentCostumeId = 0;
+	    var imageCache = {};
 
-    this._onTickFuncs = [];
-    this._deleted = false;
+	    this.clear = function() {
+	        ctx.clearRect(0,0,settings.width,settings.height);
+	    };
 
-    this._eventList = eventList;
-    this._settings = settings;
-    this._renderer = renderer;
+	    this.print = function(words, x, y, color, size, font) {
+	        x = x || 20;
+	        y = y || 20;
+	        size = size || 16; // Set or default
+	        font = font || "Arial";
+	        ctx.textBaseline = "top";
+	        ctx.font = (size*settings.zoom)+"px " + font;
+	        ctx.fillStyle = color || "black";
+	        ctx.fillText(words, x * settings.zoom, y * settings.zoom);
+	    };
 
+	    this.drawSprites = function(sprites){
+	        sprites.each(this.drawInstance);
+	    };
 
-    this._frames = [];
-    this._frameRate = 5;
-    this._frameTime = 0;
-    this._onTickFuncs.push(function() {
-        if(this._frames.length > 0) {
-            var now = new Date().getTime();
-            if(now >= this._frameTime + 1000 / this._frameRate) {
-                this._frameTime = now;
-                this.currentCostumeId = this._frames.shift();
-            }
-        }
-    })
-}
+	    this.drawInstance = function(instance){
+	        // console.log(instance);
+	        if(!instance.hidden){
+	            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
+	            var img = getImgFromCache(instance.getCurrentCostume());
+	            instance.width = img.width * instance.scale;
+	            instance.height = img.height * instance.scale;
 
-Sprite.prototype.moveTo = function(x, y){
-    this.x = x;
-    this.y = y;
-};
+	            var rad = util.degreeToRad(instance.direction);
+	            ctx.scale(settings.zoom,settings.zoom);
+	            ctx.globalAlpha = instance.opacity;
+	            if (instance.rotationstyle === 'flipped') {
+	                if(rad >= Math.PI) {
+	                    ctx.translate(instance.x*2, 0);
+	                    ctx.scale(-1, 1);
+	                    ctx.drawImage(  img,
+	                                    (instance.x-instance.width/2),
+	                                    (instance.y-instance.height/2),
+	                                    instance.width,
+	                                    instance.height
+	                    )
+	                    ctx.scale(-1, 1);
+	                    ctx.translate(-instance.x*2, 0);
+	                    ctx.globalAlpha = 1;
+	                    ctx.scale(1/settings.zoom,1/settings.zoom);
+	                    return;
+	                } else {
+	                    var rad = 0;
+	                }
+	            }
+	            if(instance.rotationstyle === 'fixed') {
+	                var rad = 0;
+	            }
+	            ctx.translate(instance.x, instance.y);
+	            ctx.rotate(rad);
+	            ctx.drawImage( img,
+	                        (-instance.width / 2),
+	                        (-instance.height / 2),
+	                        instance.width,
+	                        instance.height
+	            );
+	            ctx.rotate(-rad);
+	            ctx.translate(-instance.x, -instance.y);
+	            ctx.globalAlpha = 1;
+	            ctx.scale(1/settings.zoom,1/settings.zoom);
+	        }
+	    };
 
-Sprite.prototype.move = function(x, y){
-    this.x += x;
-    this.y += y;
-};
+	    this.getImgFromCache = getImgFromCache;
 
-Sprite.prototype.stepForward = function(distance){
-    var rad = util.degreeToRad(this.direction)
-    this.x += Math.cos(rad)*distance;
-    this.y -= Math.sin(rad)*distance;
-};
+	    // @Params:
+	    // - src: backdrop image location
+	    // - options: {x:number, y:number, width:number, height:number}
+	    this.drawBackdrop = function(src, x, y, width, height){
+	        if(src[0]=='#'){
+	            ctx.fillStyle=src;
+	            ctx.fillRect(0,0,settings.width*settings.zoom,settings.height*settings.zoom);
+	        } else {
+	            var img = imageCache[src];
+	            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
+	            if( !img ){
+	                img=new Image();
+	                img.src=src;
+	                imageCache[src]=img;
+	            }
+	            ctx.drawImage(
+	                img,
+	                (x||0)*settings.zoom,
+	                (y||0)*settings.zoom,
+	                (width||img.width)*settings.zoom,
+	                (height||img.height)*settings.zoom
+	            );
+	        }
+	    };
 
-Sprite.prototype.toward = function(){
-    var targetX, targetY, offsetX, offsetY, rad;
-    if(util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)){
-        targetX = arguments[0].x,
-        targetY = arguments[0].y;
-    } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
-        targetX = arguments[0],
-        targetY = arguments[1];
-    } else {
-        throw "請傳入角色(Sprite)或是 X, Y 坐標值";
-    }
-    offsetX = targetX - this.x;
-    offsetY = targetY - this.y;
-    rad = Math.atan2(-offsetY, offsetX); // 這裡的 offsetY 和數學坐標是反過來的
-    this.direction = util.radToDegree(rad);
-    // console.log(this.direction);
-}
+	    this.preload = function(images, completeFunc, progressFunc){
+	        var loaderProxy = {};
+	        if(images.length>0){
+	            if(completeFunc){
+	                onComplete(completeFunc);
+	            }
+	            if(progressFunc){
+	                onProgress(progressFunc);
+	            }
+	            for(var i=0; i<images.length; i++){
+	                var path = images[i];
+	                imageCache[path] = loader.addImage(path);
+	            }
+	            function onComplete(callback){
+	                loader.addCompletionListener(function(){
+	                    callback();
+	                });
+	            };
+	            function onProgress(callback){
+	                loader.addProgressListener(function(e) {
+	                    // e.completedCount, e.totalCount, e.resource.imageNumber
+	                    callback(e);
+	                });
+	            }
+	            loaderProxy.complete = onComplete;
+	            loaderProxy.progress = onProgress;
+	            loader.start();
+	            if(debugMode){
+	                console.log("Start loading "+images.length+" images...");
+	                loader.addProgressListener(function(e) {
+	                    console.log("Preloading progressing...");
+	                });
+	                loader.addCompletionListener(function(){
+	                    console.log("Preloading completed!");
+	                });
+	            }
+	        } else {
+	            if(completeFunc){
+	                completeFunc();
+	            }
+	        }
+	        return loaderProxy;
+	    };
 
-Sprite.prototype.touched = function(){
+	    function getImgFromCache(path){
+	        var img = imageCache[path];
+	        if( !img ){
+	            img=new Image();
+	            img.src=path;
+	            imageCache[path]=img;
+	        }
+	        return img;
+	    }
+	}
 
-    // 如果此角色為隱藏，不進行檢驗，直接回傳 false
-    if (this.hidden) { return false; }
+	module.exports = Renderer;
 
-    // 由於效能考量，先用成本最小的「座標範圍演算法」判斷是否有機會「像素重疊」
-    var crossX = crossY = false;
-
-    if( arguments[0] instanceof Sprite ){
-
-        // 如果目標角色為隱藏，不進行檢驗，直接回傳 false
-        if (arguments[0].hidden) { return false; }
-
-        var target = arguments[0];
-        if(target._deleted){
-            return false;
-        }
-        crossX = (this.x+this.width/2)>(target.x-target.width/2) && (target.x+target.width/2)>(this.x-this.width/2);
-        crossY = (this.y+this.height/2)>(target.y-target.height/2) && (target.y+target.height/2)>(this.y-this.height/2);
-    } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
-        var targetX = arguments[0].x,
-            targetY = arguments[0].y;
-        crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
-        crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
-    } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
-        var targetX = arguments[0],
-            targetY = arguments[1];
-        crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
-        crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
-    } else {
-        throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
-    }
-
-    // 如果經過「座標範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
-    if (crossX && crossY) {
-        var renderer = this._renderer;
-        var settings = this._settings;
-        hitCanvas.width = settings.width;
-        hitCanvas.height = settings.height;
-
-        hitTester.globalCompositeOperation = 'source-over';
-        hitTester.drawImage(    renderer.getImgFromCache(this.getCurrentCostume()),
-                                this.x-this.width/2, this.y-this.height/2,
-                                this.width, this.height );
-
-        hitTester.globalCompositeOperation = 'source-in';
-        if( arguments[0] instanceof Sprite ){
-            var target = arguments[0];
-            hitTester.drawImage(    renderer.getImgFromCache(target.getCurrentCostume()),
-                                    target.x-target.width/2, target.y-target.height/2,
-                                    target.width, target.height );
-        } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
-            hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
-        } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
-            hitTester.fillRect(arguments[0],arguments[1],1,1);
-        } else {
-            return false
-        }
-
-        // 只要對 sprite 的大小範圍取樣即可，不需對整張 canvas 取樣
-        var aData = hitTester.getImageData(this.x-this.width/2, this.y-this.height/2, this.width, this.height).data;
-        var pxCount = aData.length;
-        for (var i = 0; i < pxCount; i += 4) {
-            if (aData[i+3] > 0) {
-                return true;
-            }
-        }
-    }
-    return false;
-};
-
-Sprite.prototype.distanceTo = function(){
-    if( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ){
-        return util.distanceBetween( this, arguments[0] );
-    } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ){
-        return util.distanceBetween( this.x, this.y, arguments[0], arguments[1] );
-    }
-};
-
-Sprite.prototype.always = Sprite.prototype.forever = function(func){
-    this._onTickFuncs.push(func);
-};
-
-Sprite.prototype.when = Sprite.prototype.on = function(){
-    var event = arguments[0],
-        target, handler;
-    if(event=="hover" || event=="click"){
-        target = this;
-        handler = arguments[1];
-    } else if (event=="touch"){
-        if(Array.isArray(arguments[1])){
-            target = [this].concat(arguments[1]);
-        } else {
-            target = [this].concat([arguments[1]]);
-        }
-        handler = arguments[2];
-    } else {
-        console.log('Sprite.on() does only support "click", "hover" and "touch" events');
-        return false;
-    }
-    this._eventList.register(event, target, handler);
-};
-
-Sprite.prototype.destroy = function(){
-    this._deleted = true;
-};
-
-Sprite.prototype.getCurrentCostume = function(){
-    var id = this.currentCostumeId;
-    return this.costumes[id];
-};
-
-Sprite.prototype.animate = function (frames, frameRate) {
-    this._frames = frames;
-    this._frameRate = frameRate || 5;
-}
-
-module.exports = Sprite;
-
-/***/ }),
+/***/ },
 /* 8 */
-/***/ (function(module, exports) {
+/***/ function(module, exports) {
 
-function Sprites(){
-    this._sprites = [];
-}
+	/*!  | http://thinkpixellab.com/PxLoader */
+	/*
+	 * PixelLab Resource Loader
+	 * Loads resources while providing progress updates.
+	 */
 
-Sprites.prototype.runOnTick = function(){
-    this.each(function(){
-        for(var i=0; i<this._onTickFuncs.length; i++){
-            this._onTickFuncs[i].call(this);
-        }
-    });
-}
+	function PxLoader(settings) {
 
-Sprites.prototype.each = function(func){
-    var sprites = this._sprites;
-    // console.log(func);
-    for(var i=0; i<sprites.length; i++){
-        func.call(sprites[i],sprites[i]);
-    }
-}
+	    // merge settings with defaults
+	    settings = settings || {};
+	    this.settings = settings;
 
-Sprites.prototype.removeDeletedSprites = function(){
-    var sprites = this._sprites;
-    for(var i=0; i<sprites.length; i++){
-        if(sprites[i]._deleted){
-            sprites.splice(i,1);
-        }
-    }
-}
+	    // how frequently we poll resources for progress
+	    if (settings.statusInterval == null) {
+	        settings.statusInterval = 5000; // every 5 seconds by default
+	    }
 
-Sprites.prototype.clear = function(){
-    this._sprites = [];
-};
+	    // delay before logging since last progress change
+	    if (settings.loggingDelay == null) {
+	        settings.loggingDelay = 20 * 1000; // log stragglers after 20 secs
+	    }
 
-module.exports = Sprites;
+	    // stop waiting if no progress has been made in the moving time window
+	    if (settings.noProgressTimeout == null) {
+	        settings.noProgressTimeout = Infinity; // do not stop waiting by default
+	    }
 
-/***/ }),
+	    var entries = [],
+	        // holds resources to be loaded with their status
+	        completionListeners = [],
+	        progressListeners = [],
+	        timeStarted, progressChanged = Date.now();
+
+	    /**
+	     * The status of a resource
+	     * @enum {number}
+	     */
+	    var ResourceState = {
+	        QUEUED: 0,
+	        WAITING: 1,
+	        LOADED: 2,
+	        ERROR: 3,
+	        TIMEOUT: 4
+	    };
+
+	    // places non-array values into an array.
+	    var ensureArray = function(val) {
+	        if (val == null) {
+	            return [];
+	        }
+
+	        if (Array.isArray(val)) {
+	            return val;
+	        }
+
+	        return [val];
+	    };
+
+	    // add an entry to the list of resources to be loaded
+	    this.add = function(resource) {
+
+	        // TODO: would be better to create a base class for all resources and
+	        // initialize the PxLoaderTags there rather than overwritting tags here
+	        resource.tags = new PxLoaderTags(resource.tags);
+
+	        // ensure priority is set
+	        if (resource.priority == null) {
+	            resource.priority = Infinity;
+	        }
+
+	        entries.push({
+	            resource: resource,
+	            status: ResourceState.QUEUED
+	        });
+	    };
+
+	    this.addProgressListener = function(callback, tags) {
+	        progressListeners.push({
+	            callback: callback,
+	            tags: new PxLoaderTags(tags)
+	        });
+	    };
+
+	    this.addCompletionListener = function(callback, tags) {
+	        completionListeners.push({
+	            tags: new PxLoaderTags(tags),
+	            callback: function(e) {
+	                if (e.completedCount === e.totalCount) {
+	                    callback(e);
+	                }
+	            }
+	        });
+	    };
+
+	    // creates a comparison function for resources
+	    var getResourceSort = function(orderedTags) {
+
+	        // helper to get the top tag's order for a resource
+	        orderedTags = ensureArray(orderedTags);
+	        var getTagOrder = function(entry) {
+	            var resource = entry.resource,
+	                bestIndex = Infinity;
+	            for (var i = 0; i < resource.tags.length; i++) {
+	                for (var j = 0; j < Math.min(orderedTags.length, bestIndex); j++) {
+	                    if (resource.tags.all[i] === orderedTags[j] && j < bestIndex) {
+	                        bestIndex = j;
+	                        if (bestIndex === 0) {
+	                            break;
+	                        }
+	                    }
+	                    if (bestIndex === 0) {
+	                        break;
+	                    }
+	                }
+	            }
+	            return bestIndex;
+	        };
+	        return function(a, b) {
+	            // check tag order first
+	            var aOrder = getTagOrder(a),
+	                bOrder = getTagOrder(b);
+	            if (aOrder < bOrder) { return -1; }
+	            if (aOrder > bOrder) { return 1; }
+
+	            // now check priority
+	            if (a.priority < b.priority) { return -1; }
+	            if (a.priority > b.priority) { return 1; }
+	            return 0;
+	        };
+	    };
+
+	    this.start = function(orderedTags) {
+	        timeStarted = Date.now();
+
+	        // first order the resources
+	        var compareResources = getResourceSort(orderedTags);
+	        entries.sort(compareResources);
+
+	        // trigger requests for each resource
+	        for (var i = 0, len = entries.length; i < len; i++) {
+	            var entry = entries[i];
+	            entry.status = ResourceState.WAITING;
+	            entry.resource.start(this);
+	        }
+
+	        // do an initial status check soon since items may be loaded from the cache
+	        setTimeout(statusCheck, 100);
+	    };
+
+	    var statusCheck = function() {
+	        var checkAgain = false,
+	            noProgressTime = Date.now() - progressChanged,
+	            timedOut = (noProgressTime >= settings.noProgressTimeout),
+	            shouldLog = (noProgressTime >= settings.loggingDelay);
+
+	        for (var i = 0, len = entries.length; i < len; i++) {
+	            var entry = entries[i];
+	            if (entry.status !== ResourceState.WAITING) {
+	                continue;
+	            }
+
+	            // see if the resource has loaded
+	            if (entry.resource.checkStatus) {
+	                entry.resource.checkStatus();
+	            }
+
+	            // if still waiting, mark as timed out or make sure we check again
+	            if (entry.status === ResourceState.WAITING) {
+	                if (timedOut) {
+	                    entry.resource.onTimeout();
+	                } else {
+	                    checkAgain = true;
+	                }
+	            }
+	        }
+
+	        // log any resources that are still pending
+	        if (shouldLog && checkAgain) {
+	            log();
+	        }
+
+	        if (checkAgain) {
+	            setTimeout(statusCheck, settings.statusInterval);
+	        }
+	    };
+
+	    this.isBusy = function() {
+	        for (var i = 0, len = entries.length; i < len; i++) {
+	            if (entries[i].status === ResourceState.QUEUED || entries[i].status === ResourceState.WAITING) {
+	                return true;
+	            }
+	        }
+	        return false;
+	    };
+
+	    var onProgress = function(resource, statusType) {
+
+	        var entry = null,
+	            i, len, listeners, listener, shouldCall;
+
+	        // find the entry for the resource
+	        for (i = 0, len = entries.length; i < len; i++) {
+	            if (entries[i].resource === resource) {
+	                entry = entries[i];
+	                break;
+	            }
+	        }
+
+	        // we have already updated the status of the resource
+	        if (entry == null || entry.status !== ResourceState.WAITING) {
+	            return;
+	        }
+	        entry.status = statusType;
+	        progressChanged = Date.now();
+
+	        // ensure completion listeners fire after progress listeners
+	        listeners = progressListeners.concat( completionListeners );
+
+	        // fire callbacks for interested listeners
+	        for (i = 0, len = listeners.length; i < len; i++) {
+
+	            listener = listeners[i];
+	            if (listener.tags.length === 0) {
+	                // no tags specified so always tell the listener
+	                shouldCall = true;
+	            } else {
+	                // listener only wants to hear about certain tags
+	                shouldCall = resource.tags.intersects(listener.tags);
+	            }
+
+	            if (shouldCall) {
+	                sendProgress(entry, listener);
+	            }
+	        }
+	    };
+
+	    this.onLoad = function(resource) {
+	        onProgress(resource, ResourceState.LOADED);
+	    };
+	    this.onError = function(resource) {
+	        onProgress(resource, ResourceState.ERROR);
+	    };
+	    this.onTimeout = function(resource) {
+	        onProgress(resource, ResourceState.TIMEOUT);
+	    };
+
+	    // sends a progress report to a listener
+	    var sendProgress = function(updatedEntry, listener) {
+	        // find stats for all the resources the caller is interested in
+	        var completed = 0,
+	            total = 0,
+	            i, len, entry, includeResource;
+	        for (i = 0, len = entries.length; i < len; i++) {
+
+	            entry = entries[i];
+	            includeResource = false;
+
+	            if (listener.tags.length === 0) {
+	                // no tags specified so always tell the listener
+	                includeResource = true;
+	            } else {
+	                includeResource = entry.resource.tags.intersects(listener.tags);
+	            }
+
+	            if (includeResource) {
+	                total++;
+	                if (entry.status === ResourceState.LOADED ||
+	                    entry.status === ResourceState.ERROR ||
+	                    entry.status === ResourceState.TIMEOUT) {
+
+	                    completed++;
+	                }
+	            }
+	        }
+
+	        listener.callback({
+	            // info about the resource that changed
+	            resource: updatedEntry.resource,
+
+	            // should we expose StatusType instead?
+	            loaded: (updatedEntry.status === ResourceState.LOADED),
+	            error: (updatedEntry.status === ResourceState.ERROR),
+	            timeout: (updatedEntry.status === ResourceState.TIMEOUT),
+
+	            // updated stats for all resources
+	            completedCount: completed,
+	            totalCount: total
+	        });
+	    };
+
+	    // prints the status of each resource to the console
+	    var log = this.log = function(showAll) {
+	        if (!window.console) {
+	            return;
+	        }
+
+	        var elapsedSeconds = Math.round((Date.now() - timeStarted) / 1000);
+	        window.console.log('PxLoader elapsed: ' + elapsedSeconds + ' sec');
+
+	        for (var i = 0, len = entries.length; i < len; i++) {
+	            var entry = entries[i];
+	            if (!showAll && entry.status !== ResourceState.WAITING) {
+	                continue;
+	            }
+
+	            var message = 'PxLoader: #' + i + ' ' + entry.resource.getName();
+	            switch(entry.status) {
+	                case ResourceState.QUEUED:
+	                    message += ' (Not Started)';
+	                    break;
+	                case ResourceState.WAITING:
+	                    message += ' (Waiting)';
+	                    break;
+	                case ResourceState.LOADED:
+	                    message += ' (Loaded)';
+	                    break;
+	                case ResourceState.ERROR:
+	                    message += ' (Error)';
+	                    break;
+	                case ResourceState.TIMEOUT:
+	                    message += ' (Timeout)';
+	                    break;
+	            }
+
+	            if (entry.resource.tags.length > 0) {
+	                message += ' Tags: [' + entry.resource.tags.all.join(',') + ']';
+	            }
+
+	            window.console.log(message);
+	        }
+	    };
+	}
+
+
+	// Tag object to handle tag intersection; once created not meant to be changed
+	// Performance rationale: http://jsperf.com/lists-indexof-vs-in-operator/3
+
+	function PxLoaderTags(values) {
+
+	    this.all = [];
+	    this.first = null; // cache the first value
+	    this.length = 0;
+
+	    // holds values as keys for quick lookup
+	    this.lookup = {};
+
+	    if (values) {
+
+	        // first fill the array of all values
+	        if (Array.isArray(values)) {
+	            // copy the array of values, just to be safe
+	            this.all = values.slice(0);
+	        } else if (typeof values === 'object') {
+	            for (var key in values) {
+	                if(values.hasOwnProperty(key)) {
+	                    this.all.push(key);
+	                }
+	            }
+	        } else {
+	            this.all.push(values);
+	        }
+
+	        // cache the length and the first value
+	        this.length = this.all.length;
+	        if (this.length > 0) {
+	            this.first = this.all[0];
+	        }
+
+	        // set values as object keys for quick lookup during intersection test
+	        for (var i = 0; i < this.length; i++) {
+	            this.lookup[this.all[i]] = true;
+	        }
+	    }
+	}
+
+	// compare this object with another; return true if they share at least one value
+	PxLoaderTags.prototype.intersects = function(other) {
+
+	    // handle empty values case
+	    if (this.length === 0 || other.length === 0) {
+	        return false;
+	    }
+
+	    // only a single value to compare?
+	    if (this.length === 1 && other.length === 1) {
+	        return this.first === other.first;
+	    }
+
+	    // better to loop through the smaller object
+	    if (other.length < this.length) {
+	        return other.intersects(this);
+	    }
+
+	    // loop through every key to see if there are any matches
+	    for (var key in this.lookup) {
+	        if (other.lookup[key]) {
+	            return true;
+	        }
+	    }
+
+	    return false;
+	};
+
+	function PxLoaderImage(url, tags, priority, options) {
+	    options = options || {};
+
+	    var self = this,
+	        loader = null,
+	        img;
+
+	    img = this.img = new Image();
+	    if (options.origin) {
+	        img.crossOrigin = options.origin;
+	    }
+
+	    this.tags = tags;
+	    this.priority = priority;
+
+	    var onReadyStateChange = function() {
+	        if (self.img.readyState !== 'complete') {
+	            return;
+	        }
+
+	        onLoad();
+	    };
+
+	    var onLoad = function() {
+	        loader.onLoad(self);
+	        cleanup();
+	    };
+
+	    var onError = function() {
+	        loader.onError(self);
+	        cleanup();
+	    };
+
+	    var onTimeout = function() {
+	        loader.onTimeout(self);
+	        cleanup();
+	    };
+
+	    var cleanup = function() {
+	        self.unbind('load', onLoad);
+	        self.unbind('readystatechange', onReadyStateChange);
+	        self.unbind('error', onError);
+	    };
+
+	    this.start = function(pxLoader) {
+	        // we need the loader ref so we can notify upon completion
+	        loader = pxLoader;
+
+	        // NOTE: Must add event listeners before the src is set. We
+	        // also need to use the readystatechange because sometimes
+	        // load doesn't fire when an image is in the cache.
+	        self.bind('load', onLoad);
+	        self.bind('readystatechange', onReadyStateChange);
+	        self.bind('error', onError);
+
+	        self.img.src = url;
+	    };
+
+	    // called by PxLoader to check status of image (fallback in case
+	    // the event listeners are not triggered).
+	    this.checkStatus = function() {
+	        onReadyStateChange();
+	    };
+
+	    // called by PxLoader when it is no longer waiting
+	    this.onTimeout = function() {
+	        if (self.img.complete) {
+	            onLoad();
+	        } else {
+	            onTimeout();
+	        }
+	    };
+
+	    // returns a name for the resource that can be used in logging
+	    this.getName = function() {
+	        return url;
+	    };
+
+	    // cross-browser event binding
+	    this.bind = function(eventName, eventHandler) {
+	        self.img.addEventListener(eventName, eventHandler, false);
+	    };
+
+	    // cross-browser event un-binding
+	    this.unbind = function(eventName, eventHandler) {
+	        self.img.removeEventListener(eventName, eventHandler, false);
+	    };
+
+	}
+
+	// add a convenience method to PxLoader for adding an image
+	PxLoader.prototype.addImage = function(url, tags, priority, options) {
+	    var imageLoader = new PxLoaderImage(url, tags, priority, options);
+	    this.add(imageLoader);
+
+	    // return the img element to the caller
+	    return imageLoader.img;
+	};
+
+	module.exports = PxLoader;
+
+/***/ },
 /* 9 */
-/***/ (function(module, exports) {
-
-/*!  | http://thinkpixellab.com/PxLoader */
-/*
- * PixelLab Resource Loader
- * Loads resources while providing progress updates.
- */
-
-function PxLoader(settings) {
-
-    // merge settings with defaults
-    settings = settings || {};
-    this.settings = settings;
-
-    // how frequently we poll resources for progress
-    if (settings.statusInterval == null) {
-        settings.statusInterval = 5000; // every 5 seconds by default
-    }
-
-    // delay before logging since last progress change
-    if (settings.loggingDelay == null) {
-        settings.loggingDelay = 20 * 1000; // log stragglers after 20 secs
-    }
-
-    // stop waiting if no progress has been made in the moving time window
-    if (settings.noProgressTimeout == null) {
-        settings.noProgressTimeout = Infinity; // do not stop waiting by default
-    }
-
-    var entries = [],
-        // holds resources to be loaded with their status
-        completionListeners = [],
-        progressListeners = [],
-        timeStarted, progressChanged = Date.now();
-
-    /**
-     * The status of a resource
-     * @enum {number}
-     */
-    var ResourceState = {
-        QUEUED: 0,
-        WAITING: 1,
-        LOADED: 2,
-        ERROR: 3,
-        TIMEOUT: 4
-    };
-
-    // places non-array values into an array.
-    var ensureArray = function(val) {
-        if (val == null) {
-            return [];
-        }
-
-        if (Array.isArray(val)) {
-            return val;
-        }
-
-        return [val];
-    };
-
-    // add an entry to the list of resources to be loaded
-    this.add = function(resource) {
-
-        // TODO: would be better to create a base class for all resources and
-        // initialize the PxLoaderTags there rather than overwritting tags here
-        resource.tags = new PxLoaderTags(resource.tags);
-
-        // ensure priority is set
-        if (resource.priority == null) {
-            resource.priority = Infinity;
-        }
-
-        entries.push({
-            resource: resource,
-            status: ResourceState.QUEUED
-        });
-    };
-
-    this.addProgressListener = function(callback, tags) {
-        progressListeners.push({
-            callback: callback,
-            tags: new PxLoaderTags(tags)
-        });
-    };
-
-    this.addCompletionListener = function(callback, tags) {
-        completionListeners.push({
-            tags: new PxLoaderTags(tags),
-            callback: function(e) {
-                if (e.completedCount === e.totalCount) {
-                    callback(e);
-                }
-            }
-        });
-    };
-
-    // creates a comparison function for resources
-    var getResourceSort = function(orderedTags) {
-
-        // helper to get the top tag's order for a resource
-        orderedTags = ensureArray(orderedTags);
-        var getTagOrder = function(entry) {
-            var resource = entry.resource,
-                bestIndex = Infinity;
-            for (var i = 0; i < resource.tags.length; i++) {
-                for (var j = 0; j < Math.min(orderedTags.length, bestIndex); j++) {
-                    if (resource.tags.all[i] === orderedTags[j] && j < bestIndex) {
-                        bestIndex = j;
-                        if (bestIndex === 0) {
-                            break;
-                        }
-                    }
-                    if (bestIndex === 0) {
-                        break;
-                    }
-                }
-            }
-            return bestIndex;
-        };
-        return function(a, b) {
-            // check tag order first
-            var aOrder = getTagOrder(a),
-                bOrder = getTagOrder(b);
-            if (aOrder < bOrder) { return -1; }
-            if (aOrder > bOrder) { return 1; }
-
-            // now check priority
-            if (a.priority < b.priority) { return -1; }
-            if (a.priority > b.priority) { return 1; }
-            return 0;
-        };
-    };
-
-    this.start = function(orderedTags) {
-        timeStarted = Date.now();
-
-        // first order the resources
-        var compareResources = getResourceSort(orderedTags);
-        entries.sort(compareResources);
-
-        // trigger requests for each resource
-        for (var i = 0, len = entries.length; i < len; i++) {
-            var entry = entries[i];
-            entry.status = ResourceState.WAITING;
-            entry.resource.start(this);
-        }
-
-        // do an initial status check soon since items may be loaded from the cache
-        setTimeout(statusCheck, 100);
-    };
-
-    var statusCheck = function() {
-        var checkAgain = false,
-            noProgressTime = Date.now() - progressChanged,
-            timedOut = (noProgressTime >= settings.noProgressTimeout),
-            shouldLog = (noProgressTime >= settings.loggingDelay);
-
-        for (var i = 0, len = entries.length; i < len; i++) {
-            var entry = entries[i];
-            if (entry.status !== ResourceState.WAITING) {
-                continue;
-            }
-
-            // see if the resource has loaded
-            if (entry.resource.checkStatus) {
-                entry.resource.checkStatus();
-            }
-
-            // if still waiting, mark as timed out or make sure we check again
-            if (entry.status === ResourceState.WAITING) {
-                if (timedOut) {
-                    entry.resource.onTimeout();
-                } else {
-                    checkAgain = true;
-                }
-            }
-        }
-
-        // log any resources that are still pending
-        if (shouldLog && checkAgain) {
-            log();
-        }
-
-        if (checkAgain) {
-            setTimeout(statusCheck, settings.statusInterval);
-        }
-    };
-
-    this.isBusy = function() {
-        for (var i = 0, len = entries.length; i < len; i++) {
-            if (entries[i].status === ResourceState.QUEUED || entries[i].status === ResourceState.WAITING) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-    var onProgress = function(resource, statusType) {
-
-        var entry = null,
-            i, len, listeners, listener, shouldCall;
-
-        // find the entry for the resource
-        for (i = 0, len = entries.length; i < len; i++) {
-            if (entries[i].resource === resource) {
-                entry = entries[i];
-                break;
-            }
-        }
-
-        // we have already updated the status of the resource
-        if (entry == null || entry.status !== ResourceState.WAITING) {
-            return;
-        }
-        entry.status = statusType;
-        progressChanged = Date.now();
-
-        // ensure completion listeners fire after progress listeners
-        listeners = progressListeners.concat( completionListeners );
-
-        // fire callbacks for interested listeners
-        for (i = 0, len = listeners.length; i < len; i++) {
-
-            listener = listeners[i];
-            if (listener.tags.length === 0) {
-                // no tags specified so always tell the listener
-                shouldCall = true;
-            } else {
-                // listener only wants to hear about certain tags
-                shouldCall = resource.tags.intersects(listener.tags);
-            }
-
-            if (shouldCall) {
-                sendProgress(entry, listener);
-            }
-        }
-    };
-
-    this.onLoad = function(resource) {
-        onProgress(resource, ResourceState.LOADED);
-    };
-    this.onError = function(resource) {
-        onProgress(resource, ResourceState.ERROR);
-    };
-    this.onTimeout = function(resource) {
-        onProgress(resource, ResourceState.TIMEOUT);
-    };
-
-    // sends a progress report to a listener
-    var sendProgress = function(updatedEntry, listener) {
-        // find stats for all the resources the caller is interested in
-        var completed = 0,
-            total = 0,
-            i, len, entry, includeResource;
-        for (i = 0, len = entries.length; i < len; i++) {
-
-            entry = entries[i];
-            includeResource = false;
-
-            if (listener.tags.length === 0) {
-                // no tags specified so always tell the listener
-                includeResource = true;
-            } else {
-                includeResource = entry.resource.tags.intersects(listener.tags);
-            }
-
-            if (includeResource) {
-                total++;
-                if (entry.status === ResourceState.LOADED ||
-                    entry.status === ResourceState.ERROR ||
-                    entry.status === ResourceState.TIMEOUT) {
-
-                    completed++;
-                }
-            }
-        }
-
-        listener.callback({
-            // info about the resource that changed
-            resource: updatedEntry.resource,
-
-            // should we expose StatusType instead?
-            loaded: (updatedEntry.status === ResourceState.LOADED),
-            error: (updatedEntry.status === ResourceState.ERROR),
-            timeout: (updatedEntry.status === ResourceState.TIMEOUT),
-
-            // updated stats for all resources
-            completedCount: completed,
-            totalCount: total
-        });
-    };
-
-    // prints the status of each resource to the console
-    var log = this.log = function(showAll) {
-        if (!window.console) {
-            return;
-        }
-
-        var elapsedSeconds = Math.round((Date.now() - timeStarted) / 1000);
-        window.console.log('PxLoader elapsed: ' + elapsedSeconds + ' sec');
-
-        for (var i = 0, len = entries.length; i < len; i++) {
-            var entry = entries[i];
-            if (!showAll && entry.status !== ResourceState.WAITING) {
-                continue;
-            }
-
-            var message = 'PxLoader: #' + i + ' ' + entry.resource.getName();
-            switch(entry.status) {
-                case ResourceState.QUEUED:
-                    message += ' (Not Started)';
-                    break;
-                case ResourceState.WAITING:
-                    message += ' (Waiting)';
-                    break;
-                case ResourceState.LOADED:
-                    message += ' (Loaded)';
-                    break;
-                case ResourceState.ERROR:
-                    message += ' (Error)';
-                    break;
-                case ResourceState.TIMEOUT:
-                    message += ' (Timeout)';
-                    break;
-            }
-
-            if (entry.resource.tags.length > 0) {
-                message += ' Tags: [' + entry.resource.tags.all.join(',') + ']';
-            }
-
-            window.console.log(message);
-        }
-    };
-}
-
-
-// Tag object to handle tag intersection; once created not meant to be changed
-// Performance rationale: http://jsperf.com/lists-indexof-vs-in-operator/3
-
-function PxLoaderTags(values) {
-
-    this.all = [];
-    this.first = null; // cache the first value
-    this.length = 0;
-
-    // holds values as keys for quick lookup
-    this.lookup = {};
-
-    if (values) {
-
-        // first fill the array of all values
-        if (Array.isArray(values)) {
-            // copy the array of values, just to be safe
-            this.all = values.slice(0);
-        } else if (typeof values === 'object') {
-            for (var key in values) {
-                if(values.hasOwnProperty(key)) {
-                    this.all.push(key);
-                }
-            }
-        } else {
-            this.all.push(values);
-        }
-
-        // cache the length and the first value
-        this.length = this.all.length;
-        if (this.length > 0) {
-            this.first = this.all[0];
-        }
-
-        // set values as object keys for quick lookup during intersection test
-        for (var i = 0; i < this.length; i++) {
-            this.lookup[this.all[i]] = true;
-        }
-    }
-}
-
-// compare this object with another; return true if they share at least one value
-PxLoaderTags.prototype.intersects = function(other) {
-
-    // handle empty values case
-    if (this.length === 0 || other.length === 0) {
-        return false;
-    }
-
-    // only a single value to compare?
-    if (this.length === 1 && other.length === 1) {
-        return this.first === other.first;
-    }
-
-    // better to loop through the smaller object
-    if (other.length < this.length) {
-        return other.intersects(this);
-    }
-
-    // loop through every key to see if there are any matches
-    for (var key in this.lookup) {
-        if (other.lookup[key]) {
-            return true;
-        }
-    }
-
-    return false;
-};
-
-function PxLoaderImage(url, tags, priority, options) {
-    options = options || {};
-
-    var self = this,
-        loader = null,
-        img;
-
-    img = this.img = new Image();
-    if (options.origin) {
-        img.crossOrigin = options.origin;
-    }
-
-    this.tags = tags;
-    this.priority = priority;
-
-    var onReadyStateChange = function() {
-        if (self.img.readyState !== 'complete') {
-            return;
-        }
-
-        onLoad();
-    };
-
-    var onLoad = function() {
-        loader.onLoad(self);
-        cleanup();
-    };
-
-    var onError = function() {
-        loader.onError(self);
-        cleanup();
-    };
-
-    var onTimeout = function() {
-        loader.onTimeout(self);
-        cleanup();
-    };
-
-    var cleanup = function() {
-        self.unbind('load', onLoad);
-        self.unbind('readystatechange', onReadyStateChange);
-        self.unbind('error', onError);
-    };
-
-    this.start = function(pxLoader) {
-        // we need the loader ref so we can notify upon completion
-        loader = pxLoader;
-
-        // NOTE: Must add event listeners before the src is set. We
-        // also need to use the readystatechange because sometimes
-        // load doesn't fire when an image is in the cache.
-        self.bind('load', onLoad);
-        self.bind('readystatechange', onReadyStateChange);
-        self.bind('error', onError);
-
-        self.img.src = url;
-    };
-
-    // called by PxLoader to check status of image (fallback in case
-    // the event listeners are not triggered).
-    this.checkStatus = function() {
-        onReadyStateChange();
-    };
-
-    // called by PxLoader when it is no longer waiting
-    this.onTimeout = function() {
-        if (self.img.complete) {
-            onLoad();
-        } else {
-            onTimeout();
-        }
-    };
-
-    // returns a name for the resource that can be used in logging
-    this.getName = function() {
-        return url;
-    };
-
-    // cross-browser event binding
-    this.bind = function(eventName, eventHandler) {
-        self.img.addEventListener(eventName, eventHandler, false);
-    };
-
-    // cross-browser event un-binding
-    this.unbind = function(eventName, eventHandler) {
-        self.img.removeEventListener(eventName, eventHandler, false);
-    };
-
-}
-
-// add a convenience method to PxLoader for adding an image
-PxLoader.prototype.addImage = function(url, tags, priority, options) {
-    var imageLoader = new PxLoaderImage(url, tags, priority, options);
-    this.add(imageLoader);
-
-    // return the img element to the caller
-    return imageLoader.img;
-};
-
-module.exports = PxLoader;
-
-/***/ }),
+/***/ function(module, exports) {
+
+	function Sound(debugMode){
+	    this.sounds = [];
+	    // this.generate = function(url){
+	    //     return (function(){
+	    //         var sound = new Audio(url),
+	    //             obj = {};
+	    //         sounds.push(sound);
+	    //         obj.play = function(url){
+	    //             sound.load();
+	    //             sound.play();
+	    //         };
+	    //         obj.stop = function(){
+	    //             sound.pause();
+	    //             sound.currentTime = 0;
+	    //         };
+	    //         return obj;
+	    //     })()
+	    // }
+	    this.play = function(url){
+	        var sounds = this.sounds;
+	        return (function(){
+	            var sound = new Audio(url);
+	            var index = sounds.length;
+	            sounds.push(sound);
+	            sound.play();
+	            sound.addEventListener('ended', function(){
+	                sounds[index] = null;
+	                sound = null;
+	            });
+	            return sound;
+	        })();
+	    }
+	    this.stop = function(){
+	        for(var i=0; i<this.sounds.length; i++){
+	            if(this.sounds[i]){
+	                this.sounds[i].pause();
+	            }
+	        }
+	    }
+	}
+
+	module.exports = Sound;
+
+/***/ },
 /* 10 */
-/***/ (function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-// Source: http://jsfiddle.net/vWx8V/
-// http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
+	var keycode = __webpack_require__(11);
 
-/**
- * Conenience method returns corresponding value for given keyName or keyCode.
- *
- * @param {Mixed} keyCode {Number} or keyName {String}
- * @return {Mixed}
- * @api public
- */
+	var io = function(canvas, settings, debugMode){
 
-exports = module.exports = function(searchInput) {
-  // Keyboard Events
-  if (searchInput && 'object' === typeof searchInput) {
-    var hasKeyCode = searchInput.which || searchInput.keyCode || searchInput.charCode
-    if (hasKeyCode) searchInput = hasKeyCode
-  }
+	    var exports={},
+	        cursor={x:0, y:0},
+	        key=[],
+	        clicked={x:null, y:null},
+	        keyup={},
+	        keydown={},
+	        holding={};
 
-  // Numbers
-  if ('number' === typeof searchInput) return names[searchInput]
+	    debugMode = debugMode || false;
 
-  // Everything else (cast to string)
-  var search = String(searchInput)
+	    // Make any element focusable for keydown event.
+	    canvas.setAttribute("tabindex",'1');
+	    canvas.style.outline = "none";
 
-  // check codes
-  var foundNamedKey = codes[search.toLowerCase()]
-  if (foundNamedKey) return foundNamedKey
+	    canvas.addEventListener("mousemove", function(e){
+	        cursor.x = e.offsetX / settings.zoom;
+	        cursor.y = e.offsetY / settings.zoom;
+	    });
 
-  // check aliases
-  var foundNamedKey = aliases[search.toLowerCase()]
-  if (foundNamedKey) return foundNamedKey
+	    canvas.addEventListener("click", function(e){
+	        clicked.x = e.offsetX / settings.zoom;
+	        clicked.y = e.offsetY / settings.zoom;
+	        if(debugMode){
+	            console.log( "Clicked! cursor:"+JSON.stringify(cursor) );
+	        }
+	    });
 
-  // weird character?
-  if (search.length === 1) return search.charCodeAt(0)
+	    canvas.addEventListener("keydown", function(e){
+	        var key = keycode(e.keyCode);
+	        keydown[key] = true;
+	        holding[key] = true;
+	        if(debugMode){
+	            console.log( "Keydown! key:"+key );
+	        }
+	    });
 
-  return undefined
-}
+	    canvas.addEventListener("keyup", function(e){
+	        var key = keycode(e.keyCode);
+	        keyup[key] = true;
+	        holding[key] = false;
+	        if(debugMode){
+	            console.log( "Keyup! key:"+key );
+	        }
+	    });
 
-/**
- * Get by name
- *
- *   exports.code['enter'] // => 13
- */
+	    exports.cursor = cursor;
+	    exports.clicked = clicked;
+	    exports.keyup = keyup;
+	    exports.keydown = keydown;
+	    exports.holding = holding;
+	    return exports;
+	};
 
-var codes = exports.code = exports.codes = {
-  'backspace': 8,
-  'tab': 9,
-  'enter': 13,
-  'shift': 16,
-  'ctrl': 17,
-  'alt': 18,
-  'pause/break': 19,
-  'caps lock': 20,
-  'esc': 27,
-  'space': 32,
-  'page up': 33,
-  'page down': 34,
-  'end': 35,
-  'home': 36,
-  'left': 37,
-  'up': 38,
-  'right': 39,
-  'down': 40,
-  'insert': 45,
-  'delete': 46,
-  'command': 91,
-  'left command': 91,
-  'right command': 93,
-  'numpad *': 106,
-  'numpad +': 107,
-  'numpad -': 109,
-  'numpad .': 110,
-  'numpad /': 111,
-  'num lock': 144,
-  'scroll lock': 145,
-  'my computer': 182,
-  'my calculator': 183,
-  ';': 186,
-  '=': 187,
-  ',': 188,
-  '-': 189,
-  '.': 190,
-  '/': 191,
-  '`': 192,
-  '[': 219,
-  '\\': 220,
-  ']': 221,
-  "'": 222
-}
+	module.exports = io;
 
-// Helper aliases
-
-var aliases = exports.aliases = {
-  'windows': 91,
-  '⇧': 16,
-  '⌥': 18,
-  '⌃': 17,
-  '⌘': 91,
-  'ctl': 17,
-  'control': 17,
-  'option': 18,
-  'pause': 19,
-  'break': 19,
-  'caps': 20,
-  'return': 13,
-  'escape': 27,
-  'spc': 32,
-  'pgup': 33,
-  'pgdn': 34,
-  'ins': 45,
-  'del': 46,
-  'cmd': 91
-}
-
-
-/*!
- * Programatically add the following
- */
-
-// lower case chars
-for (i = 97; i < 123; i++) codes[String.fromCharCode(i)] = i - 32
-
-// numbers
-for (var i = 48; i < 58; i++) codes[i - 48] = i
-
-// function keys
-for (i = 1; i < 13; i++) codes['f'+i] = i + 111
-
-// numpad keys
-for (i = 0; i < 10; i++) codes['numpad '+i] = i + 96
-
-/**
- * Get by code
- *
- *   exports.name[13] // => 'Enter'
- */
-
-var names = exports.names = exports.title = {} // title for backward compat
-
-// Create reverse mapping
-for (i in codes) names[codes[i]] = i
-
-// Add aliases
-for (var alias in aliases) {
-  codes[alias] = aliases[alias]
-}
-
-
-/***/ }),
+/***/ },
 /* 11 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-var Sprite = __webpack_require__(7);
-var Sprites = __webpack_require__(8);
-var EventList = __webpack_require__(2);
-var Inspector = __webpack_require__(3);
-var Clock = __webpack_require__(1);
-var Renderer = __webpack_require__(5);
-var Sound = __webpack_require__(6);
+	// Source: http://jsfiddle.net/vWx8V/
+	// http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
 
-function engine(stageId, debugMode){
+	/**
+	 * Conenience method returns corresponding value for given keyName or keyCode.
+	 *
+	 * @param {Mixed} keyCode {Number} or keyName {String}
+	 * @return {Mixed}
+	 * @api public
+	 */
 
-    var canvas= document.getElementById(stageId);
-    var ctx = canvas.getContext("2d");
+	exports = module.exports = function(searchInput) {
+	  // Keyboard Events
+	  if (searchInput && 'object' === typeof searchInput) {
+	    var hasKeyCode = searchInput.which || searchInput.keyCode || searchInput.charCode
+	    if (hasKeyCode) searchInput = hasKeyCode
+	  }
 
-    var settings = {
-        width: canvas.width,
-        height: canvas.height,
-        zoom: 1,
-        // gravity: 0, //@TODO: set gravity
-        updateFunctions: []
-    };
+	  // Numbers
+	  if ('number' === typeof searchInput) return names[searchInput]
 
-    var sprites = new Sprites();
-    var inspector = new Inspector();
-    var io = __webpack_require__(4)(canvas, settings, debugMode);
-    var eventList = new EventList(io, debugMode);
-    var renderer = new Renderer(ctx, settings, debugMode);
-    var sound = new Sound();
-    var clock = new Clock(function(){
-        eventList.traverse();
-        for(var i=0; i<settings.updateFunctions.length; i++){
-            settings.updateFunctions[i]();
-        };
-        sprites.runOnTick();
-        sprites.removeDeletedSprites();
-        inspector.updateFPS();
-    });
+	  // Everything else (cast to string)
+	  var search = String(searchInput)
 
-    debugMode = debugMode || false;
+	  // check codes
+	  var foundNamedKey = codes[search.toLowerCase()]
+	  if (foundNamedKey) return foundNamedKey
 
-    function set(args){
-        settings.zoom      = args.zoom || settings.zoom;
-        settings.width      = args.width || settings.width;
-        settings.height     = args.height || settings.height;
-        settings.gravity    = args.gravity || settings.gravity;
-        settings.update     = args.update || settings.update;
-        if(args.width || args.zoom){ canvas.width = settings.width*settings.zoom;}
-        if(args.height || args.zoom){ canvas.height = settings.height*settings.zoom;}
-        return this;
-    }
+	  // check aliases
+	  var foundNamedKey = aliases[search.toLowerCase()]
+	  if (foundNamedKey) return foundNamedKey
 
-    // function reset(){
-    //     eventList.clear();
-    //     sprites.clear();
-    // }
+	  // weird character?
+	  if (search.length === 1) return search.charCodeAt(0)
 
-    // for proxy.on / when: 
-    var when = function(event, target, handler){
-        if(typeof target === "function"){ // 如果不指定對象，直接傳入 handler
-            eventList.register(event, null, target);
-        } else {
-            eventList.register(event, target, handler);
-        }
-    }
+	  return undefined
+	}
 
-    var proxy = {
-        createSprite: function(args){
-            var newSprite = new Sprite(args, eventList, settings, renderer)
-            sprites._sprites.push(newSprite);
-            sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
-            return newSprite;
-        },
-        print: renderer.print,
-        drawSprites: function(){ renderer.drawSprites(sprites); },
-        drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
-        cursor: io.cursor,
-        inspector: inspector,
-        when: when,
-        on: when,
-        set: set,
-        stop: function(){ clock.stop(); sound.stop(); },
-        start: function(){ clock.start(); },
-        update: function(func){ settings.updateFunctions.push(func); },
-        always: function(func){ settings.updateFunctions.push(func); },
-        forever: function(func){ settings.updateFunctions.push(func); },
-        ctx: ctx,
-        clear: function(){ renderer.clear(); },
-        preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); },
-        sound: sound
-    };
-    return proxy;
-}
+	/**
+	 * Get by name
+	 *
+	 *   exports.code['enter'] // => 13
+	 */
 
-window.Engine = engine;
+	var codes = exports.code = exports.codes = {
+	  'backspace': 8,
+	  'tab': 9,
+	  'enter': 13,
+	  'shift': 16,
+	  'ctrl': 17,
+	  'alt': 18,
+	  'pause/break': 19,
+	  'caps lock': 20,
+	  'esc': 27,
+	  'space': 32,
+	  'page up': 33,
+	  'page down': 34,
+	  'end': 35,
+	  'home': 36,
+	  'left': 37,
+	  'up': 38,
+	  'right': 39,
+	  'down': 40,
+	  'insert': 45,
+	  'delete': 46,
+	  'command': 91,
+	  'left command': 91,
+	  'right command': 93,
+	  'numpad *': 106,
+	  'numpad +': 107,
+	  'numpad -': 109,
+	  'numpad .': 110,
+	  'numpad /': 111,
+	  'num lock': 144,
+	  'scroll lock': 145,
+	  'my computer': 182,
+	  'my calculator': 183,
+	  ';': 186,
+	  '=': 187,
+	  ',': 188,
+	  '-': 189,
+	  '.': 190,
+	  '/': 191,
+	  '`': 192,
+	  '[': 219,
+	  '\\': 220,
+	  ']': 221,
+	  "'": 222
+	}
 
-/***/ })
+	// Helper aliases
+
+	var aliases = exports.aliases = {
+	  'windows': 91,
+	  '⇧': 16,
+	  '⌥': 18,
+	  '⌃': 17,
+	  '⌘': 91,
+	  'ctl': 17,
+	  'control': 17,
+	  'option': 18,
+	  'pause': 19,
+	  'break': 19,
+	  'caps': 20,
+	  'return': 13,
+	  'escape': 27,
+	  'spc': 32,
+	  'pgup': 33,
+	  'pgdn': 34,
+	  'ins': 45,
+	  'del': 46,
+	  'cmd': 91
+	}
+
+
+	/*!
+	 * Programatically add the following
+	 */
+
+	// lower case chars
+	for (i = 97; i < 123; i++) codes[String.fromCharCode(i)] = i - 32
+
+	// numbers
+	for (var i = 48; i < 58; i++) codes[i - 48] = i
+
+	// function keys
+	for (i = 1; i < 13; i++) codes['f'+i] = i + 111
+
+	// numpad keys
+	for (i = 0; i < 10; i++) codes['numpad '+i] = i + 96
+
+	/**
+	 * Get by code
+	 *
+	 *   exports.name[13] // => 'Enter'
+	 */
+
+	var names = exports.names = exports.title = {} // title for backward compat
+
+	// Create reverse mapping
+	for (i in codes) names[codes[i]] = i
+
+	// Add aliases
+	for (var alias in aliases) {
+	  codes[alias] = aliases[alias]
+	}
+
+
+/***/ }
 /******/ ]);
