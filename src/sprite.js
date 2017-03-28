@@ -8,8 +8,8 @@ function Sprite(args, eventList, settings, renderer) {
 
     if (typeof args === 'string') args = { costumes: [args] }
 
-    this.x = args.x || settings.width/2;
-    this.y = args.y || settings.height/2;
+    this.x = util.isNumeric(args.x) ? args.x : settings.width/2;
+    this.y = util.isNumeric(args.y) ? args.y : settings.height/2;
     this.width = 1;
     this.height = 1;
     this.direction = args.direction || 0;
@@ -17,8 +17,8 @@ function Sprite(args, eventList, settings, renderer) {
     this.scale = args.scale || 1;
     this.costumes = [].concat(args.costumes); // Deal with single string
     this.hidden = args.hidden || false;
-    this.layer = args.layer || 0;
-    this.opacity = args.opacity || 1;
+    this.layer = util.isNumeric(args.layer) ? args.layer : 0;
+    this.opacity = util.isNumeric(args.opacity) ? args.opacity : 1;
     this.currentCostumeId = 0;
 
     this._onTickFuncs = [];
