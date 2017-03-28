@@ -76,12 +76,9 @@
 	        for(var i=0; i<settings.updateFunctions.length; i++){
 	            settings.updateFunctions[i]();
 	        };
-<<<<<<< HEAD
 	        for(var i=0; i<sprites._sprites.length; i++){
                 sprites._sprites[i].resetDirection()
 	        };
-=======
->>>>>>> ea03c6c3dd265b40675e06a523ac7b384948dd86
 	        sprites.runOnTick();
 	        sprites.removeDeletedSprites();
 	        inspector.updateFPS();
@@ -191,15 +188,11 @@
 	            }
 	        }
 	    })
-<<<<<<< HEAD
 	    this.resetDirection = function(){
 	    	if(this.direction>=360){
 	    		this.direction=0;
 	    	}
 	    };
-	    
-=======
->>>>>>> ea03c6c3dd265b40675e06a523ac7b384948dd86
 	}
 
 	Sprite.prototype.moveTo = function(x, y){
