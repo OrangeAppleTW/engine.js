@@ -105,12 +105,13 @@ function holdingJudger(key, handler, holding, debugMode){
 
 // @TODO: Now we could only detect Sprite instance, not include cursor.
 function touchJudger(sprites, handler, debugMode){
-    for(var i=1; i<sprites.length; i++){
-        if(sprites[0].touched(sprites[i])) {
-            handler.call(sprites[0], sprites[i]);
-            if(debugMode){
-                console.log("Just fired a touch handler on: "+sprites);
-            }
+    var sprite = sprites[0],
+        targets = sprites.slice(1);
+
+    if (sprite.touched(targets)) {
+        handler.call(sprite);
+        if(debugMode){
+            console.log("Just fired a touch handler on: "+sprite);
         }
     }
 }

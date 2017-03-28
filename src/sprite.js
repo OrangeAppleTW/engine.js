@@ -74,11 +74,69 @@ Sprite.prototype.toward = function(){
     offsetY = targetY - this.y;
     rad = Math.atan2(-offsetY, offsetX); // 這裡的 offsetY 和數學坐標是反過來的
     this.direction = util.radToDegree(rad);
-    // console.log(this.direction);
 }
 
 Sprite.prototype.touched = function(){
+    if (arguments[0].constructor === Array) {
+        for(var i=0; i<arguments[0].length; i++){
+            if ( isTouched.call(this, arguments[0][i]) ){
+                return true;
+            }
+        }
+        return false;
+    } else {
+        return isTouched.apply(this, arguments);
+    }
+    
+};
 
+Sprite.prototype.distanceTo = function(){
+    if( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ){
+        return util.distanceBetween( this, arguments[0] );
+    } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ){
+        return util.distanceBetween( this.x, this.y, arguments[0], arguments[1] );
+    }
+};
+
+Sprite.prototype.always = Sprite.prototype.forever = function(func){
+    this._onTickFuncs.push(func);
+};
+
+Sprite.prototype.when = Sprite.prototype.on = function(){
+    var event = arguments[0],
+        target, handler;
+    if(event=="hover" || event=="click"){
+        target = this;
+        handler = arguments[1];
+    } else if (event=="touch"){
+        if(Array.isArray(arguments[1])){
+            target = [this].concat(arguments[1]);
+        } else {
+            target = [this].concat([arguments[1]]);
+        }
+        handler = arguments[2];
+    } else {
+        console.log('Sprite.on() does only support "click", "hover" and "touch" events');
+        return false;
+    }
+    this._eventList.register(event, target, handler);
+};
+
+Sprite.prototype.destroy = function(){
+    this._deleted = true;
+};
+
+Sprite.prototype.getCurrentCostume = function(){
+    var id = this.currentCostumeId;
+    return this.costumes[id];
+};
+
+Sprite.prototype.animate = function (frames, frameRate) {
+    this._frames = frames;
+    this._frameRate = frameRate || 5;
+}
+
+function isTouched(sprite, args){
     // 如果此角色為隱藏，不進行檢驗，直接回傳 false
     if (this.hidden) { return false; }
 
@@ -146,52 +204,6 @@ Sprite.prototype.touched = function(){
         }
     }
     return false;
-};
-
-Sprite.prototype.distanceTo = function(){
-    if( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ){
-        return util.distanceBetween( this, arguments[0] );
-    } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ){
-        return util.distanceBetween( this.x, this.y, arguments[0], arguments[1] );
-    }
-};
-
-Sprite.prototype.always = Sprite.prototype.forever = function(func){
-    this._onTickFuncs.push(func);
-};
-
-Sprite.prototype.when = Sprite.prototype.on = function(){
-    var event = arguments[0],
-        target, handler;
-    if(event=="hover" || event=="click"){
-        target = this;
-        handler = arguments[1];
-    } else if (event=="touch"){
-        if(Array.isArray(arguments[1])){
-            target = [this].concat(arguments[1]);
-        } else {
-            target = [this].concat([arguments[1]]);
-        }
-        handler = arguments[2];
-    } else {
-        console.log('Sprite.on() does only support "click", "hover" and "touch" events');
-        return false;
-    }
-    this._eventList.register(event, target, handler);
-};
-
-Sprite.prototype.destroy = function(){
-    this._deleted = true;
-};
-
-Sprite.prototype.getCurrentCostume = function(){
-    var id = this.currentCostumeId;
-    return this.costumes[id];
-};
-
-Sprite.prototype.animate = function (frames, frameRate) {
-    this._frames = frames;
-    this._frameRate = frameRate || 5;
 }
 
 module.exports = Sprite;
