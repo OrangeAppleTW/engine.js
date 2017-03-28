@@ -50,8 +50,9 @@
 	    starsScript = __webpack_require__(14),
 	    scrollingScript = __webpack_require__(15),
 	    touchTestScript = __webpack_require__(16),
-	    pumpScript = __webpack_require__(17);
-	    animateScript = __webpack_require__(18);
+	    pumpScript = __webpack_require__(17),
+	    rotationScript = __webpack_require__(18),
+	    animateScript = __webpack_require__(19);
 
 	$("textarea#TD").val(tdScript);
 	$("textarea#flappy-bird").val(flappyBirdScript);
@@ -59,6 +60,7 @@
 	$("textarea#scrolling").val(scrollingScript);
 	$("textarea#touch-test").val(touchTestScript);
 	$("textarea#pump").val(pumpScript);
+	$("textarea#rotation").val(rotationScript);
 	$("textarea#animate").val(animateScript);
 
 	var editor = CodeMirror.fromTextArea(document.getElementById("script-box"), {
@@ -167,6 +169,12 @@
 
 /***/ },
 /* 18 */
+/***/ function(module, exports) {
+
+	module.exports = "var monster = Game.createSprite(\"./images/monster.png\");\nGame.forever(function(){\n    Game.drawBackdrop(\"#ffffff\");\n    monster.toward(Game.cursor); \n    Game.print(\"Degree: \"+monster.direction);\n    Game.drawSprites();\n});\nGame.start();"
+
+/***/ },
+/* 19 */
 /***/ function(module, exports) {
 
 	module.exports = "Game.set({\n    width: 640,\n    height: 480\n});\n\nvar stitch = Game.createSprite({\n  \tx: 300,\n  \ty: 240,\n\tcostumes: [\n        \"./images/animate/0.gif\",\n        \"./images/animate/1.gif\",\n        \"./images/animate/2.gif\",\n        \"./images/animate/3.gif\",\n        \"./images/animate/4.gif\",\n        \"./images/animate/5.gif\",\n        \"./images/animate/6.gif\",\n        \"./images/animate/7.gif\",\n        \"./images/animate/8.gif\",\n        \"./images/animate/9.gif\",\n        \"./images/animate/10.gif\",\n        \"./images/animate/11.gif\",\n        \"./images/animate/12.gif\",\n        \"./images/animate/13.gif\",\n        \"./images/animate/14.gif\",\n        \"./images/animate/15.gif\",\n        \"./images/animate/16.gif\",\n        \"./images/animate/17.gif\"\n    ]\n});\n\nGame.update( function(){\n    Game.drawBackdrop('#fff');\n    Game.drawSprites();\n});\n\nstitch.animate([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], 5);\n\n\nGame.start();"
