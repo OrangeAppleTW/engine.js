@@ -4,7 +4,8 @@ var tdScript = require("raw-loader!./examples/_td.js"),
     starsScript = require("raw-loader!./examples/_stars.js"),
     scrollingScript = require("raw-loader!./examples/_scrolling.js"),
     touchTestScript = require("raw-loader!./examples/_touch-test.js"),
-    pumpScript = require("raw-loader!./examples/_pump.js");
+    pumpScript = require("raw-loader!./examples/_pump.js"),
+    rotationScript = require("raw-loader!./examples/_rotation.js"),
     animateScript = require("raw-loader!./examples/_animate.js");
 
 $("textarea#TD").val(tdScript);
@@ -13,6 +14,7 @@ $("textarea#stars").val(starsScript);
 $("textarea#scrolling").val(scrollingScript);
 $("textarea#touch-test").val(touchTestScript);
 $("textarea#pump").val(pumpScript);
+$("textarea#rotation").val(rotationScript);
 $("textarea#animate").val(animateScript);
 
 var editor = CodeMirror.fromTextArea(document.getElementById("script-box"), {
