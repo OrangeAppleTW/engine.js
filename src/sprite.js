@@ -55,8 +55,8 @@ Sprite.prototype.move = function(x, y){
 
 Sprite.prototype.stepForward = function(distance){
     var rad = util.degreeToRad(this.direction)
-    this.x += Math.cos(rad)*distance;
-    this.y -= Math.sin(rad)*distance;
+    this.x += Math.sin(rad)*distance;
+    this.y -= Math.cos(rad)*distance;
 };
 
 Sprite.prototype.toward = function(){
@@ -72,7 +72,7 @@ Sprite.prototype.toward = function(){
     }
     offsetX = targetX - this.x;
     offsetY = targetY - this.y;
-    rad = Math.atan2(-offsetY, offsetX); // 這裡的 offsetY 和數學坐標是反過來的
+    rad = Math.atan2(offsetX, -offsetY); // 這裡的 offsetY 和數學坐標是反過來的
     this.direction = util.radToDegree(rad);
 }
 
