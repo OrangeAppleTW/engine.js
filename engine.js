@@ -357,11 +357,6 @@
 	    }
 	    return false;
 	}
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> ea03c6c3dd265b40675e06a523ac7b384948dd86
 	module.exports = Sprite;
 
 /***/ },
