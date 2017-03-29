@@ -41,6 +41,14 @@ function Sprite(args, eventList, settings, renderer) {
             }
         }
     })
+    this._adjustDirection = function(){
+        if(this.direction>360){
+            this.direction = this.direction - 360*(this.direction/360)
+        }
+        else if(this.direction<0){
+            this.direction = this.direction + 360*((this.direction*-1/360)+1)
+        }
+    }
 }
 
 Sprite.prototype.moveTo = function(x, y){

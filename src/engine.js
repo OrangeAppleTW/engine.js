@@ -23,7 +23,7 @@ function engine(stageId, debugMode){
     var inspector = new Inspector();
     var io = require("./io")(canvas, settings, debugMode);
     var eventList = new EventList(io, debugMode);
-    var renderer = new Renderer(ctx, settings, debugMode);
+    var renderer = new Renderer(ctx, sprites, settings, debugMode);
     var sound = new Sound();
     var clock = new Clock(function(){
         eventList.traverse();

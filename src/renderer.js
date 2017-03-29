@@ -1,7 +1,7 @@
 var util = require("./util");
 var loader = new (require("../lib/pxloader-images"))();
 
-function Renderer(ctx, settings, debugMode){
+function Renderer(ctx, sprites, settings, debugMode){
 
     // 不可以這麼做，因為當我們要取 canvas 大小時，他可能已經變了
     // var stageWidth = settings.width,
@@ -22,6 +22,9 @@ function Renderer(ctx, settings, debugMode){
         ctx.font = (size*settings.zoom)+"px " + font;
         ctx.fillStyle = color || "black";
         ctx.fillText(words, x * settings.zoom, y * settings.zoom);
+        for(var i =0;i<sprites._sprites.length;i++){
+            sprites._sprites[i]._adjustDirection();
+        }
     };
 
     this.drawSprites = function(sprites){
