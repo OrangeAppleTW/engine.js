@@ -11,5 +11,10 @@
     "raw-loader": "latest"
   },
   "author": "Kevin Shu",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "raw-loader": "^0.5.1",
+    "webpack": "^2.3.2",
+    "webpack-dev-server": "^2.4.2"
+  }
 }
