@@ -30,6 +30,9 @@ function engine(stageId, debugMode){
         for(var i=0; i<settings.updateFunctions.length; i++){
             settings.updateFunctions[i]();
         };
+        for(var i=0; i<sprites._sprites.length; i++){
+                sprites._sprites[i].resetDirection()
+            };
         sprites.runOnTick();
         sprites.removeDeletedSprites();
         inspector.updateFPS();
