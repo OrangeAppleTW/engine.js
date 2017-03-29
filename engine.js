@@ -72,6 +72,10 @@
 	    var renderer = new Renderer(ctx, settings, debugMode);
 	    var sound = new Sound();
 	    var clock = new Clock(function(){
+	        if(background.path){
+	            renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
+	        }
+	        renderer.drawSprites(sprites);
 	        eventList.traverse();
 	        for(var i=0; i<settings.updateFunctions.length; i++){
 	            settings.updateFunctions[i]();
@@ -81,10 +85,12 @@
 	        inspector.updateFPS();
 	    });
 
+	    var background={};    
+
 	    debugMode = debugMode || false;
 
 	    function set(args){
-	        settings.zoom      = args.zoom || settings.zoom;
+	        settings.zoom       = args.zoom || settings.zoom;
 	        settings.width      = args.width || settings.width;
 	        settings.height     = args.height || settings.height;
 	        settings.gravity    = args.gravity || settings.gravity;
@@ -94,10 +100,14 @@
 	        return this;
 	    }
 
-	    // function reset(){
-	    //     eventList.clear();
-	    //     sprites.clear();
-	    // }
+	    // for proxy.setBackdrop, setBackground
+	    function setBackground (path, x, y, w, h) {
+	        background.path = path;
+	        background.x = x;
+	        background.y = y;
+	        background.w = w;
+	        background.h = h;
+	    }
 
 	    // for proxy.on / when: 
 	    var when = function(event, target, handler){
@@ -107,7 +117,6 @@
 	            eventList.register(event, target, handler);
 	        }
 	    }
-
 	    var proxy = {
 	        createSprite: function(args){
 	            var newSprite = new Sprite(args, eventList, settings, renderer)
@@ -116,8 +125,8 @@
 	            return newSprite;
 	        },
 	        print: renderer.print,
-	        drawSprites: function(){ renderer.drawSprites(sprites); },
-	        drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
+	        setBackground: setBackground,
+	        setBackdrop: setBackground,
 	        cursor: io.cursor,
 	        inspector: inspector,
 	        when: when,
@@ -131,7 +140,11 @@
 	        ctx: ctx,
 	        clear: function(){ renderer.clear(); },
 	        preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); },
-	        sound: sound
+	        sound: sound,
+
+	        // Will be deprecated:
+	        drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
+	        drawSprites: function(){ renderer.drawSprites(sprites); }
 	    };
 	    return proxy;
 	}
@@ -664,8 +677,8 @@
 	    };
 
 	    this.print = function(words, x, y, color, size, font) {
-	        x = x || 20;
-	        y = y || 20;
+	        x = util.isNumeric(x) ? x : 20;
+	        y = util.isNumeric(y) ? y : 20;
 	        size = size || 16; // Set or default
 	        font = font || "Arial";
 	        ctx.textBaseline = "top";
