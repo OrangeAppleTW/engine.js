@@ -1,4 +1,5 @@
 var ctx = Game.ctx;
+Game.setBackdrop("./images/map.png")
 
 var clock = 0,
     hp = 100,
@@ -52,8 +53,6 @@ Game.on("keydown", "s", function(){
 });
 
 Game.update( function(){
-    Game.drawBackdrop("./images/map.png")
-    Game.drawSprites();
     if(clock%30===0){
         spawnEnemy();
     }
@@ -61,6 +60,9 @@ Game.update( function(){
     Game.print("HP: "+hp, 20, 40, "white", 20);
     Game.print("Score: "+score, 20, 60, "white", 20);
     Game.print("FPS: "+Game.inspector.fps, 20, 80, "red", 20);
+    if (hp<=0) {
+        Game.print("You lose!", 200, 200, "white", 60);
+    }
     clock++;
 });
 
@@ -102,6 +104,7 @@ function spawnEnemy(){
     var newEnemy = Game.createSprite({
         x: 112,
         y: 480,
+        rotationstyle: "fixed",
         costumes:"./images/slime.gif"
     });
     newEnemy.pathIndex = 0;

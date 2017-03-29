@@ -5,6 +5,7 @@ Game.set({
     width: 640,
     height: 480
 });
+Game.drawBackdrop("#000000");
 
 for(let i=0; i<100; i++){
     var newStar = Game.createSprite({
@@ -19,10 +20,6 @@ for(let i=0; i<100; i++){
   	stars.push(newStar);
 }
 
-Game.update(function(){
-  	Game.drawBackdrop("#000000");
-});
-
 Game.forever(function(){
     if(clock%30===0){
         for(let i=0; i<stars.length; i++){
@@ -35,7 +32,6 @@ Game.forever(function(){
         }
     }
     clock++;
-  	Game.drawSprites();
 });
 
 // 測試空陣列能否正常執行

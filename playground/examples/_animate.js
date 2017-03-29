@@ -1,3 +1,5 @@
+Game.setBackdrop('#fff');
+
 Game.set({
     width: 640,
     height: 480
@@ -28,12 +30,6 @@ var stitch = Game.createSprite({
     ]
 });
 
-Game.update( function(){
-    Game.drawBackdrop('#fff');
-    Game.drawSprites();
-});
-
 stitch.animate([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], 5);
-
 
 Game.start();
