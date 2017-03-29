@@ -14,8 +14,8 @@ function Renderer(ctx, settings, debugMode){
     };
 
     this.print = function(words, x, y, color, size, font) {
-        x = x || 20;
-        y = y || 20;
+        x = util.isNumeric(x) ? x : 20;
+        y = util.isNumeric(y) ? y : 20;
         size = size || 16; // Set or default
         font = font || "Arial";
         ctx.textBaseline = "top";
