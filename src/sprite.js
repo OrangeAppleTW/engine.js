@@ -13,7 +13,7 @@ function Sprite(args, eventList, settings, renderer) {
     this.width = 1;
     this.height = 1;
     this.direction = args.direction || 0;
-    this.rotationstyle = args.rotationstyle || "full"; // "full", "flipped" and "fixed"
+    this.rotationStyle = args.rotationStyle || "full"; // "full", "flipped" and "fixed"
     this.scale = args.scale || 1;
     this.costumes = [].concat(args.costumes); // Deal with single string
     this.hidden = args.hidden || false;
