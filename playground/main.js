@@ -6,7 +6,8 @@ var tdScript = require("raw-loader!./examples/_td.js"),
     touchTestScript = require("raw-loader!./examples/_touch-test.js"),
     pumpScript = require("raw-loader!./examples/_pump.js"),
     rotationScript = require("raw-loader!./examples/_rotation.js"),
-    animateScript = require("raw-loader!./examples/_animate.js");
+    animateScript = require("raw-loader!./examples/_animate.js"),
+    zoomScript = require("raw-loader!./examples/_zoom.js");
 
 $("textarea#TD").val(tdScript);
 $("textarea#flappy-bird").val(flappyBirdScript);
@@ -16,6 +17,7 @@ $("textarea#touch-test").val(touchTestScript);
 $("textarea#pump").val(pumpScript);
 $("textarea#rotation").val(rotationScript);
 $("textarea#animate").val(animateScript);
+$("textarea#zoom").val(zoomScript);
 
 var editor = CodeMirror.fromTextArea(document.getElementById("script-box"), {
     lineNumbers: true,
