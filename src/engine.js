@@ -49,8 +49,8 @@ function engine(stageId, debugMode){
         settings.height     = args.height || settings.height;
         settings.gravity    = args.gravity || settings.gravity;
         settings.update     = args.update || settings.update;
-        if(args.width || args.zoom){ canvas.width = settings.width*settings.zoom;}
-        if(args.height || args.zoom){ canvas.height = settings.height*settings.zoom;}
+        if(args.width || args.zoom) canvas.style.width = canvas.width * settings.zoom + 'px';
+        if(args.height || args.zoom) canvas.style.height = canvas.height * settings.zoom + 'px';
         return this;
     }
 
