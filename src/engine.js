@@ -44,13 +44,15 @@ function engine(stageId, debugMode){
     debugMode = debugMode || false;
 
     function set(args){
-        settings.zoom       = args.zoom || settings.zoom;
-        settings.width      = args.width || settings.width;
-        settings.height     = args.height || settings.height;
-        settings.gravity    = args.gravity || settings.gravity;
-        settings.update     = args.update || settings.update;
-        if(args.width || args.zoom) canvas.style.width = canvas.width * settings.zoom + 'px';
-        if(args.height || args.zoom) canvas.style.height = canvas.height * settings.zoom + 'px';
+        if(args.width) canvas.width = settings.width = args.width;
+        if(args.height) canvas.height = settings.height = args.height;
+        if(args.zoom) {
+            settings.zoom = args.zoom;
+            canvas.style.width = canvas.width * settings.zoom + 'px';
+            canvas.style.height = canvas.height * settings.zoom + 'px';
+        }
+        settings.gravity = args.gravity || settings.gravity;
+        settings.update = args.update || settings.update;
         return this;
     }
 
