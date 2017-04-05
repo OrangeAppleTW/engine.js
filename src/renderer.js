@@ -22,9 +22,7 @@ function Renderer(ctx, sprites, settings, debugMode){
         ctx.font = (size*settings.zoom)+"px " + font;
         ctx.fillStyle = color || "black";
         ctx.fillText(words, x * settings.zoom, y * settings.zoom);
-        for(var i =0;i<sprites._sprites.length;i++){
-            sprites._sprites[i]._adjustDirection();
-        }
+
     };
 
     this.drawSprites = function(sprites){

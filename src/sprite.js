@@ -32,21 +32,30 @@ function Sprite(args, eventList, settings, renderer) {
     this._frames = [];
     this._frameRate = 5;
     this._frameTime = 0;
-    this._onTickFuncs.push(function() {
-        if(this._frames.length > 0) {
-            var now = new Date().getTime();
-            if(now >= this._frameTime + 1000 / this._frameRate) {
-                this._frameTime = now;
-                this.currentCostumeId = this._frames.shift();
-            }
-        }
-    })
-    this._adjustDirection = function(){
-        if(this.direction>360){
-            this.direction = this.direction - 360*(this.direction/360)
-        }
-        else if(this.direction<0){
-            this.direction = this.direction + 360*((this.direction*-1/360)+1)
+}
+
+Sprite.prototype.update = function () {
+    this._updateDirection();
+    this._updateFrames();
+
+    for (var i = this._onTickFuncs.length - 1; i >= 0; i--) {
+        this._onTickFuncs[i].call(this);
+    }
+
+}
+
+Sprite.prototype._updateDirection = function () {
+    this.direction = this.direction%360;
+    if(this.direction < 0) this.direction += 360;
+    console.log(this.direction)
+}
+
+Sprite.prototype._updateFrames = function () {
+    if(this._frames.length > 0) {
+        var now = new Date().getTime();
+        if(now >= this._frameTime + 1000 / this._frameRate) {
+            this._frameTime = now;
+            this.currentCostumeId = this._frames.shift();
         }
     }
 }
