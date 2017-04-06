@@ -3,7 +3,7 @@ var hitCanvas = document.createElement('canvas'),
     hitTester = hitCanvas.getContext('2d');
     // document.body.appendChild(hitCanvas);
 
-// @TODO: 客製化特征
+// @TODO:  
 function Sprite(args, eventList, settings, renderer) {
 
     if (typeof args === 'string') args = { costumes: [args] }
@@ -28,19 +28,32 @@ function Sprite(args, eventList, settings, renderer) {
     this._settings = settings;
     this._renderer = renderer;
 
-
     this._frames = [];
     this._frameRate = 5;
     this._frameTime = 0;
-    this._onTickFuncs.push(function() {
-        if(this._frames.length > 0) {
-            var now = new Date().getTime();
-            if(now >= this._frameTime + 1000 / this._frameRate) {
-                this._frameTime = now;
-                this.currentCostumeId = this._frames.shift();
-            }
+}
+
+Sprite.prototype.update = function () {
+    this._updateDirection();
+    this._updateFrames();
+    for (var i=0; i < this._onTickFuncs.length; i++) {
+        this._onTickFuncs[i].call(this);
+    }
+}
+
+Sprite.prototype._updateDirection = function () {
+    this.direction = this.direction % 360;
+    if(this.direction < 0) this.direction += 360;
+}
+
+Sprite.prototype._updateFrames = function () {
+    if(this._frames.length > 0) {
+        var now = new Date().getTime();
+        if(now >= this._frameTime + 1000 / this._frameRate) {
+            this._frameTime = now;
+            this.currentCostumeId = this._frames.shift();
         }
-    })
+    }
 }
 
 Sprite.prototype.moveTo = function(x, y){
