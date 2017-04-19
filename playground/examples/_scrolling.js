@@ -17,8 +17,7 @@ Game.set({
 });
 
 Game.update( function(){
-    Game.drawBackdrop("./images/scrolling/bg.jpg",bgPosition.x,bgPosition.y)
-    Game.drawSprites();
+    Game.setBackdrop("./images/scrolling/bg.jpg",bgPosition.x,bgPosition.y)
 });
 
 Game.preloadImages(

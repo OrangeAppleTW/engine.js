@@ -10,7 +10,6 @@ Sprites.prototype.runOnTick = function(){
 
 Sprites.prototype.each = function(func){
     var sprites = this._sprites;
-    // console.log(func);
     for(var i=0; i<sprites.length; i++){
         func.call(sprites[i],sprites[i]);
     }

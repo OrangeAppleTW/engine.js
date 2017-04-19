@@ -3,7 +3,7 @@ var hitCanvas = document.createElement('canvas'),
     hitTester = hitCanvas.getContext('2d');
     // document.body.appendChild(hitCanvas);
 
-// @TODO: 客製化特征
+// @TODO:  
 function Sprite(args, eventList, settings, renderer) {
 
     if (typeof args === 'string') args = { costumes: [args] }
@@ -13,7 +13,7 @@ function Sprite(args, eventList, settings, renderer) {
     this.width = 1;
     this.height = 1;
     this.direction = args.direction || 0;
-    this.rotationstyle = args.rotationstyle || "full"; // "full", "flipped" and "fixed"
+    this.rotationStyle = args.rotationStyle || "full"; // "full", "flipped" and "fixed"
     this.scale = args.scale || 1;
     this.costumes = [].concat(args.costumes); // Deal with single string
     this.hidden = args.hidden || false;
@@ -28,7 +28,6 @@ function Sprite(args, eventList, settings, renderer) {
     this._settings = settings;
     this._renderer = renderer;
 
-
     this._frames = [];
     this._frameRate = 5;
     this._frameTime = 0;
@@ -37,17 +36,14 @@ function Sprite(args, eventList, settings, renderer) {
 Sprite.prototype.update = function () {
     this._updateDirection();
     this._updateFrames();
-
-    for (var i = this._onTickFuncs.length - 1; i >= 0; i--) {
+    for (var i=0; i < this._onTickFuncs.length; i++) {
         this._onTickFuncs[i].call(this);
     }
-
 }
 
 Sprite.prototype._updateDirection = function () {
-    this.direction = this.direction%360;
+    this.direction = this.direction % 360;
     if(this.direction < 0) this.direction += 360;
-    console.log(this.direction)
 }
 
 Sprite.prototype._updateFrames = function () {

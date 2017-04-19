@@ -2,6 +2,7 @@ Game.set({
     width: 640,
     height: 480
 });
+Game.setBackdrop("#ffffff");
 
 var robot = Game.createSprite({
   	scale: 0.3,
@@ -30,10 +31,5 @@ var attack = function(){
 };
 
 robot.when("touch", monster, attack);
-
-Game.forever(function(){
-	Game.drawBackdrop("#ffffff");
-  	Game.drawSprites();
-});
 
 Game.start();

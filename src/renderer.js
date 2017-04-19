@@ -14,15 +14,19 @@ function Renderer(ctx, sprites, settings, debugMode){
     };
 
     this.print = function(words, x, y, color, size, font) {
-        x = x || 20;
-        y = y || 20;
+        x = util.isNumeric(x) ? x : 20;
+        y = util.isNumeric(y) ? y : 20;
         size = size || 16; // Set or default
         font = font || "Arial";
         ctx.textBaseline = "top";
-        ctx.font = (size*settings.zoom)+"px " + font;
+        ctx.font = size + "px " + font;
         ctx.fillStyle = color || "black";
+<<<<<<< HEAD
         ctx.fillText(words, x * settings.zoom, y * settings.zoom);
 
+=======
+        ctx.fillText(words, x, y)
+>>>>>>> 81d4db8a4946f9927228ce97fdf291db60094762
     };
 
     this.drawSprites = function(sprites){
@@ -38,9 +42,8 @@ function Renderer(ctx, sprites, settings, debugMode){
             instance.height = img.height * instance.scale;
 
             var rad = util.degreeToRad(instance.direction);
-            ctx.scale(settings.zoom,settings.zoom);
             ctx.globalAlpha = instance.opacity;
-            if (instance.rotationstyle === 'flipped') {
+            if (instance.rotationStyle === 'flipped') {
                 if(rad >= Math.PI) {
                     ctx.translate(instance.x*2, 0);
                     ctx.scale(-1, 1);
@@ -53,13 +56,12 @@ function Renderer(ctx, sprites, settings, debugMode){
                     ctx.scale(-1, 1);
                     ctx.translate(-instance.x*2, 0);
                     ctx.globalAlpha = 1;
-                    ctx.scale(1/settings.zoom,1/settings.zoom);
                     return;
                 } else {
                     var rad = 0;
                 }
             }
-            if(instance.rotationstyle === 'fixed') {
+            if(instance.rotationStyle === 'fixed') {
                 var rad = 0;
             }
             ctx.translate(instance.x, instance.y);
@@ -73,7 +75,6 @@ function Renderer(ctx, sprites, settings, debugMode){
             ctx.rotate(-rad);
             ctx.translate(-instance.x, -instance.y);
             ctx.globalAlpha = 1;
-            ctx.scale(1/settings.zoom,1/settings.zoom);
         }
     };
 
@@ -85,7 +86,7 @@ function Renderer(ctx, sprites, settings, debugMode){
     this.drawBackdrop = function(src, x, y, width, height){
         if(src[0]=='#'){
             ctx.fillStyle=src;
-            ctx.fillRect(0,0,settings.width*settings.zoom,settings.height*settings.zoom);
+            ctx.fillRect(0,0,settings.width, settings.height);
         } else {
             var img = imageCache[src];
             // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
@@ -94,13 +95,7 @@ function Renderer(ctx, sprites, settings, debugMode){
                 img.src=src;
                 imageCache[src]=img;
             }
-            ctx.drawImage(
-                img,
-                (x||0)*settings.zoom,
-                (y||0)*settings.zoom,
-                (width||img.width)*settings.zoom,
-                (height||img.height)*settings.zoom
-            );
+            ctx.drawImage(img, (x||0), (y||0), (width||img.width), (height||img.height));
         }
     };
 

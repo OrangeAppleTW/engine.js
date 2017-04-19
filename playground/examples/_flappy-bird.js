@@ -1,3 +1,5 @@
+Game.setBackdrop("./images/flappy-bird/bg.jpg",0,0,320);
+
 var bird = Game.createSprite({
     x: 160,
     y: 240,
@@ -47,8 +49,6 @@ Game.set({
 });
 
 Game.update( function(){
-    Game.drawBackdrop("./images/flappy-bird/bg.jpg",0,0,320);
-    Game.drawSprites();
     Game.print(Game.inspector.fps, 280, 20);
 });
 
