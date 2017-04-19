@@ -21,12 +21,7 @@ function Renderer(ctx, sprites, settings, debugMode){
         ctx.textBaseline = "top";
         ctx.font = size + "px " + font;
         ctx.fillStyle = color || "black";
-<<<<<<< HEAD
-        ctx.fillText(words, x * settings.zoom, y * settings.zoom);
-
-=======
         ctx.fillText(words, x, y)
->>>>>>> 81d4db8a4946f9927228ce97fdf291db60094762
     };
 
     this.drawSprites = function(sprites){
