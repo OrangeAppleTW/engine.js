@@ -3,6 +3,8 @@
 ## 遊戲初始化
 ```javascript
 var Game = Engine("canvas-id");
+setBackdrop("#000000");
+setBackground("#000000")
 
 // 設定遊戲數值
 Game.set({
@@ -44,6 +46,8 @@ slime.currentCostumeId;
 slime.width;
 slime.height;
 slime.hidden; // Notice: Sprite could still be touched or clicked when it's hidden.
+slime.rotationstyle; //"full" , "flipped", "fixed"
+slime.layer; 
 ```
 
 ### 角色的方法
@@ -115,11 +119,8 @@ Game.update(function(){
 //Alias to update:
 Game.forever();
 Game.always();
-
 Game.start();
-
 Game.stop();
-
 Game.clear();
 ```
 

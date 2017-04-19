@@ -1,7 +1,7 @@
 var util = require("./util");
 var loader = new (require("../lib/pxloader-images"))();
 
-function Renderer(ctx, settings, debugMode){
+function Renderer(ctx, sprites, settings, debugMode){
 
     // 不可以這麼做，因為當我們要取 canvas 大小時，他可能已經變了
     // var stageWidth = settings.width,

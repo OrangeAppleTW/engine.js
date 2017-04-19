@@ -94,31 +94,40 @@ module.exports = "Game.setBackdrop(\"./images/flappy-bird/bg.jpg\",0,0,320);\n\n
 /* 14 */
 /***/ (function(module, exports) {
 
+
 module.exports = "Game.setBackdrop(\"#ffffff\");\n\nGame.set({\n    width: 640,\n    height: 480\n});\n\nvar slime = Game.createSprite(\"images/slime.gif\");\nslime.x = 320;\nslime.y = 240;\n\nslime.when(\"click\",function(){\n  \tslime.scale*=0.5;\n});\n\nslime.when(\"hover\",function(){\n\tslime.scale+=0.1;\n});\n\nGame.start()"
+
 
 /***/ }),
 /* 15 */
 /***/ (function(module, exports) {
 
+
 module.exports = "Game.setBackdrop(\"#ffffff\");\n\nvar monster = Game.createSprite(\"./images/monster.png\");\n\nGame.forever(function(){\n    monster.toward(Game.cursor); \n    Game.print(\"Degree: \"+monster.direction);\n});\nGame.start();"
+
 
 /***/ }),
 /* 16 */
 /***/ (function(module, exports) {
 
+
 module.exports = "var bird = Game.createSprite({\n    x: 160,\n    y: 240,\n    costumes: \"./images/flappy-bird/bird.png\"\n});\nvar bgPosition = {x:0, y:0};\n\nGame.on(\"holding\", \"right\", function(){\n    bgPosition.x -= 4;\n});\nGame.on(\"holding\", \"left\", function(){\n    bgPosition.x += 4;\n});\nGame.set({\n    width: 320,\n    height: 480\n});\n\nGame.update( function(){\n    Game.setBackdrop(\"./images/scrolling/bg.jpg\",bgPosition.x,bgPosition.y)\n});\n\nGame.preloadImages(\n    [\n        \"./images/flappy-bird/bird.png\",\n        \"./images/scrolling/bg.jpg\"\n    ],\n    function(){\n        Game.start();\n    }\n);\n\nGame.print(\"Loading....\", 100, 240);"
+
 
 /***/ }),
 /* 17 */
 /***/ (function(module, exports) {
 
+
 module.exports = "var clock = 0;\nvar stars = []\n\nGame.set({\n    width: 640,\n    height: 480\n});\nGame.drawBackdrop(\"#000000\");\n\nfor(let i=0; i<100; i++){\n    var newStar = Game.createSprite({\n    \tx: Math.random()*640,\n      \ty: Math.random()*480,\n        scale: 0.8 + Math.random()*0.4,\n      \tcostumes: \"./images/slime.gif\"\n    });\n    newStar.on(\"click\",function(){\n        this.destroy();\n    });\n  \tstars.push(newStar);\n}\n\nGame.forever(function(){\n    if(clock%30===0){\n        for(let i=0; i<stars.length; i++){\n            var star = stars[i];\n            if(Math.random()>0.2){\n                star.hidden=true;\n            } else {\n                star.hidden=false;\n            }\n        }\n    }\n    clock++;\n});\n\n// 測試空陣列能否正常執行\nGame.preloadImages([],function(){alert(\"Start!\");})\n\nGame.start();"
+
 
 /***/ }),
 /* 18 */
 /***/ (function(module, exports) {
 
 module.exports = "var ctx = Game.ctx;\nGame.setBackdrop(\"./images/map.png\")\n\nvar clock = 0,\n    hp = 100,\n    score = 0,\n    isBuilding = false;\nvar enemyPath = [\n    {x:96+16, y:64},\n    {x:384+32, y:64+16},\n    {x:384+16, y:192+32},\n    {x:224, y:192+16},\n    {x:224+16, y:320+32},\n    {x:544+32, y:320+16},\n    {x:544+16, y:96}\n];\n\nvar enemies = [];\nvar towers = [];\nvar towerButton = Game.createSprite({\n    x:608, y:448,\n    costumes:\"./images/tower-btn.png\"\n});\nvar towerTemplate = Game.createSprite({\n    x:0, y:0,\n    costumes: \"./images/tower.png\",\n    hidden: true,\n    layer: 999\n});\n\nGame.set({\n    width: 640,\n    height: 480\n});\n\nGame.on(\"click\", null, function(){\n    if(isBuilding){\n        if(!towerButton.touched(Game.cursor.x,Game.cursor.y)){\n            isBuilding = !isBuilding;\n            towerTemplate.hidden = !isBuilding;\n            buildTower()\n        }\n    }\n});\n\ntowerButton.on(\"click\", function(){\n    isBuilding = !isBuilding;\n    towerTemplate.hidden = !isBuilding;\n});\n\nGame.on(\"keydown\", \"s\", function(){\n    score += 100;\n});\n\nGame.update( function(){\n    if(clock%30===0){\n        spawnEnemy();\n    }\n    towerTemplate.moveTo(Game.cursor.x, Game.cursor.y);\n    Game.print(\"HP: \"+hp, 20, 40, \"white\", 20);\n    Game.print(\"Score: \"+score, 20, 60, \"white\", 20);\n    Game.print(\"FPS: \"+Game.inspector.fps, 20, 80, \"red\", 20);\n    if (hp<=0) {\n        Game.print(\"You lose!\", 200, 200, \"white\", 60);\n    }\n    clock++;\n});\n\nfunction buildTower() {\n    var newTower = Game.createSprite({\n        x: Game.cursor.x,\n        y: Game.cursor.y,\n        costumes:\"./images/tower.png\"\n    });\n    newTower.range = 96;\n    newTower.searchEnemy = function(){\n        for(let i=0; i<enemies.length; i++){\n            var distance = this.distanceTo(enemies[i]);\n            if (distance<=this.range) {\n                this.shoot(enemies[i]);\n                enemies.splice(i,1);\n                return;\n            }\n        }\n    };\n    newTower.shoot = function(enemy){\n        ctx.beginPath();\n        ctx.moveTo(this.x,this.y-16);\n        ctx.lineTo(enemy.x+16,enemy.y+16);\n        ctx.strokeStyle = 'red';\n        ctx.lineWidth = 3;\n        ctx.stroke();\n        enemy.hp -= 10;\n    };\n    newTower.always(function(){\n        if(clock%30<=0){\n            this.searchEnemy();\n        }\n    });\n    towers.push(newTower);\n}\n\nfunction spawnEnemy(){\n    var newEnemy = Game.createSprite({\n        x: 112,\n        y: 480,\n        rotationstyle: \"fixed\",\n        costumes:\"./images/slime.gif\"\n    });\n    newEnemy.pathIndex = 0;\n    newEnemy.hp = 10;\n    newEnemy.always(function(){\n        if(this.hp<=0){\n            this.destroy();\n            score += 10;\n        } else {\n            var destination = {\n                x:enemyPath[this.pathIndex].x,\n                y:enemyPath[this.pathIndex].y\n            }\n            this.toward(destination.x, destination.y);\n            this.stepForward(3);\n            if( this.touched(destination.x, destination.y) ){\n                this.pathIndex++;\n                if(this.pathIndex>=enemyPath.length){\n                    this.destroy();\n                    hp-=10;\n                }\n            }\n        }\n    });\n    enemies.push(newEnemy);\n}\n\nGame.start();"
+
 
 /***/ }),
 /* 19 */
@@ -147,6 +156,7 @@ var tdScript = __webpack_require__(18),
     animateScript = __webpack_require__(12),
     zoomScript = __webpack_require__(20);
 
+
 $("textarea#TD").val(tdScript);
 $("textarea#flappy-bird").val(flappyBirdScript);
 $("textarea#stars").val(starsScript);
@@ -156,6 +166,7 @@ $("textarea#pump").val(pumpScript);
 $("textarea#rotation").val(rotationScript);
 $("textarea#animate").val(animateScript);
 $("textarea#zoom").val(zoomScript);
+
 
 var editor = CodeMirror.fromTextArea(document.getElementById("script-box"), {
     lineNumbers: true,
