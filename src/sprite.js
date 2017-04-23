@@ -92,8 +92,11 @@ Sprite.prototype.toward = function(){
 Sprite.prototype.touched = function(){
     if (arguments[0].constructor === Array) {
         for(var i=0; i<arguments[0].length; i++){
-            if ( isTouched.call(this, arguments[0][i]) ){
-                return true;
+            // 如果陣列中的這個elem不是自己，才檢查碰撞 (因為自己一定會碰到自己)
+            if(arguments[0][i]!=this){
+                if ( isTouched.call(this, arguments[0][i]) ){
+                    return true;
+                }
             }
         }
         return false;

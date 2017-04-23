@@ -4,6 +4,8 @@ Game.set({
 });
 Game.setBackdrop("#ffffff");
 
+var monsters = [];
+
 var robot = Game.createSprite({
   	scale: 0.3,
   	x: 400,
@@ -12,16 +14,28 @@ var robot = Game.createSprite({
 });
 
 var monster = Game.createSprite({
-  	scale: 0.4,
-  	x: 80,
-  	y: 300,
+  	scale: 0.2,
 	costumes: "images/monster.png"
 });
 monster.hp=100;
+monsters.push(monster);
+
+for(var i=0; i<10; i++){
+	var monster = Game.createSprite({
+        scale: 0.2,
+        x: Math.random()*640,
+        y: Math.random()*320,
+        costumes: "images/monster.png"
+    });
+	monsters.push(monster);
+}
 
 monster.forever(function(){
     this.x = Game.cursor.x;
     this.y = Game.cursor.y;
+  	if(this.touched(monsters)){
+    	this.destroy();
+    }
 });
 
 var attack = function(){
