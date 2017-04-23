@@ -36,7 +36,9 @@ EventList.prototype.register = function(event, target, handler){
         handler:handler
     }
     // @TODO: target 型別偵測
-    if (event=="keydown" || event=="keyup" || event=="holding"){
+    if (event=="touch"){
+        eventObj.sprites = target;
+    } else if (event=="keydown" || event=="keyup" || event=="holding"){
         eventObj.key = target;
     } else if (event=="click") {
         eventObj.sprite = target;

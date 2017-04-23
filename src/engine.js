@@ -67,10 +67,13 @@ function engine(stageId, debugMode){
 
     // for proxy.on / when: 
     var when = function(event, target, handler){
-        if(typeof target === "function"){ // 如果不指定對象，直接傳入 handler
-            eventList.register(event, null, target);
-        } else {
-            eventList.register(event, target, handler);
+        // Global when() only accepts followed events:
+        if(["keydown", "keyup", "holding", "click"].includes(event)){
+            if(typeof target === "function"){ // 如果不指定對象，直接傳入 handler
+                eventList.register(event, null, target);
+            } else {
+                eventList.register(event, target, handler);
+            }
         }
     }
     var proxy = {
