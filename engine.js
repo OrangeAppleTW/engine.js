@@ -113,10 +113,13 @@
 
 	    // for proxy.on / when: 
 	    var when = function(event, target, handler){
-	        if(typeof target === "function"){ // 如果不指定對象，直接傳入 handler
-	            eventList.register(event, null, target);
-	        } else {
-	            eventList.register(event, target, handler);
+	        // Global when() only accepts followed events:
+	        if(["keydown", "keyup", "holding", "click"].includes(event)){
+	            if(typeof target === "function"){ // 如果不指定對象，直接傳入 handler
+	                eventList.register(event, null, target);
+	            } else {
+	                eventList.register(event, target, handler);
+	            }
 	        }
 	    }
 	    var proxy = {
@@ -251,8 +254,11 @@
 	Sprite.prototype.touched = function(){
 	    if (arguments[0].constructor === Array) {
 	        for(var i=0; i<arguments[0].length; i++){
-	            if ( isTouched.call(this, arguments[0][i]) ){
-	                return true;
+	            // 如果陣列中的這個elem不是自己，才檢查碰撞 (因為自己一定會碰到自己)
+	            if(arguments[0][i]!=this){
+	                if ( isTouched.call(this, arguments[0][i]) ){
+	                    return true;
+	                }
 	            }
 	        }
 	        return false;
@@ -507,7 +513,9 @@
 	        handler:handler
 	    }
 	    // @TODO: target 型別偵測
-	    if (event=="keydown" || event=="keyup" || event=="holding"){
+	    if (event=="touch"){
+	        eventObj.sprites = target;
+	    } else if (event=="keydown" || event=="keyup" || event=="holding"){
 	        eventObj.key = target;
 	    } else if (event=="click") {
 	        eventObj.sprite = target;

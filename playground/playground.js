@@ -161,7 +161,7 @@
 /* 16 */
 /***/ function(module, exports) {
 
-	module.exports = "Game.set({\n    width: 640,\n    height: 480\n});\nGame.setBackdrop(\"#ffffff\");\n\nvar robot = Game.createSprite({\n  \tscale: 0.3,\n  \tx: 400,\n  \ty: 300,\n\tcostumes: \"images/robot.png\"\n});\n\nvar monster = Game.createSprite({\n  \tscale: 0.4,\n  \tx: 80,\n  \ty: 300,\n\tcostumes: \"images/monster.png\"\n});\nmonster.hp=100;\n\nmonster.forever(function(){\n    this.x = Game.cursor.x;\n    this.y = Game.cursor.y;\n});\n\nvar attack = function(){\n  \t// 碰撞時執行的function會在 object 的 scope\n    console.log(this);\n  \tmonster.hp -= 50;\n};\n\nrobot.when(\"touch\", monster, attack);\n\nGame.start();"
+	module.exports = "Game.set({\n    width: 640,\n    height: 480\n});\nGame.setBackdrop(\"#ffffff\");\n\nvar monsters = [];\n\nvar robot = Game.createSprite({\n  \tscale: 0.3,\n  \tx: 400,\n  \ty: 300,\n\tcostumes: \"images/robot.png\"\n});\n\nvar monster = Game.createSprite({\n  \tscale: 0.2,\n\tcostumes: \"images/monster.png\"\n});\nmonster.hp=100;\nmonsters.push(monster);\n\nfor(var i=0; i<10; i++){\n\tvar monster = Game.createSprite({\n        scale: 0.2,\n        x: Math.random()*640,\n        y: Math.random()*320,\n        costumes: \"images/monster.png\"\n    });\n\tmonsters.push(monster);\n}\n\nmonster.forever(function(){\n    this.x = Game.cursor.x;\n    this.y = Game.cursor.y;\n  \tif(this.touched(monsters)){\n    \tthis.destroy();\n    }\n});\n\nvar attack = function(){\n  \t// 碰撞時執行的function會在 object 的 scope\n    console.log(this);\n  \tmonster.hp -= 50;\n};\n\nrobot.when(\"touch\", monster, attack);\n\nGame.start();"
 
 /***/ },
 /* 17 */
