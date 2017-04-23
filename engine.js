@@ -90,13 +90,15 @@
 	    debugMode = debugMode || false;
 
 	    function set(args){
-	        settings.zoom       = args.zoom || settings.zoom;
-	        settings.width      = args.width || settings.width;
-	        settings.height     = args.height || settings.height;
-	        settings.gravity    = args.gravity || settings.gravity;
-	        settings.update     = args.update || settings.update;
-	        if(args.width || args.zoom){ canvas.width = settings.width*settings.zoom;}
-	        if(args.height || args.zoom){ canvas.height = settings.height*settings.zoom;}
+	        if(args.width) canvas.width = settings.width = args.width;
+	        if(args.height) canvas.height = settings.height = args.height;
+	        if(args.zoom) {
+	            settings.zoom = args.zoom;
+	            canvas.style.width = canvas.width * settings.zoom + 'px';
+	            canvas.style.height = canvas.height * settings.zoom + 'px';
+	        }
+	        settings.gravity = args.gravity || settings.gravity;
+	        settings.update = args.update || settings.update;
 	        return this;
 	    }
 
@@ -160,7 +162,7 @@
 	    hitTester = hitCanvas.getContext('2d');
 	    // document.body.appendChild(hitCanvas);
 
-	// @TODO: 客製化特征
+	// @TODO:  
 	function Sprite(args, eventList, settings, renderer) {
 
 	    if (typeof args === 'string') args = { costumes: [args] }
@@ -170,7 +172,7 @@
 	    this.width = 1;
 	    this.height = 1;
 	    this.direction = args.direction || 0;
-	    this.rotationstyle = args.rotationstyle || "full"; // "full", "flipped" and "fixed"
+	    this.rotationStyle = args.rotationStyle || "full"; // "full", "flipped" and "fixed"
 	    this.scale = args.scale || 1;
 	    this.costumes = [].concat(args.costumes); // Deal with single string
 	    this.hidden = args.hidden || false;
@@ -185,19 +187,32 @@
 	    this._settings = settings;
 	    this._renderer = renderer;
 
-
 	    this._frames = [];
 	    this._frameRate = 5;
 	    this._frameTime = 0;
-	    this._onTickFuncs.push(function() {
-	        if(this._frames.length > 0) {
-	            var now = new Date().getTime();
-	            if(now >= this._frameTime + 1000 / this._frameRate) {
-	                this._frameTime = now;
-	                this.currentCostumeId = this._frames.shift();
-	            }
+	}
+
+	Sprite.prototype.update = function () {
+	    this._updateDirection();
+	    this._updateFrames();
+	    for (var i=0; i < this._onTickFuncs.length; i++) {
+	        this._onTickFuncs[i].call(this);
+	    }
+	}
+
+	Sprite.prototype._updateDirection = function () {
+	    this.direction = this.direction % 360;
+	    if(this.direction < 0) this.direction += 360;
+	}
+
+	Sprite.prototype._updateFrames = function () {
+	    if(this._frames.length > 0) {
+	        var now = new Date().getTime();
+	        if(now >= this._frameTime + 1000 / this._frameRate) {
+	            this._frameTime = now;
+	            this.currentCostumeId = this._frames.shift();
 	        }
-	    })
+	    }
 	}
 
 	Sprite.prototype.moveTo = function(x, y){
@@ -424,15 +439,12 @@
 
 	Sprites.prototype.runOnTick = function(){
 	    this.each(function(){
-	        for(var i=0; i<this._onTickFuncs.length; i++){
-	            this._onTickFuncs[i].call(this);
-	        }
+	        this.update();
 	    });
 	}
 
 	Sprites.prototype.each = function(func){
 	    var sprites = this._sprites;
-	    // console.log(func);
 	    for(var i=0; i<sprites.length; i++){
 	        func.call(sprites[i],sprites[i]);
 	    }
@@ -495,11 +507,9 @@
 	        handler:handler
 	    }
 	    // @TODO: target 型別偵測
-	    if (event=="touch"){
-	        eventObj.sprites = target;
-	    } else if (event=="keydown" || event=="keyup" || event=="holding"){
+	    if (event=="keydown" || event=="keyup" || event=="holding"){
 	        eventObj.key = target;
-	    } else if (event=="hover" || event=="click") {
+	    } else if (event=="click") {
 	        eventObj.sprite = target;
 	    }
 	    this.pool.push(eventObj);
@@ -682,9 +692,9 @@
 	        size = size || 16; // Set or default
 	        font = font || "Arial";
 	        ctx.textBaseline = "top";
-	        ctx.font = (size*settings.zoom)+"px " + font;
+	        ctx.font = size + "px " + font;
 	        ctx.fillStyle = color || "black";
-	        ctx.fillText(words, x * settings.zoom, y * settings.zoom);
+	        ctx.fillText(words, x, y)
 	    };
 
 	    this.drawSprites = function(sprites){
@@ -700,9 +710,8 @@
 	            instance.height = img.height * instance.scale;
 
 	            var rad = util.degreeToRad(instance.direction);
-	            ctx.scale(settings.zoom,settings.zoom);
 	            ctx.globalAlpha = instance.opacity;
-	            if (instance.rotationstyle === 'flipped') {
+	            if (instance.rotationStyle === 'flipped') {
 	                if(rad >= Math.PI) {
 	                    ctx.translate(instance.x*2, 0);
 	                    ctx.scale(-1, 1);
@@ -715,13 +724,12 @@
 	                    ctx.scale(-1, 1);
 	                    ctx.translate(-instance.x*2, 0);
 	                    ctx.globalAlpha = 1;
-	                    ctx.scale(1/settings.zoom,1/settings.zoom);
 	                    return;
 	                } else {
 	                    var rad = 0;
 	                }
 	            }
-	            if(instance.rotationstyle === 'fixed') {
+	            if(instance.rotationStyle === 'fixed') {
 	                var rad = 0;
 	            }
 	            ctx.translate(instance.x, instance.y);
@@ -735,7 +743,6 @@
 	            ctx.rotate(-rad);
 	            ctx.translate(-instance.x, -instance.y);
 	            ctx.globalAlpha = 1;
-	            ctx.scale(1/settings.zoom,1/settings.zoom);
 	        }
 	    };
 
@@ -747,7 +754,7 @@
 	    this.drawBackdrop = function(src, x, y, width, height){
 	        if(src[0]=='#'){
 	            ctx.fillStyle=src;
-	            ctx.fillRect(0,0,settings.width*settings.zoom,settings.height*settings.zoom);
+	            ctx.fillRect(0,0,settings.width, settings.height);
 	        } else {
 	            var img = imageCache[src];
 	            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
@@ -756,13 +763,7 @@
 	                img.src=src;
 	                imageCache[src]=img;
 	            }
-	            ctx.drawImage(
-	                img,
-	                (x||0)*settings.zoom,
-	                (y||0)*settings.zoom,
-	                (width||img.width)*settings.zoom,
-	                (height||img.height)*settings.zoom
-	            );
+	            ctx.drawImage(img, (x||0), (y||0), (width||img.width), (height||img.height));
 	        }
 	    };
 
