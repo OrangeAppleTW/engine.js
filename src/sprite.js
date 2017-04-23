@@ -92,11 +92,8 @@ Sprite.prototype.toward = function(){
 Sprite.prototype.touched = function(){
     if (arguments[0].constructor === Array) {
         for(var i=0; i<arguments[0].length; i++){
-            // 如果陣列中的這個elem不是自己，才檢查碰撞 (因為自己一定會碰到自己)
-            if(arguments[0][i]!=this){
-                if ( isTouched.call(this, arguments[0][i]) ){
-                    return true;
-                }
+            if ( isTouched.call(this, arguments[0][i]) ){
+                return true;
             }
         }
         return false;
@@ -153,6 +150,7 @@ Sprite.prototype.animate = function (frames, frameRate) {
 }
 
 function isTouched(sprite, args){
+
     // 如果此角色為隱藏，不進行檢驗，直接回傳 false
     if (this.hidden) { return false; }
 
@@ -160,6 +158,9 @@ function isTouched(sprite, args){
     var crossX = crossY = false;
 
     if( arguments[0] instanceof Sprite ){
+
+        // 如果目標角色是自己，不進行檢驗，直接回傳 false (因為自己一定會碰到自己)
+        if (this == arguments[0]) { return false; }
 
         // 如果目標角色為隱藏，不進行檢驗，直接回傳 false
         if (arguments[0].hidden) { return false; }
