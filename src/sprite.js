@@ -6,7 +6,9 @@ var hitCanvas = document.createElement('canvas'),
 // @TODO:  
 function Sprite(args, eventList, settings, renderer) {
 
-    if (typeof args === 'string') args = { costumes: [args] }
+    if (args.constructor === String || args.constructor === Array) {
+        args = { costumes: [].concat(args) }
+    }
 
     this.x = util.isNumeric(args.x) ? args.x : settings.width/2;
     this.y = util.isNumeric(args.y) ? args.y : settings.height/2;
