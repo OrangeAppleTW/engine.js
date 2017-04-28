@@ -33,8 +33,8 @@ downTube.forever(function(){
 });
 
 bird.when("touch", ground, Game.stop);
-Game.when("touch", [bird, upTube], Game.stop);
-Game.on("touch", [bird, downTube], Game.stop);
+bird.when("touch", upTube, Game.stop);
+bird.on("touch", downTube, Game.stop);
 Game.on("click", function(){
     Game.sound.play("./assets/laser1.wav");
     bird.speed = -4;
