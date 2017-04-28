@@ -87,6 +87,7 @@ function engine(stageId, debugMode){
         setBackground: setBackground,
         setBackdrop: setBackground,
         cursor: io.cursor,
+        keyboard: io.holding,
         inspector: inspector,
         when: when,
         on: when,

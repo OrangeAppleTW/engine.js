@@ -6,7 +6,9 @@ var hitCanvas = document.createElement('canvas'),
 // @TODO:  
 function Sprite(args, eventList, settings, renderer) {
 
-    if (typeof args === 'string') args = { costumes: [args] }
+    if (args.constructor === String || args.constructor === Array) {
+        args = { costumes: [].concat(args) }
+    }
 
     this.x = util.isNumeric(args.x) ? args.x : settings.width/2;
     this.y = util.isNumeric(args.y) ? args.y : settings.height/2;
@@ -28,9 +30,7 @@ function Sprite(args, eventList, settings, renderer) {
     this._settings = settings;
     this._renderer = renderer;
 
-    this._frames = [];
-    this._frameRate = 5;
-    this._frameTime = 0;
+    this._animation = { frames: [], rate: 5, timer: 0 }
 }
 
 Sprite.prototype.update = function () {
@@ -47,11 +47,13 @@ Sprite.prototype._updateDirection = function () {
 }
 
 Sprite.prototype._updateFrames = function () {
-    if(this._frames.length > 0) {
+    var animate = this._animation;
+    if(animate.frames.length > 0) {
         var now = new Date().getTime();
-        if(now >= this._frameTime + 1000 / this._frameRate) {
-            this._frameTime = now;
-            this.currentCostumeId = this._frames.shift();
+        if(now >= animate.timer + 1000 / animate.rate) {
+            animate.timer = now;
+            this.currentCostumeId = animate.frames.shift();
+            if(animate.frames.length <= 0 && animate.callback) animate.callback();
         }
     }
 }
@@ -144,9 +146,13 @@ Sprite.prototype.getCurrentCostume = function(){
     return this.costumes[id];
 };
 
-Sprite.prototype.animate = function (frames, frameRate) {
-    this._frames = frames;
-    this._frameRate = frameRate || 5;
+Sprite.prototype.animate = function (frames, frameRate, callback) {
+    this._animation = {
+        frames: frames,
+        rate: frameRate || 5,
+        callback: callback,
+        timer: 0
+    }
 }
 
 function isTouched(sprite, args){
