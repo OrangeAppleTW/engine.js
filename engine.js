@@ -80,8 +80,8 @@
 	        for(var i=0; i<settings.updateFunctions.length; i++){
 	            settings.updateFunctions[i]();
 	        };
-	        sprites.runOnTick();
 	        sprites.removeDeletedSprites();
+	        sprites.runOnTick();
 	        inspector.updateFPS();
 	    });
 
@@ -487,8 +487,14 @@
 	        io = this.io,
 	        debugMode = this.debugMode;
 	    for(var i=0; i<pool.length; i++){
-	        if (pool[i].sprite && pool[i].sprite.constructor.name=="Sprite" && pool[i].sprite._deleted){ pool.splice(i,1); }
-	        else if (pool[i].event=="hover")    { hoverJudger(   pool[i].sprite,  pool[i].handler, io.cursor,  debugMode ); }
+	        if (pool[i].sprite || pool[i].sprites) {
+	            var sprite = pool[i].sprite || pool[i].sprites[0];
+	            if (sprite.constructor.name=="Sprite" && sprite._deleted){ 
+	                pool.splice(i,1);
+	                continue;
+	            }
+	        }
+	        if (pool[i].event=="hover")    { hoverJudger(   pool[i].sprite,  pool[i].handler, io.cursor,  debugMode ); }
 	        else if (pool[i].event=="click")    { clickJudger(   pool[i].sprite,  pool[i].handler, io.clicked, debugMode ); }
 	        else if (pool[i].event=="keydown")  { keydownJudger( pool[i].key,     pool[i].handler, io.keydown, debugMode ); }
 	        else if (pool[i].event=="keyup")    { keydownJudger( pool[i].key,     pool[i].handler, io.keyup,   debugMode ); }
