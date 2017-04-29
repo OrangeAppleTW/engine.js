@@ -39,7 +39,9 @@ function engine(stageId, debugMode){
         inspector.updateFPS();
     });
 
-    var background={};    
+    var background={
+        path: "#ffffff"
+    };    
 
     debugMode = debugMode || false;
 
