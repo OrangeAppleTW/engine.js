@@ -3,7 +3,7 @@ var keycode = require('keycode');
 var io = function(canvas, settings, debugMode){
 
     var exports={},
-        cursor={x:0, y:0, isDown:null},
+        cursor={ x:0, y:0, isDown:false, left: false, right: false },
         key=[],
         clicked={x:null, y:null},
         keyup={},
@@ -16,12 +16,20 @@ var io = function(canvas, settings, debugMode){
     canvas.setAttribute("tabindex",'1');
     canvas.style.outline = "none";
 
+    canvas.oncontextmenu = function () {
+        return false;
+    }
+
     canvas.addEventListener("mousedown", function(e){
+        if(e.which == 1) cursor.left = true;
+        if(e.which == 3) cursor.right = true;
         cursor.isDown = true;
     });
 
     canvas.addEventListener("mouseup", function(e){
-        cursor.isDown = false;
+        if(e.which == 1) cursor.left = false;
+        if(e.which == 3) cursor.right = false;
+        cursor.isDown = cursor.left || cursor.right;
     });
 
     canvas.addEventListener("mousemove", function(e){
