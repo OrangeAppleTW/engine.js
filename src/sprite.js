@@ -4,7 +4,7 @@ var hitCanvas = document.createElement('canvas'),
     // document.body.appendChild(hitCanvas);
 
 // @TODO:  
-function Sprite(args, eventList, settings, renderer) {
+function Sprite(args, eventList, broadcast, settings, renderer) {
 
     if (args.constructor === String || args.constructor === Array) {
         args = { costumes: [].concat(args) }
@@ -27,6 +27,7 @@ function Sprite(args, eventList, settings, renderer) {
     this._deleted = false;
 
     this._eventList = eventList;
+    this._broadcast = broadcast;
     this._settings = settings;
     this._renderer = renderer;
 
@@ -120,7 +121,9 @@ Sprite.prototype.always = Sprite.prototype.forever = function(func){
 Sprite.prototype.when = Sprite.prototype.on = function(){
     var event = arguments[0],
         target, handler;
-    if(event=="hover" || event=="click"){
+    if(event=="listen") {
+        this._broadcast.on(arguments[1], arguments[2], this);
+    } else if(event=="hover" || event=="click"){
         target = this;
         handler = arguments[1];
     } else if (event=="touch"){
