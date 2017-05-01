@@ -9,6 +9,7 @@ var tdScript = require("raw-loader!./examples/_td.js"),
     animateScript = require("raw-loader!./examples/_animate.js"),
     zoomScript = require("raw-loader!./examples/_zoom.js"),
     ioScript = require("raw-loader!./examples/_io-test.js");
+    broadcastScript = require("raw-loader!./examples/_broadcast.js");
 
 $("textarea#TD").val(tdScript);
 $("textarea#flappy-bird").val(flappyBirdScript);
@@ -20,6 +21,7 @@ $("textarea#rotation").val(rotationScript);
 $("textarea#animate").val(animateScript);
 $("textarea#zoom").val(zoomScript);
 $("textarea#io").val(ioScript);
+$("textarea#broadcast").val(broadcastScript);
 
 var editor = CodeMirror.fromTextArea(document.getElementById("script-box"), {
     lineNumbers: true,
