@@ -5,6 +5,7 @@ var Inspector = require("./inspector");
 var Clock = require("./clock");
 var Renderer = require("./renderer");
 var Sound = require("./sound");
+var EventEmitter = require("./event-emitter");
 
 function engine(stageId, debugMode){
 
@@ -25,6 +26,7 @@ function engine(stageId, debugMode){
     var eventList = new EventList(io, debugMode);
     var renderer = new Renderer(ctx, settings, debugMode);
     var sound = new Sound();
+    var broadcast = new EventEmitter();
     var clock = new Clock(function(){
         if(background.path){
             renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
@@ -80,7 +82,7 @@ function engine(stageId, debugMode){
     }
     var proxy = {
         createSprite: function(args){
-            var newSprite = new Sprite(args, eventList, settings, renderer)
+            var newSprite = new Sprite(args, eventList, broadcast, settings, renderer)
             sprites._sprites.push(newSprite);
             sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
             return newSprite;
@@ -89,7 +91,7 @@ function engine(stageId, debugMode){
         setBackground: setBackground,
         setBackdrop: setBackground,
         cursor: io.cursor,
-        keyboard: io.holding,
+        key: io.holding,
         inspector: inspector,
         when: when,
         on: when,
@@ -103,6 +105,7 @@ function engine(stageId, debugMode){
         clear: function(){ renderer.clear(); },
         preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); },
         sound: sound,
+        broadcast: broadcast.emit.bind(broadcast),
 
         // Will be deprecated:
         drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },

@@ -51,6 +51,7 @@
 	var Clock = __webpack_require__(6);
 	var Renderer = __webpack_require__(7);
 	var Sound = __webpack_require__(9);
+	var EventEmitter = __webpack_require__(10);
 
 	function engine(stageId, debugMode){
 
@@ -67,10 +68,11 @@
 
 	    var sprites = new Sprites();
 	    var inspector = new Inspector();
-	    var io = __webpack_require__(10)(canvas, settings, debugMode);
+	    var io = __webpack_require__(11)(canvas, settings, debugMode);
 	    var eventList = new EventList(io, debugMode);
 	    var renderer = new Renderer(ctx, settings, debugMode);
 	    var sound = new Sound();
+	    var broadcast = new EventEmitter();
 	    var clock = new Clock(function(){
 	        if(background.path){
 	            renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
@@ -126,7 +128,7 @@
 	    }
 	    var proxy = {
 	        createSprite: function(args){
-	            var newSprite = new Sprite(args, eventList, settings, renderer)
+	            var newSprite = new Sprite(args, eventList, broadcast, settings, renderer)
 	            sprites._sprites.push(newSprite);
 	            sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
 	            return newSprite;
@@ -135,7 +137,7 @@
 	        setBackground: setBackground,
 	        setBackdrop: setBackground,
 	        cursor: io.cursor,
-	        keyboard: io.holding,
+	        key: io.holding,
 	        inspector: inspector,
 	        when: when,
 	        on: when,
@@ -149,6 +151,7 @@
 	        clear: function(){ renderer.clear(); },
 	        preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); },
 	        sound: sound,
+	        broadcast: broadcast.emit.bind(broadcast),
 
 	        // Will be deprecated:
 	        drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
@@ -169,7 +172,7 @@
 	    // document.body.appendChild(hitCanvas);
 
 	// @TODO:  
-	function Sprite(args, eventList, settings, renderer) {
+	function Sprite(args, eventList, broadcast, settings, renderer) {
 
 	    if (args.constructor === String || args.constructor === Array) {
 	        args = { costumes: [].concat(args) }
@@ -192,6 +195,7 @@
 	    this._deleted = false;
 
 	    this._eventList = eventList;
+	    this._broadcast = broadcast;
 	    this._settings = settings;
 	    this._renderer = renderer;
 
@@ -285,7 +289,9 @@
 	Sprite.prototype.when = Sprite.prototype.on = function(){
 	    var event = arguments[0],
 	        target, handler;
-	    if(event=="hover" || event=="click"){
+	    if(event=="listen") {
+	        this._broadcast.on(arguments[1], arguments[2], this);
+	    } else if(event=="hover" || event=="click"){
 	        target = this;
 	        handler = arguments[1];
 	    } else if (event=="touch"){
@@ -1405,14 +1411,40 @@
 
 /***/ },
 /* 10 */
+/***/ function(module, exports) {
+
+	function EventEmitter () {
+	    this.events = {}
+	}
+
+	EventEmitter.prototype.on = function (event, fn, context) {
+	    if(context) fn = fn.bind(context);
+	    if(this.events[event]) {
+	        this.events[event].push(fn);
+	    } else {
+	        this.events[event] = [fn];
+	    }
+	}
+
+	EventEmitter.prototype.emit = function (event) {
+	    var funs = this.events[event];
+	    for(var i=0; i<funs.length; i++) {
+	        funs[i]();
+	    }
+	}
+
+	module.exports = EventEmitter;
+
+/***/ },
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var keycode = __webpack_require__(11);
+	var keycode = __webpack_require__(12);
 
 	var io = function(canvas, settings, debugMode){
 
 	    var exports={},
-	        cursor={x:0, y:0, isDown:null},
+	        cursor={ x:0, y:0, isDown:false, left: false, right: false },
 	        key=[],
 	        clicked={x:null, y:null},
 	        keyup={},
@@ -1425,12 +1457,20 @@
 	    canvas.setAttribute("tabindex",'1');
 	    canvas.style.outline = "none";
 
+	    canvas.oncontextmenu = function () {
+	        return false;
+	    }
+
 	    canvas.addEventListener("mousedown", function(e){
+	        if(e.which == 1) cursor.left = true;
+	        if(e.which == 3) cursor.right = true;
 	        cursor.isDown = true;
 	    });
 
 	    canvas.addEventListener("mouseup", function(e){
-	        cursor.isDown = false;
+	        if(e.which == 1) cursor.left = false;
+	        if(e.which == 3) cursor.right = false;
+	        cursor.isDown = cursor.left || cursor.right;
 	    });
 
 	    canvas.addEventListener("mousemove", function(e){
@@ -1475,7 +1515,7 @@
 	module.exports = io;
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports) {
 
 	// Source: http://jsfiddle.net/vWx8V/
