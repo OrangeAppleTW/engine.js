@@ -79,10 +79,7 @@ function Renderer(ctx, settings, debugMode){
     // - src: backdrop image location
     // - options: {x:number, y:number, width:number, height:number}
     this.drawBackdrop = function(src, x, y, width, height){
-        if(src[0]=='#'){
-            ctx.fillStyle=src;
-            ctx.fillRect(0,0,settings.width, settings.height);
-        } else {
+        if(src.includes('.')) {
             var img = imageCache[src];
             // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
             if( !img ){
@@ -91,6 +88,9 @@ function Renderer(ctx, settings, debugMode){
                 imageCache[src]=img;
             }
             ctx.drawImage(img, (x||0), (y||0), (width||img.width), (height||img.height));
+        } else {
+            ctx.fillStyle=src;
+            ctx.fillRect(0,0,settings.width, settings.height);
         }
     };
 
