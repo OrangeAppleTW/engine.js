@@ -4,7 +4,7 @@ var hitCanvas = document.createElement('canvas'),
     // document.body.appendChild(hitCanvas);
 
 // @TODO:  
-function Sprite(args, eventList, broadcast, settings, renderer) {
+function Sprite(args, eventList, settings, renderer) {
 
     if (args.constructor === String || args.constructor === Array) {
         args = { costumes: [].concat(args) }
@@ -118,26 +118,21 @@ Sprite.prototype.always = Sprite.prototype.forever = function(func){
     this._onTickFuncs.push(func);
 };
 
-Sprite.prototype.when = Sprite.prototype.on = function(){
-    var event = arguments[0],
-        target, handler;
+Sprite.prototype.when = Sprite.prototype.on = function() {
+
+    var event = arguments[0];
+    var eventList = this._eventList;
+
     if(event=="listen") {
-        this._broadcast.on(arguments[1], arguments[2], this);
+        return eventList.register(event, arguments[1], this, arguments[2]);
     } else if(event=="hover" || event=="click"){
-        target = this;
-        handler = arguments[1];
+        return eventList.register(event, this, arguments[1]);
     } else if (event=="touch"){
-        if(Array.isArray(arguments[1])){
-            target = [this].concat(arguments[1]);
-        } else {
-            target = [this].concat([arguments[1]]);
-        }
-        handler = arguments[2];
+        return eventList.register(event, [this].concat(arguments[1]), arguments[2]);
     } else {
-        console.log('Sprite.on() does only support "click", "hover" and "touch" events');
+        console.log('Sprite.on() does only support "listen", "click", hover" and "touch" events');
         return false;
     }
-    this._eventList.register(event, target, handler);
 };
 
 Sprite.prototype.destroy = function(){
@@ -200,6 +195,8 @@ function isTouched(sprite, args){
         var settings = this._settings;
         hitCanvas.width = settings.width;
         hitCanvas.height = settings.height;
+
+        if(!this._renderer) return console.log(this);
 
         hitTester.globalCompositeOperation = 'source-over';
         hitTester.drawImage(    renderer.getImgFromCache(this.getCurrentCostume()),

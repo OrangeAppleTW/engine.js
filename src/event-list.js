@@ -1,5 +1,6 @@
 function EventList(io, debugMode){
     this.pool=[];
+    this.messages = [];
     this.io=io;
     this.debugMode = debugMode || false;
 }
@@ -7,6 +8,7 @@ function EventList(io, debugMode){
 EventList.prototype.traverse = function (){
     var pool = this.pool,
         io = this.io,
+        messages = this.messages,
         debugMode = this.debugMode;
     for(var i=0; i<pool.length; i++){
         if (pool[i].sprite || pool[i].sprites) {
@@ -16,12 +18,13 @@ EventList.prototype.traverse = function (){
                 continue;
             }
         }
-        if (pool[i].event=="hover")    { hoverJudger(   pool[i].sprite,  pool[i].handler, io.cursor,  debugMode ); }
-        else if (pool[i].event=="click")    { clickJudger(   pool[i].sprite,  pool[i].handler, io.clicked, debugMode ); }
-        else if (pool[i].event=="keydown")  { keydownJudger( pool[i].key,     pool[i].handler, io.keydown, debugMode ); }
-        else if (pool[i].event=="keyup")    { keydownJudger( pool[i].key,     pool[i].handler, io.keyup,   debugMode ); }
-        else if (pool[i].event=="holding")  { holdingJudger( pool[i].key,     pool[i].handler, io.holding, debugMode ); }
-        else if (pool[i].event=="touch")    {
+        if (pool[i].event=="hover") hoverJudger(pool[i].sprite, pool[i].handler, io.cursor, debugMode);
+        else if (pool[i].event=="click") clickJudger(pool[i].sprite, pool[i].handler, io.clicked, debugMode);
+        else if (pool[i].event=="keydown") keydownJudger(pool[i].key, pool[i].handler, io.keydown, debugMode);
+        else if (pool[i].event=="keyup") keydownJudger(pool[i].key, pool[i].handler, io.keyup, debugMode);
+        else if (pool[i].event=="holding") holdingJudger(pool[i].key, pool[i].handler, io.holding, debugMode);
+        else if (pool[i].event=="listen") listenJudger(pool[i].sprite, pool[i].message, messages, pool[i].handler, debugMode);
+        else if (pool[i].event=="touch") {
             if(!pool[i].sprites.length || pool[i].sprites.length<2){
                 console.log("You must pass a sprites array which length is bigger than 1 as the second argument!");
                 return;
@@ -29,29 +32,53 @@ EventList.prototype.traverse = function (){
             touchJudger( pool[i].sprites, pool[i].handler, debugMode );
         }
     }
-    clearEventRecord(this.io);
+    this._clearEventRecord();
+    this._clearMessages();
+}
+
+EventList.prototype._clearEventRecord = function () {
+    var io = this.io;
+    io.clicked.x=null;
+    io.clicked.y=null;
+    for(var key in io.keydown){
+        io.keydown[key]=false;
+        io.keyup[key]=false;
+    }
+}
+
+EventList.prototype._clearMessages = function () {
+    this.messages = [];
 }
 
 EventList.prototype.clear = function(){
     this.pool=[];
 }
 
-EventList.prototype.register = function(event, target, handler){
-    var eventObj = {
-        event:event,
-        handler:handler
-    }
-    // @TODO: target 型別偵測
-    if (event=="touch"){
-        eventObj.sprites = target;
-    } else if (event=="keydown" || event=="keyup" || event=="holding"){
-        eventObj.key = target;
-    } else if (event=="click") {
-        eventObj.sprite = target;
-    }
-    this.pool.push(eventObj);
-};
+EventList.prototype.register = function(){
 
+    var event = arguments[0];
+    var eventObj = {
+        event: event,
+        handler: arguments[arguments.length - 1]
+    }
+
+    if (event === "touch"){
+        eventObj.sprites = arguments[1];
+    } else if (event === "keydown" || event === "keyup" || event === "holding"){
+        eventObj.key = arguments[1];
+    } else if (event === "click") {
+        eventObj.sprite = arguments[1];
+    } else if (event === "listen") {
+        eventObj.message = arguments[1];
+        eventObj.sprite = arguments[2];
+    }
+
+    this.pool.push(eventObj);
+}
+
+EventList.prototype.emit = function (eventName) {
+    this.messages.push(eventName);
+}
 
 function hoverJudger(sprite, handler, cursor, debugMode){
     if(sprite.touched(cursor)){
@@ -109,6 +136,15 @@ function holdingJudger(key, handler, holding, debugMode){
     }
 }
 
+function listenJudger(sprite, message, messages, handler, debugMode) {
+    if(messages.includes(message)) {
+        handler.call(sprite);
+        if(debugMode) {
+            // console.log('listen event');
+        }
+    }
+}
+
 // @TODO: Now we could only detect Sprite instance, not include cursor.
 function touchJudger(sprites, handler, debugMode){
     var sprite = sprites[0];
@@ -119,15 +155,6 @@ function touchJudger(sprites, handler, debugMode){
                 console.log({event:"Touch", "sprite":sprite, "target":target});
             }
         }
-    }
-}
-
-function clearEventRecord(io){
-    io.clicked.x=null;
-    io.clicked.y=null;
-    for(var key in io.keydown){
-        io.keydown[key]=false;
-        io.keyup[key]=false;
     }
 }
 
