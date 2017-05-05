@@ -24,7 +24,7 @@ EventList.prototype.traverse = function (){
         else if (pool[i].event=="keyup")    keydownJudger( pool[i].key,    pool[i].handler, io.keyup,   debugMode);
         else if (pool[i].event=="holding")  holdingJudger( pool[i].key,    pool[i].handler, io.holding, debugMode);
         else if (pool[i].event=="listen")   listenJudger(  pool[i].sprite, pool[i].handler, messages,   pool[i].message, debugMode);
-        else if (pool[i].event=="touch")    touchJudger(   pool[i].sprite, pool[i].targets, pool[i].handler, debugMode );
+        else if (pool[i].event=="touch")    touchJudger(   pool[i].sprite, pool[i].handler, pool[i].targets, debugMode );
     }
     this._clearEventRecord();
     this._clearMessages();
@@ -145,7 +145,7 @@ function listenJudger(sprite, handler, messages, message, debugMode) {
 }
 
 // @TODO: Now we could only detect Sprite instance, not include cursor.
-function touchJudger(sprite, targets, handler, debugMode) {
+function touchJudger(sprite, handler, targets, debugMode) {
     for(var i=0, target; target = targets[i]; i++) {
         if(sprite.touched(target)) {
             handler.call(sprite, target);
