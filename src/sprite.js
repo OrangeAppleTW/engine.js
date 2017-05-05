@@ -128,7 +128,7 @@ Sprite.prototype.when = Sprite.prototype.on = function() {
     } else if(event=="hover" || event=="click"){
         return eventList.register(event, this, arguments[1]);
     } else if (event=="touch"){
-        return eventList.register(event, [this].concat(arguments[1]), arguments[2]);
+        return eventList.register(event, this, arguments[1], arguments[2]);
     } else {
         console.log('Sprite.on() does only support "listen", "click", hover" and "touch" events');
         return false;
