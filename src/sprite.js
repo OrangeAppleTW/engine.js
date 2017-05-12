@@ -27,7 +27,6 @@ function Sprite(args, eventList, settings, renderer) {
     this._deleted = false;
 
     this._eventList = eventList;
-    this._broadcast = broadcast;
     this._settings = settings;
     this._renderer = renderer;
 

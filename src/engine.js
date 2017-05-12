@@ -26,6 +26,9 @@ function engine(stageId, debugMode){
     var renderer = new Renderer(ctx, settings, debugMode);
     var sound = new Sound();
     var clock = new Clock(function(){
+        if(background.path){
+            renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
+        }
         eventList.traverse();
         for(var i=0; i<settings.updateFunctions.length; i++){
             settings.updateFunctions[i]();
@@ -33,9 +36,6 @@ function engine(stageId, debugMode){
         sprites.removeDeletedSprites();
         sprites.runOnTick();
         inspector.updateFPS();
-        if(background.path){
-            renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
-        }
         renderer.drawSprites(sprites);
     });
 
