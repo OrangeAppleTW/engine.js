@@ -152,6 +152,13 @@ Sprite.prototype.animate = function (frames, frameRate, callback) {
     }
 }
 
+Sprite.prototype.nextCostume = function () {
+    this.currentCostumeId += 1;
+    if(this.currentCostumeId >= this.costumes.length) {
+        this.currentCostumeId = 0;
+    }
+}
+
 function isTouched(sprite, args){
 
     // 如果此角色為隱藏，不進行檢驗，直接回傳 false
