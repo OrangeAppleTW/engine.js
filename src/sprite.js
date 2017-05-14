@@ -21,7 +21,7 @@ function Sprite(args, eventList, settings, renderer) {
     this.hidden = args.hidden || false;
     this.layer = util.isNumeric(args.layer) ? args.layer : 0;
     this.opacity = util.isNumeric(args.opacity) ? args.opacity : 1;
-    this.currentCostumeId = 0;
+    this.costumeId = 0;
 
     this._onTickFuncs = [];
     this._deleted = false;
@@ -52,7 +52,7 @@ Sprite.prototype._updateFrames = function () {
         var now = new Date().getTime();
         if(now >= animate.timer + 1000 / animate.rate) {
             animate.timer = now;
-            this.currentCostumeId = animate.frames.shift();
+            this.costumeId = animate.frames.shift();
             if(animate.frames.length <= 0 && animate.callback) animate.callback();
         }
     }
@@ -139,7 +139,7 @@ Sprite.prototype.destroy = function(){
 };
 
 Sprite.prototype.getCurrentCostume = function(){
-    var id = this.currentCostumeId;
+    var id = this.costumeId;
     return this.costumes[id];
 };
 
@@ -153,9 +153,9 @@ Sprite.prototype.animate = function (frames, frameRate, callback) {
 }
 
 Sprite.prototype.nextCostume = function () {
-    this.currentCostumeId += 1;
-    if(this.currentCostumeId >= this.costumes.length) {
-        this.currentCostumeId = 0;
+    this.costumeId += 1;
+    if(this.costumeId >= this.costumes.length) {
+        this.costumeId = 0;
     }
 }
 
