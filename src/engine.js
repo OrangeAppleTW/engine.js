@@ -37,6 +37,7 @@ function engine(stageId, debugMode){
         sprites.runOnTick();
         inspector.updateFPS();
         renderer.drawSprites(sprites);
+        renderer.drawTexts();
     });
 
     var background={
