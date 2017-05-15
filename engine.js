@@ -63,11 +63,77 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 11);
+/******/ 	return __webpack_require__(__webpack_require__.s = 12);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+function Loader () { 
+    this.loaded = 0;
+    this.paths = [];
+    this.sounds = {};
+    this.images = {};
+    this.completeFunc;
+    this.progressFunc;
+}
+
+Loader.prototype = {
+
+
+    preload: function (paths, completeFunc, progressFunc) {
+
+        this.paths = paths;
+        this.completeFunc = completeFunc;
+        this.progressFunc = progressFunc;
+
+        for(var i=0; i<paths.length; i++) {    
+            var path = paths[i];
+            var ext = path.split('.').pop();
+
+            if(['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
+                this._loadImage(path);
+            }
+            if(['mp3', 'ogg', 'wav'].includes(ext)) {
+                this._loadSound(path);
+            }
+        }
+    },
+
+    _loadImage: function (url) {
+        var instance = this;
+        var image = new Image();
+        image.src = url;
+        image.onload = function() {instance._loaded()};
+        this.images[url] = image;
+    },
+
+    _loadSound: function (url) {
+        var instance = this;
+        var audio = new Audio();
+        audio.src = url;
+        audio.addEventListener('canplaythrough', function() {instance._loaded()});
+        this.sounds[url] = audio;
+    },
+
+    _loaded: function () {
+        this.loaded += 1;
+        if(this.progressFunc) {
+            this.progressFunc(this.loaded, this.paths.length);
+        }
+        if(this.loaded === this.paths.length && this.completeFunc) {
+            this.completeFunc();
+        }
+    }
+
+}
+
+module.exports = Loader;
+
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports) {
 
 var util = {};
@@ -116,7 +182,7 @@ util.distanceBetween = function(){
 module.exports = util;
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports) {
 
 //  state 用來表達 renderer 的以下狀態：
@@ -170,7 +236,7 @@ Clock.prototype.stop = function(){
 module.exports = Clock;
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports) {
 
 function EventList(io, debugMode){
@@ -334,7 +400,7 @@ function touchJudger(sprite, handler, targets, debugMode) {
 module.exports = EventList;
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports) {
 
 function Inspector(){
@@ -351,10 +417,10 @@ Inspector.prototype.updateFPS = function(){
 module.exports = Inspector;
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var keycode = __webpack_require__(10);
+var keycode = __webpack_require__(11);
 
 var io = function(canvas, settings, debugMode){
 
@@ -430,19 +496,19 @@ var io = function(canvas, settings, debugMode){
 module.exports = io;
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var util = __webpack_require__(0);
-var loader = new (__webpack_require__(9))();
+var util = __webpack_require__(1);
+var loader = new (__webpack_require__(10))();
 
-function Renderer(ctx, settings, debugMode){
+function Renderer(ctx, settings, images, debugMode){
 
     // 不可以這麼做，因為當我們要取 canvas 大小時，他可能已經變了
     // var stageWidth = settings.width,
     //     stageHeight = settings.height;
 
-    var imageCache = {};
+    var imageCache = images;
     var texts = [];
 
     this.clear = function() {
@@ -541,50 +607,6 @@ function Renderer(ctx, settings, debugMode){
         }
     };
 
-    this.preload = function(images, completeFunc, progressFunc){
-        var loaderProxy = {};
-        if(images.length>0){
-            if(completeFunc){
-                onComplete(completeFunc);
-            }
-            if(progressFunc){
-                onProgress(progressFunc);
-            }
-            for(var i=0; i<images.length; i++){
-                var path = images[i];
-                imageCache[path] = loader.addImage(path);
-            }
-            function onComplete(callback){
-                loader.addCompletionListener(function(){
-                    callback();
-                });
-            };
-            function onProgress(callback){
-                loader.addProgressListener(function(e) {
-                    // e.completedCount, e.totalCount, e.resource.imageNumber
-                    callback(e);
-                });
-            }
-            loaderProxy.complete = onComplete;
-            loaderProxy.progress = onProgress;
-            loader.start();
-            if(debugMode){
-                console.log("Start loading "+images.length+" images...");
-                loader.addProgressListener(function(e) {
-                    console.log("Preloading progressing...");
-                });
-                loader.addCompletionListener(function(){
-                    console.log("Preloading completed!");
-                });
-            }
-        } else {
-            if(completeFunc){
-                completeFunc();
-            }
-        }
-        return loaderProxy;
-    };
-
     function getImgFromCache(path){
         var img = imageCache[path];
         if( !img ){
@@ -599,13 +621,13 @@ function Renderer(ctx, settings, debugMode){
 module.exports = Renderer;
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var loader = new(__webpack_require__(12));
+var loader = new(__webpack_require__(0));
 
-function Sound (debugMode){
-    this.sounds = {};
+function Sound (sounds, debugMode){
+    this.sounds = sounds;
     this.playing = [];
 }
 
@@ -639,10 +661,10 @@ Sound.prototype = {
 module.exports = Sound;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var util = __webpack_require__(0);
+var util = __webpack_require__(1);
 var hitCanvas = document.createElement('canvas'),
     hitTester = hitCanvas.getContext('2d');
     // document.body.appendChild(hitCanvas);
@@ -882,7 +904,7 @@ function isTouched(sprite, args){
 module.exports = Sprite;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports) {
 
 function Sprites(){
@@ -918,7 +940,7 @@ Sprites.prototype.clear = function(){
 module.exports = Sprites;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 /*!  | http://thinkpixellab.com/PxLoader */
@@ -1426,7 +1448,7 @@ PxLoader.prototype.addImage = function(url, tags, priority, options) {
 module.exports = PxLoader;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports) {
 
 // Source: http://jsfiddle.net/vWx8V/
@@ -1578,16 +1600,17 @@ for (var alias in aliases) {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Sprite = __webpack_require__(7);
-var Sprites = __webpack_require__(8);
-var EventList = __webpack_require__(2);
-var Inspector = __webpack_require__(3);
-var Clock = __webpack_require__(1);
-var Renderer = __webpack_require__(5);
-var Sound = __webpack_require__(6);
+var Sprite = __webpack_require__(8);
+var Sprites = __webpack_require__(9);
+var EventList = __webpack_require__(3);
+var Inspector = __webpack_require__(4);
+var Clock = __webpack_require__(2);
+var Renderer = __webpack_require__(6);
+var Sound = __webpack_require__(7);
+var Loader = __webpack_require__(0);
 
 function engine(stageId, debugMode){
 
@@ -1602,12 +1625,13 @@ function engine(stageId, debugMode){
         updateFunctions: []
     };
 
+    var loader = new Loader();
     var sprites = new Sprites();
     var inspector = new Inspector();
-    var io = __webpack_require__(4)(canvas, settings, debugMode);
+    var io = __webpack_require__(5)(canvas, settings, debugMode);
     var eventList = new EventList(io, debugMode);
-    var renderer = new Renderer(ctx, settings, debugMode);
-    var sound = new Sound();
+    var renderer = new Renderer(ctx, settings, loader.images, debugMode);
+    var sound = new Sound(loader.sounds, debugMode);
     var clock = new Clock(function(){
         if(background.path){
             renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
@@ -1685,8 +1709,7 @@ function engine(stageId, debugMode){
         forever: function(func){ settings.updateFunctions.push(func); },
         ctx: ctx,
         clear: function(){ renderer.clear(); },
-        preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); },
-        preloadSounds: sound.preload.bind(sound),
+        preload: function(assets, completeFunc, progressFunc) { loader.preload(assets, completeFunc, progressFunc) },
         sound: sound,
         broadcast: eventList.emit.bind(eventList),
 
@@ -1698,39 +1721,6 @@ function engine(stageId, debugMode){
 }
 
 window.Engine = engine;
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports) {
-
-function Loader () {
-    this.loaded = 0;
-}
-
-Loader.prototype.preload = function (paths, completeFunc, progressFunc) {
-    var instance = this;
-    var sounds = {};
-    for(var i=0; i<paths.length; i++) {
-        var path = paths[i];
-        var ext = path.split('.').pop();
-        if(['mp3', 'ogg', 'wav'].includes(ext)) {
-            var audio = new Audio();
-            audio.src = path;
-            audio.addEventListener('canplaythrough', function() {
-                instance.loaded += 1;
-                if(progressFunc) progressFunc(instance.loaded);
-                if(instance.loaded >= paths.length) {
-                    if(completeFunc) completeFunc();
-                }
-            });
-            sounds[path] = audio;
-        }
-    }
-    return sounds;
-}
-
-module.exports = Loader;
-
 
 /***/ })
 /******/ ]);

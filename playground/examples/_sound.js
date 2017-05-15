@@ -1,4 +1,4 @@
-Game.preloadSounds([
+Game.preload([
     "./assets/hallelujah.mp3",
     "./assets/laser1.wav",
     "./assets/bomb.mp3",
