@@ -1,5 +1,4 @@
 var util = require("./util");
-var loader = new (require("../lib/pxloader-images"))();
 
 function Renderer(ctx, settings, images, debugMode){
 
