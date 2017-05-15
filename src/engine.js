@@ -5,6 +5,7 @@ var Inspector = require("./inspector");
 var Clock = require("./clock");
 var Renderer = require("./renderer");
 var Sound = require("./sound");
+var Loader = require("./loader");
 
 function engine(stageId, debugMode){
 
@@ -19,12 +20,13 @@ function engine(stageId, debugMode){
         updateFunctions: []
     };
 
+    var loader = new Loader();
     var sprites = new Sprites();
     var inspector = new Inspector();
     var io = require("./io")(canvas, settings, debugMode);
     var eventList = new EventList(io, debugMode);
-    var renderer = new Renderer(ctx, settings, debugMode);
-    var sound = new Sound();
+    var renderer = new Renderer(ctx, settings, loader.images, debugMode);
+    var sound = new Sound(loader.sounds, debugMode);
     var clock = new Clock(function(){
         if(background.path){
             renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
@@ -102,8 +104,7 @@ function engine(stageId, debugMode){
         forever: function(func){ settings.updateFunctions.push(func); },
         ctx: ctx,
         clear: function(){ renderer.clear(); },
-        preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); },
-        preloadSounds: sound.preload.bind(sound),
+        preload: function(assets, completeFunc, progressFunc) { loader.preload(assets, completeFunc, progressFunc) },
         sound: sound,
         broadcast: eventList.emit.bind(eventList),
 

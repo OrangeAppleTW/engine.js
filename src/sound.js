@@ -1,7 +1,7 @@
 var loader = new(require('./loader'));
 
-function Sound (debugMode){
-    this.sounds = {};
+function Sound (sounds, debugMode){
+    this.sounds = sounds;
     this.playing = [];
 }
 
