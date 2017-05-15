@@ -1,41 +1,34 @@
-function Sound(debugMode){
-    this.sounds = [];
-    // this.generate = function(url){
-    //     return (function(){
-    //         var sound = new Audio(url),
-    //             obj = {};
-    //         sounds.push(sound);
-    //         obj.play = function(url){
-    //             sound.load();
-    //             sound.play();
-    //         };
-    //         obj.stop = function(){
-    //             sound.pause();
-    //             sound.currentTime = 0;
-    //         };
-    //         return obj;
-    //     })()
-    // }
-    this.play = function(url){
-        var sounds = this.sounds;
-        return (function(){
-            var sound = new Audio(url);
-            var index = sounds.length;
-            sounds.push(sound);
-            sound.play();
-            sound.addEventListener('ended', function(){
-                sounds[index] = null;
-                sound = null;
-            });
-            return sound;
-        })();
-    }
-    this.stop = function(){
-        for(var i=0; i<this.sounds.length; i++){
-            if(this.sounds[i]){
-                this.sounds[i].pause();
-            }
+var loader = new(require('./loader'));
+
+function Sound (debugMode){
+    this.sounds = {};
+    this.playing = [];
+}
+
+Sound.prototype = {
+    
+    preload: function (paths, completeFunc, progressFunc) {
+        this.sounds = loader.preload(paths, completeFunc, progressFunc);
+    },
+
+    play: function(url) {
+        if(this.sounds[url]) {
+            var audio = this.sounds[url].cloneNode();
+            this.playing.push(audio);
+            audio.play();
+        } else {
+            var audio = new Audio(url);
+            this.sounds[url] = audio;
+            this.playing.push(audio);
+            audio.play();
         }
+    },
+
+    stop: function() {
+        for(var i=0; i< this.playing.length; i++) {
+            this.playing[i].pause();
+        }
+        this.playing = [];
     }
 }
 

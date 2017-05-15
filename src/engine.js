@@ -103,6 +103,7 @@ function engine(stageId, debugMode){
         ctx: ctx,
         clear: function(){ renderer.clear(); },
         preloadImages: function(imagePaths, completeCallback, progressCallback){ renderer.preload(imagePaths, completeCallback, progressCallback); },
+        preloadSounds: sound.preload.bind(sound),
         sound: sound,
         broadcast: eventList.emit.bind(eventList),
 
