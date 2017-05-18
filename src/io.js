@@ -1,14 +1,18 @@
 var keycode = require('keycode');
 
-var io = function(canvas, settings, debugMode){
-
+function IO(canvas, settings, debugMode){
     var exports={},
         cursor={ x:0, y:0, isDown:false, left: false, right: false },
         key=[],
         clicked={x:null, y:null},
+        mousedown={x:null, y:null},
+        mouseup={x:null, y:null},
         keyup={},
         keydown={},
         holding={};
+
+    this.mousedown = mousedown;
+    this.mouseup = mouseup;
 
     debugMode = debugMode || false;
 
@@ -24,12 +28,16 @@ var io = function(canvas, settings, debugMode){
         if(e.which == 1) cursor.left = true;
         if(e.which == 3) cursor.right = true;
         cursor.isDown = true;
+        mousedown.x = e.offsetX / settings.zoom;
+        mousedown.y = e.offsetY / settings.zoom;
     });
 
     canvas.addEventListener("mouseup", function(e){
         if(e.which == 1) cursor.left = false;
         if(e.which == 3) cursor.right = false;
         cursor.isDown = cursor.left || cursor.right;
+        mouseup.x = e.offsetX / settings.zoom;
+        mouseup.y = e.offsetY / settings.zoom;
     });
 
     canvas.addEventListener("mousemove", function(e){
@@ -63,12 +71,24 @@ var io = function(canvas, settings, debugMode){
         }
     });
 
-    exports.cursor = cursor;
-    exports.clicked = clicked;
-    exports.keyup = keyup;
-    exports.keydown = keydown;
-    exports.holding = holding;
-    return exports;
+    this.cursor = cursor;
+    this.clicked = clicked;
+    this.keyup = keyup;
+    this.keydown = keydown;
+    this.holding = holding;
 };
 
-module.exports = io;
+IO.prototype.clearEvents = function(){
+    this.clicked.x=null;
+    this.clicked.y=null;
+    this.mousedown.x=null;
+    this.mousedown.y=null;
+    this.mouseup.x=null;
+    this.mouseup.y=null;
+    for(var key in this.keydown){
+        this.keydown[key]=false;
+        this.keyup[key]=false;
+    }
+}
+
+module.exports = IO;

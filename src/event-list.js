@@ -18,26 +18,18 @@ EventList.prototype.traverse = function (){
                 continue;
             }
         }
-        if (pool[i].event=="hover")         hoverJudger(   pool[i].sprite, pool[i].handler, io.cursor,  debugMode);
-        else if (pool[i].event=="click")    clickJudger(   pool[i].sprite, pool[i].handler, io.clicked, debugMode);
-        else if (pool[i].event=="keydown")  keydownJudger( pool[i].key,    pool[i].handler, io.keydown, debugMode);
-        else if (pool[i].event=="keyup")    keydownJudger( pool[i].key,    pool[i].handler, io.keyup,   debugMode);
-        else if (pool[i].event=="holding")  holdingJudger( pool[i].key,    pool[i].handler, io.holding, debugMode);
-        else if (pool[i].event=="listen")   listenJudger(  pool[i].sprite, pool[i].handler, messages,   pool[i].message, debugMode);
-        else if (pool[i].event=="touch")    touchJudger(   pool[i].sprite, pool[i].handler, pool[i].targets, debugMode );
+        if      (pool[i].event=="hover")        hoverJudger(   pool[i].sprite, pool[i].handler, io.cursor,  debugMode);
+        else if (pool[i].event=="click")        mouseJudger(   pool[i].sprite, pool[i].handler, io.clicked, debugMode);
+        else if (pool[i].event=="mousedown")    mouseJudger(   pool[i].sprite, pool[i].handler, io.mousedown, debugMode);
+        else if (pool[i].event=="mouseup")      mouseJudger(   pool[i].sprite, pool[i].handler, io.mouseup, debugMode);
+        else if (pool[i].event=="keydown")      keydownJudger( pool[i].key,    pool[i].handler, io.keydown, debugMode);
+        else if (pool[i].event=="keyup")        keydownJudger( pool[i].key,    pool[i].handler, io.keyup,   debugMode);
+        else if (pool[i].event=="holding")      holdingJudger( pool[i].key,    pool[i].handler, io.holding, debugMode);
+        else if (pool[i].event=="listen")       listenJudger(  pool[i].sprite, pool[i].handler, messages,   pool[i].message, debugMode);
+        else if (pool[i].event=="touch")        touchJudger(   pool[i].sprite, pool[i].handler, pool[i].targets, debugMode );
     }
-    this._clearEventRecord();
+    io.clearEvents();
     this._clearMessages();
-}
-
-EventList.prototype._clearEventRecord = function () {
-    var io = this.io;
-    io.clicked.x=null;
-    io.clicked.y=null;
-    for(var key in io.keydown){
-        io.keydown[key]=false;
-        io.keyup[key]=false;
-    }
 }
 
 EventList.prototype._clearMessages = function () {
@@ -65,7 +57,7 @@ EventList.prototype.register = function(){
         }
     } else if (event === "keydown" || event === "keyup" || event === "holding"){
         eventObj.key = arguments[1];
-    } else if (event === "click") {
+    } else if ( ["mousedown", "mouseup", "hover", "click"].includes(event) ) {
         eventObj.sprite = arguments[1];
     } else if (event === "listen") {
         eventObj.message = arguments[1];
@@ -88,21 +80,20 @@ function hoverJudger(sprite, handler, cursor, debugMode){
     }
 }
 
-function clickJudger(sprite, handler, clicked, debugMode){
-    if(clicked.x && clicked.y){ // 如果有點擊記錄才檢查
+// 用來判斷 click, mousedown, mouseup 的 function
+function mouseJudger(sprite, handler, mouse, debugMode){
+    if(mouse.x && mouse.y){ // 如果有點擊記錄才檢查
         if(sprite){ // 如果是 Sprite, 則對其做判定
-            var crossX = (sprite.x+sprite.width/2)>clicked.x && clicked.x>(sprite.x-sprite.width/2),
-                crossY = (sprite.y+sprite.height/2)>clicked.y && clicked.y>(sprite.y-sprite.height/2);
-            if( sprite.touched(clicked.x,clicked.y) ){
+            if( sprite.touched(mouse.x,mouse.y) ){
                 handler.call(sprite);
                 if(debugMode){
-                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(clicked)+")");
+                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(mouse)+")");
                 }
             }
         } else { // 如果為 null, 則對整個遊戲舞台做判定
             handler();
             if(debugMode){
-                console.log("Just fired a click handler on stage! ("+JSON.stringify(clicked)+")");
+                console.log("Just fired a click handler on stage! ("+JSON.stringify(mouse)+")");
             }
         }
     }

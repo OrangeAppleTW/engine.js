@@ -6,6 +6,7 @@ var Clock = require("./clock");
 var Renderer = require("./renderer");
 var Sound = require("./sound");
 var Loader = require("./loader");
+var IO = require("./io");
 
 function engine(stageId, debugMode){
 
@@ -23,7 +24,7 @@ function engine(stageId, debugMode){
     var loader = new Loader();
     var sprites = new Sprites();
     var inspector = new Inspector();
-    var io = require("./io")(canvas, settings, debugMode);
+    var io = new IO(canvas, settings, debugMode);
     var eventList = new EventList(io, debugMode);
     var renderer = new Renderer(ctx, settings, loader.images, debugMode);
     var sound = new Sound(loader.sounds, debugMode);
@@ -73,7 +74,7 @@ function engine(stageId, debugMode){
     // for proxy.on / when: 
     var when = function(event, target, handler){
         // Global when() only accepts followed events:
-        if(["keydown", "keyup", "holding", "click"].includes(event)){
+        if(["keydown", "keyup", "mousedown", "mouseup", "holding", "click"].includes(event)){
             if(typeof target === "function"){ // 如果不指定對象，直接傳入 handler
                 eventList.register(event, null, target);
             } else {
@@ -112,6 +113,9 @@ function engine(stageId, debugMode){
         drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
         drawSprites: function(){ renderer.drawSprites(sprites); }
     };
+    if(debugMode){
+        proxy.eventList = eventList;
+    }
     return proxy;
 }
 
