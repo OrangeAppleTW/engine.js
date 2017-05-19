@@ -11,6 +11,8 @@ Loader.prototype = {
 
     preload: function (paths, completeFunc, progressFunc) {
 
+        if(paths.length === 0) return completeFunc();
+
         this.paths = paths;
         this.completeFunc = completeFunc;
         this.progressFunc = progressFunc;
