@@ -13,7 +13,6 @@
 //  狀態變化流程如下：
 //  (1) -> (2) -> (3) -> (1)
 
-var FPS = 60
 
 function Clock(update){
     this._state = "readyToStart"; //"readyToStart", "stopping", "running";
@@ -27,9 +26,7 @@ Clock.prototype.start = function(){
         onTick = (function(){
             if(this._state==="running"){
                 this._update();
-                setTimeout(function(){
-                    requestAnimationFrame(onTick);
-                },1000/FPS);
+                requestAnimationFrame(onTick);
             } else {
                 this._state = "readyToStart";
             }
