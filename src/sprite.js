@@ -58,9 +58,16 @@ Sprite.prototype._updateFrames = function () {
     }
 }
 
-Sprite.prototype.moveTo = function(x, y){
-    this.x = x;
-    this.y = y;
+Sprite.prototype.moveTo = function(){
+    if(util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
+        this.x = arguments[0].x;
+        this.y = arguments[0].y;
+    } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
+        this.x = arguments[0];
+        this.y = arguments[1];
+    } else {
+        throw "請傳入角色(Sprite, Cursor)或是 X, Y 座標值"
+    }
 };
 
 Sprite.prototype.move = function(x, y){
