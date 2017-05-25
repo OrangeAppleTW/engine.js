@@ -21,10 +21,10 @@ Loader.prototype = {
             var path = paths[i];
             var ext = path.split('.').pop();
 
-            if(['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
+            if(['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(ext)) {
                 this._loadImage(path);
             }
-            if(['mp3', 'ogg', 'wav'].includes(ext)) {
+            if(['mp3', 'ogg', 'wav', 'midi'].includes(ext)) {
                 this._loadSound(path);
             }
         }
