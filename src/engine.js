@@ -17,7 +17,6 @@ function engine(stageId, debugMode){
         width: canvas.width,
         height: canvas.height,
         zoom: 1,
-        // gravity: 0, //@TODO: set gravity
         updateFunctions: []
     };
 
@@ -57,7 +56,6 @@ function engine(stageId, debugMode){
             canvas.style.width = canvas.width * settings.zoom + 'px';
             canvas.style.height = canvas.height * settings.zoom + 'px';
         }
-        settings.gravity = args.gravity || settings.gravity;
         settings.update = args.update || settings.update;
         return this;
     }
