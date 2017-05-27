@@ -7,6 +7,7 @@ var Renderer = require("./renderer");
 var Sound = require("./sound");
 var Loader = require("./loader");
 var IO = require("./io");
+var Pen = require("./pen");
 
 function engine(stageId, debugMode){
 
@@ -27,6 +28,7 @@ function engine(stageId, debugMode){
     var eventList = new EventList(io, debugMode);
     var renderer = new Renderer(ctx, settings, loader.images, debugMode);
     var sound = new Sound(loader.sounds, debugMode);
+    var pen = new Pen(ctx);
     var clock = new Clock(function(){
         if(background.path){
             renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
@@ -40,6 +42,7 @@ function engine(stageId, debugMode){
         inspector.updateFPS();
         renderer.drawSprites(sprites);
         renderer.drawTexts();
+        pen.draw();
     });
 
     var background={
@@ -106,6 +109,7 @@ function engine(stageId, debugMode){
         preload: function(assets, completeFunc, progressFunc) { loader.preload(assets, completeFunc, progressFunc) },
         sound: sound,
         broadcast: eventList.emit.bind(eventList),
+        pen: pen,
 
         // Will be deprecated:
         drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
