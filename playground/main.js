@@ -13,6 +13,7 @@ var tdScript = require("raw-loader!./examples/_td.js"),
     soundScript = require("raw-loader!./examples/_sound.js"),
     preloadScript = require("raw-loader!./examples/_preload.js"),
     dragScript = require("raw-loader!./examples/_drag.js");
+    penScript = require("raw-loader!./examples/_pen.js");
 
 $("textarea#TD").val(tdScript);
 $("textarea#flappy-bird").val(flappyBirdScript);
@@ -28,6 +29,7 @@ $("textarea#broadcast").val(broadcastScript);
 $("textarea#sound").val(soundScript);
 $("textarea#preload").val(preloadScript);
 $("textarea#drag").val(dragScript);
+$("textarea#pen").val(penScript);
 
 var editor = CodeMirror.fromTextArea(document.getElementById("script-box"), {
     lineNumbers: true,
