@@ -41,7 +41,6 @@ function engine(stageId, debugMode){
         sprites.runOnTick();
         inspector.updateFPS();
         renderer.drawSprites(sprites);
-        renderer.drawTexts();
         pen.draw();
     });
 
@@ -90,7 +89,7 @@ function engine(stageId, debugMode){
             sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
             return newSprite;
         },
-        print: renderer.print,
+        print: function(text, x, y, color ,size, font) {pen.drawText(text, x, y, color ,size, font)},
         setBackground: setBackground,
         setBackdrop: setBackground,
         cursor: io.cursor,

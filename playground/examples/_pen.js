@@ -21,7 +21,7 @@ Game.forever(function() {
         else if(i < 2000) Game.pen.drawRect(s.x, s.y, s.r, s.r, randomColor());
         else Game.pen.drawLine(s.x, s.y, s.r, s.r, randomColor());
     }
-    Game.pen.drawText(Game.inspector.fps,10,10,'red',30);
+    Game.print(Game.inspector.fps,10,10,'red',30);
 });
 
 function randomColor () {
