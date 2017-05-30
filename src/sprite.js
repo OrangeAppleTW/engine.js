@@ -168,8 +168,8 @@ Sprite.prototype.nextCostume = function () {
 
 function isTouched(sprite, args){
 
-    // 如果此角色為隱藏，不進行檢驗，直接回傳 false
-    if (this.hidden) { return false; }
+    // 如果此角色為隱藏或已被銷毀，不進行檢驗，直接回傳 false
+    if (this.hidden || this._deleted) { return false; }
 
     // 由於效能考量，先用成本最小的「座標範圍演算法」判斷是否有機會「像素重疊」
     var crossX = crossY = false;
