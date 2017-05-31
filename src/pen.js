@@ -112,9 +112,9 @@ Pen.prototype = {
         this._addShape(s);
     },
     
-    drawPolygon: function (points) {
+    drawPolygon: function () {
         var s = {};
-        s.points = points;
+        s.points = Array.prototype.slice.call(arguments);
         s.type = 'polygon';
         this._addShape(s);
     },
