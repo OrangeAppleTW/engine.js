@@ -7,6 +7,7 @@ var Renderer = require("./renderer");
 var Sound = require("./sound");
 var Loader = require("./loader");
 var IO = require("./io");
+var Pen = require("./pen");
 
 function engine(stageId, debugMode){
 
@@ -27,6 +28,7 @@ function engine(stageId, debugMode){
     var eventList = new EventList(io, debugMode);
     var renderer = new Renderer(ctx, settings, loader.images, debugMode);
     var sound = new Sound(loader.sounds, debugMode);
+    var pen = new Pen(ctx);
     var clock = new Clock(function(){
         if(background.path){
             renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
@@ -39,7 +41,7 @@ function engine(stageId, debugMode){
         sprites.runOnTick();
         inspector.updateFPS();
         renderer.drawSprites(sprites);
-        renderer.drawTexts();
+        pen.draw();
     });
 
     var background={
@@ -69,6 +71,16 @@ function engine(stageId, debugMode){
         background.h = h;
     }
 
+    function print (text, x, y, color ,size, font) {
+        var tmp_1 = pen.fillCOlor;
+        var tmp_2 = pen.size;
+        pen.fillColor = color;
+        pen.size = size;
+        pen.drawText(text, x, y, font);
+        pen.fillColor = tmp_1;
+        pen.size = tmp_2;
+    }
+
     // for proxy.on / when: 
     var when = function(event, target, handler){
         // Global when() only accepts followed events:
@@ -87,7 +99,7 @@ function engine(stageId, debugMode){
             sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
             return newSprite;
         },
-        print: renderer.print,
+        print: print,
         setBackground: setBackground,
         setBackdrop: setBackground,
         cursor: io.cursor,
@@ -106,6 +118,7 @@ function engine(stageId, debugMode){
         preload: function(assets, completeFunc, progressFunc) { loader.preload(assets, completeFunc, progressFunc) },
         sound: sound,
         broadcast: eventList.emit.bind(eventList),
+        pen: pen,
 
         // Will be deprecated:
         drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },

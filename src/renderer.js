@@ -7,33 +7,10 @@ function Renderer(ctx, settings, images, debugMode){
     //     stageHeight = settings.height;
 
     var imageCache = images;
-    var texts = [];
 
     this.clear = function() {
         ctx.clearRect(0,0,settings.width,settings.height);
     };
-
-    this.print = function(words, x, y, color, size, font) {
-        texts.push({
-            words: words,
-            x: util.isNumeric(x) ? x : 20,
-            y: util.isNumeric(y) ? y : 20,
-            color: color || 'black',
-            size: size || 16,
-            font: font || 'Arial'
-        })
-    };
-
-    this.drawTexts = function () {
-        for(var i=0; i<texts.length; i++) {
-            var t = texts[i];
-            ctx.textBaseline = "top";
-            ctx.font = t.size + "px " + t.font;
-            ctx.fillStyle = t.color;
-            ctx.fillText(t.words, t.x, t.y);
-        }
-        texts = [];
-    }
 
     this.drawSprites = function(sprites){
         sprites.each(this.drawInstance);
