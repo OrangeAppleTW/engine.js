@@ -17,9 +17,10 @@ Game.forever(function() {
             s.x = Math.random()*640;
             s.y = 0;
         }
-        if(i < 1000) Game.pen.drawCircle(s.x, s.y, s.r, randomColor());
-        else if(i < 2000) Game.pen.drawRect(s.x, s.y, s.r, s.r, randomColor());
-        else Game.pen.drawLine(s.x, s.y, s.r, s.r, randomColor());
+        Game.pen.color = randomColor();
+        if(i < 1000) Game.pen.drawCircle(s.x, s.y, s.r);
+        else if(i < 2000) Game.pen.drawRect(s.x, s.y, s.r, s.r);
+        else Game.pen.drawLine(s.x, s.y, s.r, s.r);
     }
     Game.print(Game.inspector.fps,10,10,'red',30);
 });
