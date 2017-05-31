@@ -2,7 +2,7 @@ function Pen (ctx) {
     this.ctx = ctx;
     this.size = 1;
     this.color = 'black';
-    this.fill = null;
+    this.fillColor = null;
     this.shapes = [];
 }
 
@@ -18,7 +18,7 @@ Pen.prototype = {
             s = this.shapes[i];
             ctx.lineWidth = s.size;
             ctx.strokeStyle = s.color;
-            ctx.fillStyle = s.fill;
+            ctx.fillStyle = s.fillColor;
 
             ctx.beginPath();
 
@@ -55,7 +55,7 @@ Pen.prototype = {
             ctx.closePath();
 
             if(s.size) ctx.stroke();
-            if(s.fill) ctx.fill();
+            if(s.fillColor) ctx.fill();
         }
 
         this.shapes = [];
@@ -122,7 +122,7 @@ Pen.prototype = {
     _addShape: function (s) {
         s.size = this.size;
         s.color = this.color;
-        s.fill = this.fill;
+        s.fillColor = this.fillColor;
         this.shapes.push(s);
     }
 

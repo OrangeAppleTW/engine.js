@@ -72,12 +72,12 @@ function engine(stageId, debugMode){
     }
 
     function print (text, x, y, color ,size, font) {
-        var tmp_1 = pen.fill;
+        var tmp_1 = pen.fillCOlor;
         var tmp_2 = pen.size;
-        pen.fill = color;
+        pen.fillColor = color;
         pen.size = size;
         pen.drawText(text, x, y, font);
-        pen.fill = tmp_1;
+        pen.fillColor = tmp_1;
         pen.size = tmp_2;
     }
 
