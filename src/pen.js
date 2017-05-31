@@ -61,16 +61,14 @@ Pen.prototype = {
         this.shapes = [];
     },
 
-    drawText: function (text, x, y, color, size, font) {
+    drawText: function (text, x, y, font) {
         var s = {};
         s.t = text;
         s.x = x;
         s.y = y;
-        s.fill = color;
-        s.size = size;
         s.font = font || 'Arial';
         s.type = 'text';
-        this.shapes.push(s);
+        this._addShape(s);
     },
     
     drawLine: function (x1, y1, x2, y2) {
