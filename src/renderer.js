@@ -13,6 +13,7 @@ function Renderer(ctx, settings, images, debugMode){
     };
 
     this.drawSprites = function(sprites){
+        sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
         sprites.each(this.drawInstance);
     };
 

@@ -96,7 +96,6 @@ function engine(stageId, debugMode){
         createSprite: function(args){
             var newSprite = new Sprite(args, eventList, settings, renderer)
             sprites._sprites.push(newSprite);
-            sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
             return newSprite;
         },
         print: print,
