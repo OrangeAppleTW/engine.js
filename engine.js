@@ -53,6 +53,7 @@
 	var Sound = __webpack_require__(8);
 	var Loader = __webpack_require__(9);
 	var IO = __webpack_require__(10);
+	var Pen = __webpack_require__(12);
 
 	function engine(stageId, debugMode){
 
@@ -63,7 +64,6 @@
 	        width: canvas.width,
 	        height: canvas.height,
 	        zoom: 1,
-	        // gravity: 0, //@TODO: set gravity
 	        updateFunctions: []
 	    };
 
@@ -74,19 +74,20 @@
 	    var eventList = new EventList(io, debugMode);
 	    var renderer = new Renderer(ctx, settings, loader.images, debugMode);
 	    var sound = new Sound(loader.sounds, debugMode);
+	    var pen = new Pen(ctx);
 	    var clock = new Clock(function(){
-	        if(background.path){
-	            renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
-	        }
 	        eventList.traverse();
 	        for(var i=0; i<settings.updateFunctions.length; i++){
 	            settings.updateFunctions[i]();
 	        };
+	        if(background.path){
+	            renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
+	        }
 	        sprites.removeDeletedSprites();
 	        sprites.runOnTick();
 	        inspector.updateFPS();
 	        renderer.drawSprites(sprites);
-	        renderer.drawTexts();
+	        pen.draw();
 	    });
 
 	    var background={
@@ -103,7 +104,6 @@
 	            canvas.style.width = canvas.width * settings.zoom + 'px';
 	            canvas.style.height = canvas.height * settings.zoom + 'px';
 	        }
-	        settings.gravity = args.gravity || settings.gravity;
 	        settings.update = args.update || settings.update;
 	        return this;
 	    }
@@ -115,6 +115,16 @@
 	        background.y = y;
 	        background.w = w;
 	        background.h = h;
+	    }
+
+	    function print (text, x, y, color ,size, font) {
+	        var tmp_1 = pen.fillCOlor;
+	        var tmp_2 = pen.size;
+	        pen.fillColor = color;
+	        pen.size = size;
+	        pen.drawText(text, x, y, font);
+	        pen.fillColor = tmp_1;
+	        pen.size = tmp_2;
 	    }
 
 	    // for proxy.on / when: 
@@ -132,10 +142,9 @@
 	        createSprite: function(args){
 	            var newSprite = new Sprite(args, eventList, settings, renderer)
 	            sprites._sprites.push(newSprite);
-	            sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
 	            return newSprite;
 	        },
-	        print: renderer.print,
+	        print: print,
 	        setBackground: setBackground,
 	        setBackdrop: setBackground,
 	        cursor: io.cursor,
@@ -154,6 +163,7 @@
 	        preload: function(assets, completeFunc, progressFunc) { loader.preload(assets, completeFunc, progressFunc) },
 	        sound: sound,
 	        broadcast: eventList.emit.bind(eventList),
+	        pen: pen,
 
 	        // Will be deprecated:
 	        drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
@@ -231,9 +241,16 @@
 	    }
 	}
 
-	Sprite.prototype.moveTo = function(x, y){
-	    this.x = x;
-	    this.y = y;
+	Sprite.prototype.moveTo = function(){
+	    if(util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
+	        this.x = arguments[0].x;
+	        this.y = arguments[0].y;
+	    } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
+	        this.x = arguments[0];
+	        this.y = arguments[1];
+	    } else {
+	        throw "請傳入角色(Sprite, Cursor)或是 X, Y 座標值"
+	    }
 	};
 
 	Sprite.prototype.move = function(x, y){
@@ -334,8 +351,8 @@
 
 	function isTouched(sprite, args){
 
-	    // 如果此角色為隱藏，不進行檢驗，直接回傳 false
-	    if (this.hidden) { return false; }
+	    // 如果此角色為隱藏或已被銷毀，不進行檢驗，直接回傳 false
+	    if (this.hidden || this._deleted) { return false; }
 
 	    // 由於效能考量，先用成本最小的「座標範圍演算法」判斷是否有機會「像素重疊」
 	    var crossX = crossY = false;
@@ -686,7 +703,6 @@
 	//  狀態變化流程如下：
 	//  (1) -> (2) -> (3) -> (1)
 
-	var FPS = 60
 
 	function Clock(update){
 	    this._state = "readyToStart"; //"readyToStart", "stopping", "running";
@@ -700,9 +716,7 @@
 	        onTick = (function(){
 	            if(this._state==="running"){
 	                this._update();
-	                setTimeout(function(){
-	                    requestAnimationFrame(onTick);
-	                },1000/FPS);
+	                requestAnimationFrame(onTick);
 	            } else {
 	                this._state = "readyToStart";
 	            }
@@ -734,35 +748,13 @@
 	    //     stageHeight = settings.height;
 
 	    var imageCache = images;
-	    var texts = [];
 
 	    this.clear = function() {
 	        ctx.clearRect(0,0,settings.width,settings.height);
 	    };
 
-	    this.print = function(words, x, y, color, size, font) {
-	        texts.push({
-	            words: words,
-	            x: util.isNumeric(x) ? x : 20,
-	            y: util.isNumeric(y) ? y : 20,
-	            color: color || 'black',
-	            size: size || 16,
-	            font: font || 'Arial'
-	        })
-	    };
-
-	    this.drawTexts = function () {
-	        for(var i=0; i<texts.length; i++) {
-	            var t = texts[i];
-	            ctx.textBaseline = "top";
-	            ctx.font = t.size + "px " + t.font;
-	            ctx.fillStyle = t.color;
-	            ctx.fillText(t.words, t.x, t.y);
-	        }
-	        texts = [];
-	    }
-
 	    this.drawSprites = function(sprites){
+	        sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
 	        sprites.each(this.drawInstance);
 	    };
 
@@ -923,6 +915,8 @@
 
 	    preload: function (paths, completeFunc, progressFunc) {
 
+	        if(paths.length === 0) return completeFunc();
+
 	        this.paths = paths;
 	        this.completeFunc = completeFunc;
 	        this.progressFunc = progressFunc;
@@ -931,10 +925,10 @@
 	            var path = paths[i];
 	            var ext = path.split('.').pop();
 
-	            if(['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
+	            if(['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(ext)) {
 	                this._loadImage(path);
 	            }
-	            if(['mp3', 'ogg', 'wav'].includes(ext)) {
+	            if(['mp3', 'ogg', 'wav', 'midi'].includes(ext)) {
 	                this._loadSound(path);
 	            }
 	        }
@@ -1221,6 +1215,142 @@
 	  codes[alias] = aliases[alias]
 	}
 
+
+/***/ },
+/* 12 */
+/***/ function(module, exports) {
+
+	function Pen (ctx) {
+	    this.ctx = ctx;
+	    this.size = 1;
+	    this.color = 'black';
+	    this.fillColor = null;
+	    this.shapes = [];
+	}
+
+	Pen.prototype = {
+
+	    draw: function () {
+
+	        var s;
+	        var ctx = this.ctx;
+
+	        for(var i=0; i<this.shapes.length; i++) {
+	            
+	            s = this.shapes[i];
+	            ctx.lineWidth = s.size;
+	            ctx.strokeStyle = s.color;
+	            ctx.fillStyle = s.fillColor;
+
+	            ctx.beginPath();
+
+	            if (s.type == 'text') {
+	                ctx.textBaseline = "top";
+	                ctx.font = s.size + "px " + s.font;
+	                ctx.fillText(s.t, s.x, s.y);
+	            }
+	            else if (s.type == 'line') {
+	                ctx.moveTo(s.x1,s.y1);
+	                ctx.lineTo(s.x2,s.y2);
+	            }
+	            else if (s.type == 'circle') {
+	                ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
+	            }
+	            else if (s.type == 'triangle') {
+	                ctx.moveTo(s.x1, s.y1);
+	                ctx.lineTo(s.x2, s.y2);
+	                ctx.lineTo(s.x3, s.y3);
+	            }
+	            else if (s.type == 'rect') {
+	                ctx.moveTo(s.x, s.y);
+	                ctx.lineTo(s.x + s.w, s.y);
+	                ctx.lineTo(s.x + s.w, s.y + s.h);
+	                ctx.lineTo(s.x, s.y + s.h);
+	            }
+	            else if (s.type == 'polygon') {
+	                ctx.moveTo(s.points[0],s.points[1]);
+	                for(var i=2; i<s.points.length; i+=2) {
+	                     ctx.lineTo(s.points[i],s.points[i+1]);
+	                }
+	            }
+
+	            ctx.closePath();
+
+	            if(s.size) ctx.stroke();
+	            if(s.fillColor) ctx.fill();
+	        }
+
+	        this.shapes = [];
+	    },
+
+	    drawText: function (text, x, y, font) {
+	        var s = {};
+	        s.t = text;
+	        s.x = x;
+	        s.y = y;
+	        s.font = font || 'Arial';
+	        s.type = 'text';
+	        this._addShape(s);
+	    },
+	    
+	    drawLine: function (x1, y1, x2, y2) {
+	        var s = {};
+	        s.x1 = x1;
+	        s.y1 = y1;
+	        s.x2 = x2;
+	        s.y2 = y2;
+	        s.type = 'line';
+	        this._addShape(s);
+	    },
+
+	    drawCircle: function (x, y ,r) {
+	        var s = {};
+	        s.x = x;
+	        s.y = y;
+	        s.r = r;
+	        s.type = 'circle';
+	        this._addShape(s);
+	    },
+
+	    drawTriangle: function (x1, y1, x2, y2, x3, y3) {
+	        var s = {};
+	        s.x1 = x1;
+	        s.y1 = y1;
+	        s.x2 = x2;
+	        s.y2 = y2;
+	        s.x3 = x3;
+	        s.y3 = y3;
+	        s.type = 'triangle';
+	        this._addShape(s);
+	    },
+
+	    drawRect: function (x, y, width, height) {
+	        var s = {};
+	        s.x = x;
+	        s.y = y;
+	        s.w = width;
+	        s.h = height;
+	        s.type = 'rect';
+	        this._addShape(s);
+	    },
+	    
+	    drawPolygon: function () {
+	        var s = {};
+	        s.points = Array.prototype.slice.call(arguments);
+	        s.type = 'polygon';
+	        this._addShape(s);
+	    },
+
+	    _addShape: function (s) {
+	        s.size = this.size;
+	        s.color = this.color;
+	        s.fillColor = this.fillColor;
+	        this.shapes.push(s);
+	    }
+
+	}
+
+	module.exports = Pen;
 
 /***/ }
 /******/ ]);
