@@ -74,8 +74,10 @@ function engine(stageId, debugMode){
     function print (text, x, y, color ,size, font) {
         var tmp_1 = pen.fillCOlor;
         var tmp_2 = pen.size;
-        pen.fillColor = color;
-        pen.size = size;
+        pen.fillColor = color || 'black';
+        pen.size = size || 16;
+        x = x == undefined ? 10 : x;
+        y = y == undefined ? 10 : y;
         pen.drawText(text, x, y, font);
         pen.fillColor = tmp_1;
         pen.size = tmp_2;
