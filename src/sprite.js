@@ -14,7 +14,7 @@ function Sprite(args, eventList, settings, renderer) {
     this.y = util.isNumeric(args.y) ? args.y : settings.height/2;
     this.width = 1;
     this.height = 1;
-    this.direction = args.direction || 90;
+    this.direction = util.isNumeric(args.direction) ? args.direction : 90;
     this.rotationStyle = args.rotationStyle || "full"; // "full", "flipped" and "fixed"
     this.scale = args.scale || 1;
     this.costumes = [].concat(args.costumes); // Deal with single string
