@@ -221,6 +221,19 @@ function isTouched(sprite, args){
             var target = arguments[0];
             // 繪製前設定旋轉原點與旋轉
             rad = util.degreeToRad(target.direction - 90);
+
+            if (target.rotationStyle === 'flipped') {
+                if(target.direction > 180) {
+                    hitTester.scale(-1, 1);
+                } else {
+                    var rad = 0;
+                }
+            }
+            
+            if(target.rotationStyle === 'fixed') {
+                var rad = 0;
+            }
+
             hitTester.translate(target.x, target.y);
             hitTester.rotate(rad);
             hitTester.drawImage( renderer.getImgFromCache(target.getCurrentCostume()),
@@ -244,6 +257,19 @@ function isTouched(sprite, args){
         // 繪製前設定旋轉原點與旋轉
         hitTester.globalCompositeOperation = 'source-in';
         var rad = util.degreeToRad(this.direction - 90);
+
+        if (this.rotationStyle === 'flipped') {
+            if(this.direction > 180) {
+                hitTester.scale(-1, 1);
+            } else {
+                var rad = 0;
+            }
+        }
+
+        if(this.rotationStyle === 'fixed') {
+            var rad = 0;
+        }
+
         hitTester.translate(this.x, this.y);
         hitTester.rotate(rad);
         hitTester.drawImage( renderer.getImgFromCache(this.getCurrentCostume()),

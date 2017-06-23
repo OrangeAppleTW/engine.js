@@ -28,7 +28,7 @@ function Renderer(ctx, settings, images, debugMode){
             var rad = util.degreeToRad(instance.direction - 90);
             ctx.globalAlpha = instance.opacity;
             if (instance.rotationStyle === 'flipped') {
-                if(rad >= Math.PI) {
+                if(instance.direction > 180) {
                     ctx.translate(instance.x*2, 0);
                     ctx.scale(-1, 1);
                     ctx.drawImage(  img,
