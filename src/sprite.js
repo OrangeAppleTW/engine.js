@@ -1,7 +1,7 @@
 var util = require("./util");
 var hitCanvas = document.createElement('canvas'),
     hitTester = hitCanvas.getContext('2d');
-    // document.body.appendChild(hitCanvas);
+    document.body.appendChild(hitCanvas);
 
 // @TODO:  
 function Sprite(args, eventList, settings, renderer) {
@@ -215,18 +215,24 @@ function isTouched(sprite, args){
         hitCanvas.height = settings.height;
 
         if(!this._renderer) return console.log(this);
-
+        
         hitTester.globalCompositeOperation = 'source-over';
-        hitTester.drawImage(    renderer.getImgFromCache(this.getCurrentCostume()),
-                                this.x-this.width/2, this.y-this.height/2,
-                                this.width, this.height );
-
-        hitTester.globalCompositeOperation = 'source-in';
         if( arguments[0] instanceof Sprite ){
             var target = arguments[0];
-            hitTester.drawImage(    renderer.getImgFromCache(target.getCurrentCostume()),
-                                    target.x-target.width/2, target.y-target.height/2,
-                                    target.width, target.height );
+            // 繪製前設定旋轉原點與旋轉
+            rad = util.degreeToRad(target.direction - 90);
+            hitTester.translate(target.x, target.y);
+            hitTester.rotate(rad);
+            hitTester.drawImage( renderer.getImgFromCache(target.getCurrentCostume()),
+                        (-target.width / 2),
+                        (-target.height / 2),
+                        target.width,
+                        target.height
+            );
+            // 繪製後還原旋轉原點與旋轉
+            hitTester.rotate(-rad);
+            hitTester.translate(-target.x, -target.y);
+            
         } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
             hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
         } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
@@ -235,8 +241,26 @@ function isTouched(sprite, args){
             return false
         }
 
+        // 繪製前設定旋轉原點與旋轉
+        hitTester.globalCompositeOperation = 'source-in';
+        var rad = util.degreeToRad(this.direction - 90);
+        hitTester.translate(this.x, this.y);
+        hitTester.rotate(rad);
+        hitTester.drawImage( renderer.getImgFromCache(this.getCurrentCostume()),
+                    (-this.width / 2),
+                    (-this.height / 2),
+                    this.width,
+                    this.height
+        );
+        
+        // 繪製後還原旋轉原點與旋轉
+        hitTester.rotate(-rad);
+        hitTester.translate(-this.x, -this.y);
+
+
         // 只要對 sprite 的大小範圍取樣即可，不需對整張 canvas 取樣
-        var aData = hitTester.getImageData(this.x-this.width/2, this.y-this.height/2, this.width, this.height).data;
+        var maxLength = Math.max(this.width, this.height); // 根據最大邊取得範圍 （因應圖片旋轉修正）
+        var aData = hitTester.getImageData(this.x-maxLength/2, this.y-maxLength/2, maxLength, maxLength).data;
         var pxCount = aData.length;
         for (var i = 0; i < pxCount; i += 4) {
             if (aData[i+3] > 0) {

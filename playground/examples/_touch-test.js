@@ -2,14 +2,14 @@ Game.setBackdrop("#ffffff");
 
 var robot = Game.createSprite({
   	scale: 0.3,
-    direction: 100000,
+    direction: 0,
   	x: 400,
   	y: 300,
 	costumes: "images/robot.png"
 });
 
 var monsters = [];
-for(var i=0; i<20; i++){
+for(var i=0; i<1; i++){
 	var monster = Game.createSprite({
         scale: 0.2,
         x: Math.random()*640,
