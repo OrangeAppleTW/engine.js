@@ -183,11 +183,16 @@ function isTouched(sprite, args){
         if (arguments[0].hidden) { return false; }
 
         var target = arguments[0];
-        if(target._deleted){
+        if (target._deleted) {
             return false;
         }
-        crossX = (this.x+this.width/2)>(target.x-target.width/2) && (target.x+target.width/2)>(this.x-this.width/2);
-        crossY = (this.y+this.height/2)>(target.y-target.height/2) && (target.y+target.height/2)>(this.y-this.height/2);
+        // 用兩個 Sprite 最大距離來判斷是否有可能 touch
+        maxThisLength = Math.sqrt(Math.pow(this.width / 2, 2) + Math.pow(this.height / 2, 2))
+        maxTargetLength = Math.sqrt(Math.pow(target.width / 2, 2) + Math.pow(target.height / 2, 2))
+        if (this.distanceTo(target) <= maxThisLength + maxTargetLength) {
+            crossX = true;
+            crossY = true;
+        }
     } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
         var targetX = arguments[0].x,
             targetY = arguments[0].y;
