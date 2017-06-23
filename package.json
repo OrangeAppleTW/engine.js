@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "keycode": "2.1.4",
-    "raw-loader": "latest"
+    "raw-loader": "latest",
+    "webpack": "^3.0.0"
   },
   "author": "Kevin Shu",
   "license": "ISC"
