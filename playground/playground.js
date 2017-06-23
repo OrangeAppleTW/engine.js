@@ -200,7 +200,7 @@ module.exports = "var bird = Game.createSprite({\n    x: 160,\n    y: 240,\n    
 /* 18 */
 /***/ (function(module, exports) {
 
-module.exports = "Game.setBackdrop(\"#ffffff\");\n\nvar robot = Game.createSprite({\n  \tscale: 0.3,\n  \tx: 400,\n  \ty: 300,\n\tcostumes: \"images/robot.png\"\n});\n\nvar monsters = [];\nfor(var i=0; i<20; i++){\n\tvar monster = Game.createSprite({\n        scale: 0.2,\n        x: Math.random()*640,\n        y: Math.random()*480,\n        costumes: \"images/monster.png\"\n    });\n\tmonsters.push(monster);\n}\n\nrobot.forever(function(){\n    this.x = Game.cursor.x;\n    this.y = Game.cursor.y;\n});\n\nvar attack = function(target){\n    this.scale += 0.05;\n  \ttarget.destroy();\n};\n\nrobot.when(\"touch\", monsters, attack);\n\nGame.start();"
+module.exports = "Game.setBackdrop(\"#ffffff\");\n\nvar robot = Game.createSprite({\n  \tscale: 0.3,\n    direction: 0,\n  \tx: 400,\n  \ty: 300,\n\tcostumes: \"images/robot.png\"\n});\n\nvar monsters = [];\nfor(var i=0; i<20; i++){\n\tvar monster = Game.createSprite({\n        scale: 0.2,\n        x: Math.random()*640,\n        y: Math.random()*480,\n        costumes: \"images/monster.png\"\n    });\n\tmonsters.push(monster);\n}\n\nrobot.forever(function(){\n    this.x = Game.cursor.x;\n    this.y = Game.cursor.y;\n});\n\nvar attack = function(target){\n    this.scale += 0.05;\n  \ttarget.destroy();\n};\n\nrobot.when(\"touch\", monsters, attack);\n\nGame.start();"
 
 /***/ }),
 /* 19 */

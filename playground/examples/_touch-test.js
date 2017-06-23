@@ -2,6 +2,7 @@ Game.setBackdrop("#ffffff");
 
 var robot = Game.createSprite({
   	scale: 0.3,
+    direction: 100000,
   	x: 400,
   	y: 300,
 	costumes: "images/robot.png"
