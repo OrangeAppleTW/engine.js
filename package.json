@@ -4,11 +4,14 @@
   "description": "",
   "main": "engine.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack-dev-server --devtool eval --progress --colors --hot"
   },
   "dependencies": {
     "keycode": "2.1.4",
-    "raw-loader": "latest"
+    "raw-loader": "latest",
+    "webpack": "^3.0.0",
+    "webpack-dev-server": "^2.5.0"
   },
   "author": "Kevin Shu",
   "license": "ISC"
