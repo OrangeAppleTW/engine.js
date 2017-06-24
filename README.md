@@ -19,77 +19,116 @@ Game.set({
 ```javascript
 
 // 創造新角色 (簡易版)
-var slime = Game.createSprite("./slime.gif");
+var slime = createSprite("./slime.gif");
+
+// 創造角色&多個造型
+var slim = createSprite(["./slime_1.gif","./slime_2.gif"]);
 
 // 創造新角色 (進階設定)
-var slime = Game.createSprite({
+var slime = createSprite({
     x: 200,
     y: 200,
+  	direction: 100, // 朝向 100 度
     scale: 1.2, // 1.2倍大
     costumes: ["./slime.gif"]
 });
-
-// 移除遊戲中的所有角色
-// Game.clearSprites();
 ```
 
 ### 角色的特徵
 ```javascript
-slime.x;
-slime.y;
-slime.direction;
-slime.scale;
+slime.x; // x座標
+slime.y; // y座標
+slime.direction; // 朝向某個角度 0~359
+slim.rotationStyle; // 旋轉形式："full"正常旋轉(預設), "flipped"左右翻轉, "fixed" 固定
+slime.scale; // 角色縮放比例，預設 1
 slime.costumes;
-slime.currentCostumeId;
-slime.width;
-slime.height;
+slime.currentCostumeId; // 角色的造型編號
+slime.layer; // 繪製角色的圖層
+slime.opacity; // 透明度 0 ~ 1
 slime.hidden; // Notice: Sprite could still be touched or clicked when it's hidden.
 ```
 
 ### 角色的方法
 ```javascript
-slime.moveTo(160, 200);
-slime.move(10, 0);
-slime.stepForward(4);
-slime.toward(sprite1);
+slime.moveTo(160, 200); // 移動到 x:160 y:200 位置
+slime.move(10, 0); // 向右移動 10 步 
+slime.stepForward(4); // 朝向前方移動 4 步
+slime.toward(sprite1); // 朝向 sprite1 角色
 
 slime.always(function(){/* Do this every tick */}); // Later callback will cover the previous one.
 slime.forever(function(){/* Do this every tick */}); // Alias to always
 
+// 檢測是否碰撞
 slime.touched(sprite1); // Return Boolean
 slime.touched(40, 160); // Return Boolean
+
+// 角色間的距離計算
 slime.distanceTo(sprite1); // Return number
 slime.distanceTo({x:0, y:0}); // Return number
 slime.distanceTo(0, 0); // Return number
 
-slime.on("click",function(){});
-slime.on("hover",function(){});
-slime.on("touch", sprite1, function(){});
-slime.on("touch", [sprite1, sprite2], function(){}); // 同時碰到兩個角色
+// 角色綁定事件
+slime.on("click",function(){}); // 滑鼠點擊
+slime.on("hover",function(){}); // 滑鼠碰到
+slime.on("touch", sprite1, function(){}); // 角色碰撞
+slime.on("touch", [sprite1, sprite2], function(){}); // 碰到任何一個角色
 slime.when("EventName", target, function(){}); // Alias to Sprite.on
 
+// 刪除角色
 slime.destroy(); // Destroy it-self. (Will be deleted later in the same tick )
 ```
 
-## IO & Events
+## Cursor & Keyboard 
+
 ```javascript
-// Current cursor position
-Game.cursor; // {x:0, y:0}
+// 滑鼠的狀態
+cursor.x; // x 座標
+cursor.y; // y 座標
+cursor.isDown; // 是否被按下
+cursor.left; // 左鍵是否被按下
+cursor.right; // 右鍵是否被按下
 
-// 取得目前的 FPS
-Game.inspector.fps; // 58
-
-// 綁定事件
-Game.on("click", Game.sprites.hero, function(){ /* Do something */ });
-Game.on("hover", Game.sprites.hero, function(){ /* Do something */ });
-Game.on("keydown", "w", function(){ /* Do something */ });
-Game.on("keyup", "space", function(){ /* Do something */ });
-Game.on("holding", "right", function(){ /* Do something */ });
-Game.on("touch", [sprite1, sprite2], function(){ /* Do something */ });
-Game.on("touch", [sprite1, sprite2, sprite3], function(){ /* Do something */ }); // 三個角色同時碰在一起
-Game.when("EventName", target, function(){}); // Alias to Game.on
+// 鍵盤的狀態
+// key[按鍵名稱] 
+// 狀態為布林值，被按下為 true 放開為 false
+key.up // 上
+key.down // 下
+key.left // 左
+key.right // 右
+key.space // 空白鍵
+key.a // a
+key.b  // b
+// 更多...
 ```
 
+## Events
+
+```javascript
+// 綁定事件
+on("click", Game.sprites.hero, function(){ /* Do something */ });
+on("hover", Game.sprites.hero, function(){ /* Do something */ });
+on("keydown", "w", function(){ /* Do something */ });
+on("keyup", "space", function(){ /* Do something */ });
+on("holding", "right", function(){ /* Do something */ });
+on("touch", [sprite1, sprite2], function(){ /* Do something */ });
+on("touch", [sprite1, sprite2, sprite3], function(){ /* Do something */ }); // 三個角色同時碰在一起
+when("EventName", target, function(){}); // Alias to Game.on
+```
+
+## Pen
+
+```javascript
+pen.size; // 繪筆的大小
+pen.color; // 顏色
+pen.fillColor; // 填充的顏色
+
+pen.drawText(text, x, y); // 文字
+pen.drawLine(x1, y1, x2, y2); // 線條
+pen.drawCircle(x, y, r); // 圓形
+pen.drawTriangle(x1, y1, x2, y2, x3, y3); // 三角形
+pen.drawRect(x, y, width, height); // 矩形
+pen.drawPolygon(x1, y1, x2, y2, x3, y3, x4, y4, ...); // 多邊形
+```
 
 ## Rendering
 
@@ -122,25 +161,20 @@ Game.stop();
 
 Game.clear();
 ```
-
-你也可以拿 context 物件自由畫出你要畫的東西
-可以查看 CanvasRenderingContext2D 的 [API](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)  
-但是請注意：**當對整個遊戲做倍率縮放的時候，操作ctx時需要自己調整座標，因為在網頁上的座標並非實際的座標**。
-(例如：當放大為2倍時，螢幕上看到的2px其實是遊戲中的1px)
-```javascript
-Game.ctx;
-```
-
-
 ## Sounds
 
 ```javascript
-// 直接播放音效
-Game.sound.play("shoot.wav");
-// 將 audio 物件存下來，以便後續的操作
-var BgMusic = Game.sound.play("music.mp3");
-// 暫停音樂
-BgMusic.pause();
-// 停止所有音效
-Game.sound.stop();
+sound.play("shoot.wav"); // 直接播放音效
+var BgMusic = sound.play("music.mp3"); // 將 audio 物件存下來，以便後續的操作
+BgMusic.loop = true; // 音效不斷重複播放
+sound.setVolume(0.5); // 設定音量 0~1
+sound.mute(true); // 靜音
+sound.stop(); // 暫停所有音效
 ```
+## inspector
+
+```javascript
+// 取得目前的 FPS
+inspector.fps;
+```
+
