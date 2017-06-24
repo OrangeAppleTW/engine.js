@@ -1,7 +1,6 @@
 var util = require("./util");
 var hitCanvas = document.createElement('canvas'),
     hitTester = hitCanvas.getContext('2d');
-    document.body.appendChild(hitCanvas);
 
 // @TODO:  
 function Sprite(args, eventList, settings, renderer) {
