@@ -7,15 +7,15 @@ html(lang='en')
     title Document
     link(rel='stylesheet', href='../lib/atom-one-dark.css')
     link(rel='stylesheet', href='./index.css')
-    link(rel='stylesheet', href='/lib/codemirror/codemirror.css')
-    link(rel='stylesheet', href='/lib/codemirror/theme/mbo.css')
+    link(rel='stylesheet', href='../lib/codemirror/codemirror.css')
+    link(rel='stylesheet', href='../lib/codemirror/theme/mbo.css')
     script(src='../lib/highlight.pack.js')
     script.
       hljs.initHighlightingOnLoad();
     script(src='https://code.jquery.com/jquery-3.2.1.min.js')
     script(src='./index.js')
-    script(src='/lib/codemirror/codemirror.js')
-    script(src='/lib/codemirror/mode/javascript/javascript.js')
+    script(src='../lib/codemirror/codemirror.js')
+    script(src='../lib/codemirror/mode/javascript/javascript.js')
   body
     .container
       .treemenu
@@ -189,7 +189,7 @@ html(lang='en')
           .textarea-container
             textarea#editor-textarea(name='')
           .iframe-container
-            iframe#sandbox(src='/playground/sandbox.html', frameborder='0')
+            iframe#sandbox(src='../test/sandbox.html', frameborder='0')
         .btns
           button.btn.start.js-start 開始
           button.btn.stop.js-stop 停止
