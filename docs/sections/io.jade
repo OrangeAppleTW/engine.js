@@ -1,0 +1,45 @@
+section
+	h3
+		span#cursor #
+		| 滑鼠
+	p
+		| cursor.x X座標;
+		br
+		| cursor.y Y座標;
+		br
+		| cursor.left 左鍵是否按住;
+		br
+		| cursor.right 右鍵是否按住;
+		br
+		| cursor.isDown 是否按住;
+	pre.javascript
+		code
+			| var cursor = Game.cursor;
+			| forever(function(){
+			|	 var y = 80
+			|	 print('**滑鼠測試**', 30, y, 'white');
+			|	 print('cursor.x: ' + cursor.x, 30, y+ 20, 'white');
+			|	 print('cursor.y: ' + cursor.y, 30, y + 2*20, 'white');
+			|	 print('cursor.left: ' + cursor.left, 30, y + 3*20, 'white');
+			|	 print('cursor.right: ' + cursor.right, 30, y + 4*20, 'white');
+			|  	 print('cursor.isDown: ' + cursor.isDown, 30, y + 5*20, 'white');
+			| });
+	span.example-code.js-example-code(href='', code-path='/test/io/cursor.js') 範例程式
+section
+	h3
+		span#keyboard #
+		| 鍵盤
+	p
+		| key[keyName] 鍵盤中特定鍵的狀態
+	p
+	pre.javascript
+		code
+			| forever(function(){
+			| 	  var y = 80
+			| 	  print('**鍵盤測試**', 30, y + 8*20, 'white');
+			|	  print('key.q: ' + key.q, 30, y + 9*20, 'white');
+			|	  print('key.w: ' + key.w, 30, y + 10*20, 'white');
+			|	  print('key.e: ' + key.e, 30, y + 11*20, 'white');
+			|	  print('key.r: ' + key.r, 30, y + 12*20, 'white');
+			| });
+	span.example-code.js-example-code(href='', code-path='/test/io/keyboard.js') 範例程式

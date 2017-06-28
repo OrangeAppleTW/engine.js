@@ -1,0 +1,90 @@
+section
+  h3
+    span#sprite-methods-moveTo #
+    | 移動到
+  p 角色移動到
+  p player.moveTo(x, v);
+  p
+    | x: 目的位置 x 座標
+    | y: 目的位置 y 座標
+  pre.javascript
+    code
+      | player.moveTo(100, 100);
+  span.example-code.js-example-code(code-path='/test/sprite/moveTo.js') 範例程式
+section
+  h3
+    span#sprite-methods-move #
+    | 移動
+  p 角色移動
+  p player.move(vx, vy);
+  p
+    | vx: 水平移動距離 vx
+    | vy: 垂直移動距離 vy
+  pre.javascript
+    cpde
+      | player.move(100, 100);
+  span.example-code.js-example-code(code-path='/test/sprite/move.js') 範例程式
+section
+  h3
+    span#sprite-methods-stepForward #
+    | 朝向前方移動
+  p 朝向前方移動
+  p player.stepForward(d);
+  p d: 移動的步數
+  pre.javascript
+    code
+      | player.stepForward(50);
+  span.example-code.js-example-code(code-path='/test/sprite/stepForward.js') 範例程式
+section
+  h3
+    span#sprite-methods-toward #
+    | 朝向
+  p 角色朝向另一個角色
+  p player.toward(target);
+  p
+    | target: 角色對象
+  pre.javascript
+    code
+      | player.toward(target);                           
+  span.example-code.js-example-code(code-path='/test/sprite/toward.js') 範例程式
+section
+  h3
+    span#sprite-methods-event #
+    | 綁定事件
+  p 綁定事件在角色身上
+  p player.when(eventName, callback)
+  p
+  pre.javascript
+section
+  h3
+    span#sprite-methods-touched #
+    | 碰撞檢測
+  p
+  p spriteA.touched(spriteB);
+  p spriteB: 碰撞的對象，若碰撞返回 true
+  pre.javascript
+    code
+      | player.touched(target);
+  span.example-code.js-example-code(code-path='/test/sprite/touched.js') 範例程式
+section
+  h3
+    span#sprite-methods-forever #
+    | 角色迴圈
+  p
+  p player.forever(fun);
+  p fun: 不斷執行的函示，this 綁定角色對象
+  pre.javascript
+    code
+      | player.forever(fun);
+  span.example-code.js-example-code(code-path='/test/sprite/forever.js') 範例程式
+section
+  h3
+    span#sprite-methods-destroy #
+    | 銷毀
+  p 刪除角色
+  p player.destroy();
+  p
+  pre.javascript
+    code
+      | player.destroy();
+  span.example-code.js-example-code(code-path='/test/sprite/destroy.js') 範例程式

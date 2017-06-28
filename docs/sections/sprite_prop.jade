@@ -1,0 +1,96 @@
+section
+  h3
+    span#sprite-prop-xy #
+    | 座標
+  p
+  p
+  p
+  pre.javascript
+    code
+      | player.x = 50;
+      | player.y = 50;
+  span.example-code.js-example-code(code-path='/test/sprite/xy.js') 範例程式
+section
+  h3
+    span#sprite-prop-direction #
+    | 方向
+  p 角色面向的方位，值介於 0 ~ 359 度
+  p
+  p
+  pre.javascript
+    code
+      | player.direction = 180;
+  span.example-code.js-example-code(code-path='/test/sprite/direction.js') 範例程式
+section
+  h3
+    span#sprite-prop-scale #
+    | 縮放
+  p 角色大小縮放比例
+  p
+  p
+  pre.javascript
+    code
+      | player.scale = 0.5;
+  span.example-code.js-example-code(code-path='/test/sprite/scale.js') 範例程式
+section
+  h3
+    span#sprite-prop-rotationStyle #
+    | 旋轉方式
+  p
+    | 角色旋轉的方式
+  p player.rotationStyle
+  p
+    | 三種方式
+    | full (預設)
+    | flipped (左右翻轉)
+    | fixed (固定不旋轉)
+  pre.javascript
+    code
+      | player.rotationStyle = 'fixed'
+  span.example-code.js-example-code(code-path='/test/sprite/rotationStyle.js') 範例程式
+section
+  h3
+    span#sprite-prop-opacity #
+    | 透明度
+  p
+    | 角色的透明度
+  p player.opacity
+  p
+    | 值介於 0 ~ 1
+  pre.javascript
+    code
+      | player.opacity
+  span.example-code.js-example-code(code-path='/test/sprite/opacity.js') 範例程式
+section
+  h3
+    span#sprite-prop-costumeId #
+    | 造型編號
+  p 角色當前的造型
+  p player.costumeId
+  p 造型編號
+  pre.javascript
+    code
+      | player.costumeId = 1;
+  span.example-code.js-example-code(code-path='/test/sprite/costumeId.js') 範例程式
+section
+  h3
+    span#sprite-prop-layer #
+    | 圖層
+  p 角色當前所在的圖層
+  p player.player
+  p
+  pre.javascript
+    code 
+      | player.player = 2;
+  span.example-code.js-example-code(code-path='/test/sprite/layer.js') 範例程式
+section
+  h3
+    span#sprite-prop-hidden #
+    | 隱藏
+  p 角色隱藏
+  p player.hidden
+  p
+  pre.javascript
+    code
+      | player.hidden = true;
+  span.example-code.js-example-code(code-path='/test/sprite/hidden.js') 範例程式

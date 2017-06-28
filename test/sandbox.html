@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="stage"></canvas>
+    <script src="../engine.js"></script>
+    <script>
+        
+        document.getElementById('stage').width = document.documentElement.clientWidth;
+        document.getElementById('stage').height = document.documentElement.clientHeight;
+        
+        Game = Engine("stage",{
+            width: document.documentElement.clientWidth,
+            height: document.documentElement.clientHeight
+        });
+        Game.start();
+        
+        var print = Game.print,
+            on = Game.on,
+            when = Game.when,
+            cursor = Game.cursor,
+            key = Game.key,
+            inspector = Game.inspector,
+            set = Game.set,
+            sprites = Game.sprites,
+            update = Game.update,
+            always = Game.update,
+            forever = Game.update,
+            start = Game.start,
+            stop = Game.stop,
+            clear = Game.clear,
+            ctx = Game.ctx,
+            createSprite = Game.createSprite,
+            drawBackdrop = Game.drawBackdrop,
+            drawSprites = Game.drawSprites,
+            setBackdrop = Game.setBackdrop,
+            broadcast = Game.broadcast,
+            sound = Game.sound;
+        
+        window.addEventListener("message", function(msg) {
+            if(msg.data.fn == 'stop') stop();
+            if(msg.data.fn == 'exec') eval(msg.data.code);
+        });
+    </script>
+</body>
+</html>

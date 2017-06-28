@@ -1,0 +1,174 @@
+section
+  h3
+    span#start-game #
+    | 創造遊戲
+  p.syntax Engine(canvasId);
+  p canvasId: canvas 元素的 ID
+  pre.javascript
+    code
+      | var Game = Engine('stage');
+  p 初始化遊戲設定
+  pre.javascript
+    code
+      | Game.set({
+      |     width: 400, // Default: 640px
+      |     height: 400, // Default: 480px
+      |     zoom: 0.8, // Default: 1
+      |     update: function(){}, // 每次刷新畫面都要做的事放這裡
+      |     debugMode: true // Default: false
+      | });                                  
+  pre.javascript
+section
+  h3
+    span#start-assets #
+    | 載入素材
+  p
+  p.syntax Game.preloadImages([path1, path2, path3], completeCallback, progressCallback);
+  p
+  pre.javascript
+    code
+      | Game.preloadImages(
+      | [
+      |     "./assets/bird.png",
+      |     "./assets/up-tube.png",
+      |     "./assets/down-tube.png",
+      |     "./assets/start-button.png",
+      |     "./assets/gameOver.png"
+      | ],
+      | function() {
+      |     Game.start();
+      | }
+section
+  h3
+    span#start-setBackdrop #
+    | 設定背景
+  p
+  p
+    span.syntax setBackdrop(path, x, y, width, height);
+    | path: 素材的網址
+    br
+    | x: 背景圖左上角 x 座標
+    br
+    | y: 背景圖左上角 y 座標
+    br
+    | width: 長度
+    br
+    | height: 寬度
+  p
+  pre.javascript
+    code
+      | setBackdrop("./assets/background.png", 0, 0, 470, 400);
+  span.example-code.js-example-code(href='', code-path='/test/start/setBackdrop.js') 範例程式
+section
+  h3
+    span#start-createSprite #
+    | 創造角色
+  p 創造出小鳥，預設位置為場景中央
+  pre.javascript
+                                
+  p 創造出上下水管，可以傳入物件的參數
+  pre.javascript
+    code
+      | var bird = createSprite("./assets/bird.png");
+      | 
+      | var tubeUp = createSprite({
+      |     costumes: "./assets/up-tube.png",
+      |     x: 450,
+      |     y: -30
+      | });
+      | var tubeDown = createSprite({
+      |     costumes: "./assets/down-tube.png",
+      |     x: 450,
+      |     y: 430
+      | });
+  span.example-code.js-example-code(code-path='/test/start/createSprite.js') 範例程式
+section
+  h3
+    span#start-forever #
+    | 遊戲迴圈
+  p
+    span.syntax Game.forever(fn) | Game.aways(fn) | Game.update(fn)
+    |                         fn: 遊戲迴圈，重複不斷執行的函式
+  p 在遊戲迴圈裡不斷移動水管，如果水管移動超出邊界就重置水管的位置
+  pre.javascript
+    code
+      | forever(function() {
+      |     tubeUp.x -= 2;
+      |     tubeDown.x -= 2;
+      |     if(tubeUp.x < 0) {
+      |         resetTube();
+      | } 
+      });
+  p 重置水管的函式，將水管移到右邊遊戲場景外，並隨機水管的位置
+  pre.javascript
+    code
+      | forever(function() {
+      |     tubeUp.x -= 2;
+      |     tubeDown.x -= 2;
+      |     if(tubeUp.x < 0) {
+      |         resetTube();
+      |     } 
+      | });
+  span.example-code.js-example-code(code-path='/test/start/forever.js') 範例程式
+section
+  h3
+    span#start-event #
+    | 遊戲事件
+  p 當滑鼠點擊時，鳥要往上飛行
+  pre.javascript
+    code
+      | var vy = 0;
+      | when('click', function() { vy = -5; });
+      | forever(function() {
+      |     bird.y + vy;
+      |     vy += 0.2;
+      | });
+  p 小鳥碰撞水管時結束遊戲，顯示遊戲結束的 Logo 和重新開始的按鈕
+  pre.javascript
+    code
+      | bird.when('touch', [tubeUp, tubeDown], gameOver);
+      | function gameOver () {
+      |    gameOverLogo.hidden = false;
+      |    startBtn.hidden = false;
+      |  status = 'gameOver';
+      | }
+  span.example-code.js-example-code(code-path='/test/start/event.js') 範例程式
+section
+  h3
+    span#start-else #
+    | 完成
+  p 創造開始按鈕與遊戲結束Logo，遊戲開始時隱藏結束Logo，Sprite.hidden 設為 true 角色將會被隱藏
+  pre.javascript
+    code
+      | var startBtn = createSprite("./assets/start-button.png");
+      | var gameOverLogo = createSprite({
+      |     costumes: "./assets/gameOver.png",
+      |     hidden: true,
+      |     y: 100
+      | });
+  p 遊戲初始化函式，初始角色的座標與歸零分數，並將遊戲狀態改為 "playing"
+  pre.javascript
+    code
+      | function start () {
+      |     startBtn.hidden = true;
+      |     gameOverLogo.hidden = true;
+      |     status = 'start';
+      |     bird.y = 200;
+      |     scores = 0;
+      |     randomPos();
+      | }
+  p 改寫遊戲迴圈的判斷式
+  pre.javascript
+    code
+      | if(status == 'start') {
+      |   tubeUp.x -= 2;
+      |   tubeDown.x -= 2;
+      |   if(tubeUp.x < 0) {
+      |       randomPos();
+      |       scores += 1;
+      |   } 
+      |   vy += 0.2;
+      |   bird.y += vy;
+      | }
+      | if(bird.y > 400 || bird.y < 0) gameOver();
+  span.example-code.js-example-code(code-path='/test/start/final.js') 範例程式

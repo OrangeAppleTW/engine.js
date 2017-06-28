@@ -8,11 +8,19 @@
     "dev": "webpack-dev-server --devtool eval --progress --colors --hot"
   },
   "dependencies": {
+    "gulp-minify": "^1.0.0",
     "keycode": "2.1.4",
     "raw-loader": "latest",
     "webpack": "^3.0.0",
     "webpack-dev-server": "^2.5.0"
   },
   "author": "Kevin Shu",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-browserify": "^0.5.1",
+    "gulp-jade": "^1.1.0",
+    "gulp-util": "^3.0.8",
+    "gulp-webserver": "^0.9.1"
+  }
 }

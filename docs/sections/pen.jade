@@ -1,0 +1,108 @@
+section
+  h3
+    span#pen-attr #
+    | 畫筆的屬性
+  p 設定繪筆的顏色、大小
+  p
+    | pen.color: 繪筆線條的顏色
+    br
+    | pen.size: 繪筆線條的寬度尺寸
+    br
+    | pen.fillColor: 幾何圖形的填充的顏色
+  pre.javascript
+    code
+      | var pen = Game.pen;
+      | 
+      | pen.color = "red";
+      | pen.size = 30;
+      | pen.fillColor = "blue";
+section
+  h3
+    span#pen-drawLine #
+    | 線條
+  p.syntax Game.pen.drawLine(x1, y1, x2, y2);
+  p
+    | x1: 起點 x 座標
+    br
+    | y1: 起點 y 座標
+    br
+    | x2: 終點 x 座標
+    br
+    | y2: 終點 y 座標
+  pre.javascript
+    code Game.pen.drawLine(10, 10, 150, 150);
+  span.example-code.js-example-code(href='', code-path='/test/pen/drawLine.js') 範例程式
+section
+  h3
+    span#pen-drawRect #
+    | 矩形
+  p.syntax Game.pen.drawRect(x, y, width, height);
+  p
+    | x: x 座標
+    br
+    | y: y 座標
+    br
+    | width: 長
+    br
+    | height: 寬
+  pre.javascript
+    code
+      | Game.pen.drawRect(400, 40, 200, 100);
+  span.example-code.js-example-code(href='', code-path='/test/pen/drawRect.js') 範例程式
+section
+  h3
+    span#pen-drawCircle #
+    | 圓形
+  p.syntax Game.pen.drawCircle(x, y, r);
+  p
+    | x: 圓心 x 座標
+    br
+    | y: 圓心 y 座標
+    br
+    | r: 半徑長
+  pre.javascript
+    code
+      | Game.pen.drawCircle(200, 100, 100);
+  span.example-code.js-example-code(href='', code-path='/test/pen/drawCircle.js') 範例程式
+section
+  h3
+    span#pen-drawTriangle #
+    | 三角形
+  p.syntax Game.pen.drawTriangle(x1, y1, x2, y2, x3, y3);
+  p
+    | x1, y1: 角 1 的座標
+    br
+    | x2, y2: 角 2 的座標
+    br
+    | x3, y3: 角 3 的座標
+  pre.javascript
+    code
+      | Game.pen.drawTriangle(200, 200, 300, 300, 200, 300);
+  span.example-code.js-example-code(href='', code-path='/test/pen/drawTriangle.js') 範例程式
+section
+  h3
+    span#pen-drawPolygon #
+    | 多邊形
+  p.syntax pen.drawCircle(x1, y1, x2, y2, x3, y3, ...);
+  p
+  pre.javascript
+    code
+      | Game.pen.drawPolygon(320, 240, 520, 120, 520, 420, 100, 400, 100, 200);
+  span.example-code.js-example-code(href='', code-path='/test/pen/drawPolygon.js') 範例程式
+section
+  h3
+    span#pen-drawText #
+    | 文字
+  p.syntax pen.drawText(text, x, y, font);
+  p
+    | text: 文字的內容
+    br
+    | x: X 座標
+    br
+    | y: Y 座標
+    br
+    | font: 字型，預設為 "Arial"
+  pre.javascript
+    code
+      | Game.pen.drawText('測試123', 100, 100);
+  span.example-code.js-example-code(href='', code-path='/test/pen/drawText.js') 範例程式

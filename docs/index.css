@@ -1,0 +1,212 @@
+body {
+    background-color: #eee;
+    margin: 0;
+    padding: 0;
+}
+h1 {
+    /*font-size: 2em;*/
+    font-size: 3em;
+    margin-top: 0.67em;
+    margin-bottom: 0.67em;
+}
+h2 {
+    /*font-size: 1.5em;*/
+    font-size: 2.3em;
+    margin-top: 0.83em;
+    margin-bottom: 0.83em;
+}
+h3 {
+    /*font-size: 1.17em;*/
+    font-size: 1.5em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+p {
+    /*font-size: 1em;*/
+    font-size: 0.9em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+section {
+    margin-bottom: 60px;
+}
+
+pre {}
+
+code {}
+
+.hljs {
+    padding: 15px 10px;
+    border: 2px solid #ccc;
+}
+
+.syntax {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+.example-code {
+    color: rgb(21, 159, 159);
+    font-size: 0.9em;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    /*display: none;*/
+    z-index: -1;
+    transition: all 0.4s;
+}
+
+.popup-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1000px;
+    background-color: #fff;
+    transition: all 0.4s;
+    transform: translate(-50%, 100vh);
+    padding: 15px;
+    box-shadow:0 10px 16px 0 rgba(0,0,0,0.2);
+}
+
+.popup.active {
+    /*display: block;*/
+    z-index: 1;
+    background-color: rgba(0,0,0,0.3);
+}
+
+.popup.active .popup-content {
+    transform: translate(-50%, -50%);
+}
+
+#editor-toggle {
+    position: fixed;
+    right: 50px;
+    bottom: 50px;
+    z-index: 10;
+}
+
+
+/*====================================================*/
+
+.container {
+    width: 800px;
+    margin: auto;
+    padding: 45px 0px;
+}
+
+.treemenu {
+    position: fixed;
+    width: 250px;
+    height: 100vh;
+    box-sizing: border-box;
+}
+.treemenu a {
+    border-left: 3px solid rgba(0,0,0,0);
+    padding: 2px 7px;
+}
+.treemenu li {
+    padding-top: 7px;
+}
+.treemenu li > a {
+    font-size: 0.9em;
+}
+.treemenu li li > a {
+    font-size: 0.8em;
+}
+.treemenu ul {
+    list-style-type: none;
+    padding-left: 15px;
+}
+.treemenu a {
+    color: #777;
+    text-decoration: none;
+}
+.treemenu ul ul {
+    display: none;
+}
+.treemenu li.focus ul {
+    display: list-item;
+    
+}
+.treemenu li.focus > a {
+    color: rgb(21, 159, 159);
+    border-left: 3px solid rgb(21, 159, 159);
+}
+
+.content {
+    width: 100%;
+    height: 300vh;
+    padding-left: 250px;
+    box-sizing: border-box;
+    color: #333;
+}
+
+.iframe-container {
+    position: relative;
+    width: calc(50% - 4px);
+    height: 400px;
+    display: inline-block;
+    box-sizing: border-box;
+}
+
+.iframe-container iframe {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #ccc;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.textarea-container {
+    position: relative;
+    width: calc(50% - 4px);
+    height: 400px;
+    display: inline-block;
+    box-sizing: border-box;
+}
+.textarea-container .CodeMirror {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.btns {
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.btn {
+    display: inline-block;
+    border: 0;
+    margin: 3px;
+    font-size: 1.1em;
+    color: #fff;
+    box-shadow:0 10px 16px 0 rgba(0,0,0,0.2);
+    border: 1px solid #999;
+    border-radius: 3px;
+}
+
+.btn.start {
+    background-color: #5cb85c;
+}
+.btn.start:hover {
+    background-color: #5add5a;
+}
+.btn.stop {
+    background-color: #d9534f;
+}
+.btn.stop:hover {
+    background-color: #f7706c;
+}

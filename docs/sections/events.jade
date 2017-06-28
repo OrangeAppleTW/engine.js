@@ -1,0 +1,71 @@
+section
+	h3
+		span#event-click #
+		| 點擊事件
+	p 滑鼠點擊
+	p
+	pre.javascript
+		code
+			| when('click', enemies, function () {
+			| 	 life -= 1;
+			| })
+	span.example-code.js-example-code(code-path='/test/events/click.js') 範例程式
+section
+	h3
+		span#event-touch #
+		| 碰撞
+	p 角色碰撞檢測
+	p
+		| when('touch',[Sprite1, Sprite2], function () {});
+	p
+	pre.javascript
+		code
+			| when('touch',[Sprite1, Sprite2], function () {});
+	span.example-code.js-example-code(code-path='/test/events/touch.js') 範例程式
+section
+	h3
+		span#event-hover #
+		| 滑鼠碰撞
+	p 滑鼠覆蓋
+	p
+	p
+	pre.javascript
+		code
+			| when("hover", target, function() {});
+	span.example-code.js-example-code(code-path='/test/events/hover.js') 範例程式
+section
+	h3
+		span#event-keydown #
+		| 鍵盤按下
+	p 當特定按鍵按下時
+	p
+		| when('keydown', keyName, function () {});
+	p
+	pre.javascript
+		code
+			| when('keydown', keyName, function () {});
+	span.example-code.js-example-code(code-path='/test/events/keydown.js') 範例程式
+section
+	h3
+		span#event-keyup #
+		| 鍵盤放開
+	p 當特定按鍵放開時
+	p
+		| when(&apos;keyup&apos;, keyName, function () {});
+	p
+	pre.javascript
+		code
+			| pwhen('keyup', keyName, function () {});
+	span.example-code.js-example-code(code-path='/test/events/keyup.js') 範例程式
+section
+	h3
+		span#event-holding #
+		| 按鍵持續按壓
+	p 當特定按鍵持續被按住時
+	p
+		| pwhen('holding', keyName, function () {});
+	p
+	pre.javascript
+		code
+			| when('holding', keyName, function () {});
+	span.example-code.js-example-code(code-path='/test/events/holding.js') 範例程式
