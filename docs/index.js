@@ -11,13 +11,10 @@ $(document).ready(function() {
         }
         
     });
-
     links.sort(function(a, b) {
         return a.data('scroll-top') - b.data('scroll-top');
     });
-
     window.links = links;
-
     $(document).scroll(function() {
         var distance = $(document).scrollTop();
         for(var i=0; i<links.length; i++) {
@@ -27,66 +24,12 @@ $(document).ready(function() {
             }
         }
     })
-
     function focus(ele) {
         $('.treemenu li').removeClass('focus');
         $(ele).addClass('focus');
         $($(ele).find('li')[0]).addClass('focus');
         $(ele).parent().parent().addClass('focus');
     }
-
-    $('#editor-toggle,.js-popup').click(function() {
-        $('.popup').toggleClass('active');
-        stop();
-    });
-
-    $('.popup-content').click(function(event) {
-        event.stopPropagation();
-    });
-
-    var editor = CodeMirror.fromTextArea(document.getElementById("editor-textarea"), {
-        lineNumbers: true,
-        mode:  "javascript",
-        theme: "mbo",
-        styleActiveLine: true,
-        matchBrackets: true
-    });
-
-    $('.js-start').click(runCode);
-    $('.js-stop').click(stop);
-
-    $('.js-example-code').click(function() {
-        editor.setValue('');
-        $('.popup').toggleClass('active');
-        var path = $(this).attr('code-path');
-        $.ajax({
-            url: path,
-            dataType: "text",
-            success: function (data) {
-                editor.setValue(data);
-            }
-        }).done(runCode);
-    });
-
-    $('.popup').on('mousewheel', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
-    function runCode () {
-        var code = editor.getValue();
-        var sandbox = document.getElementById('sandbox');
-        sandbox.contentWindow.location.reload();
-        sandbox.onload = function() {
-            sandbox.contentWindow.postMessage({fn: 'exec', code: code}, "*");
-            sandbox.contentWindow.document.getElementsByTagName('canvas')[0].focus();
-        };
-    }
-
-    function stop () {
-        sandbox.contentWindow.postMessage({fn: 'stop'}, "*");
-    }
-
 
     function Runner (containerId) {
         this.editor = CodeMirror.fromTextArea(document.getElementById("editor-textarea"), {
@@ -107,10 +50,10 @@ $(document).ready(function() {
         this.editor.setValue('');
     }
     Runner.prototype.show = function () {
-        $(this.container).toggleClass('active');
+        $(this.container).addClass('active');
     }
     Runner.prototype.hide = function () {
-        $(this.container).toggleClass('active');
+        $(this.container).removeClass('active');
         this.stop();
     }
     Runner.prototype.runCode = function () {
@@ -124,4 +67,34 @@ $(document).ready(function() {
     Runner.prototype.stop = function () {
         this.sandbox.contentWindow.postMessage({fn: 'stop'}, "*");
     }
+
+    var runner = new Runner('editor');
+
+    $('.js-popup').click(function() {
+        runner.hide();
+        stop();
+    });
+    $('.popup-content').click(function(event) {
+        event.stopPropagation();
+    });
+    $('.js-start').click(function() {
+        runner.runCode();
+    });
+    $('.js-stop').click(function() {
+        runner.stop();
+    });
+    $('.js-example-code').click(function() {
+        runner.clearCode();
+        runner.show();
+        var path = $(this).attr('code-path');
+        $.ajax({
+            url: path,
+            dataType: "text",
+            success: function (data) {
+                runner.setCode(data);
+            }
+        }).done(function() {
+            runner.runCode();
+        });
+    });
 });

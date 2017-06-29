@@ -45,7 +45,9 @@ html(lang='en')
               li
                 a(href='#start-sound') 遊戲音效
               li
-                a(href='#start-else') 完成
+                a(href='#start-print') 顯示文字
+              li
+                a(href='#start-final') 完成
           li
             a(href='#sprite-prop') 角色的特徵
             ul
@@ -187,12 +189,10 @@ html(lang='en')
             span#pen #
             | 繪筆
           include ./sections/pen
-    .popup.js-popup
+    .popup.js-popup#editor
       .popup-content
         .stage
           textarea#editor-textarea(name='')
           iframe#sandbox(src='../test/sandbox.html', frameborder='0', scrolling="no")
         .btns
-          button.btn.start.js-start 開始
-          button.btn.stop.js-stop 停止
-    button#editor-toggle 編輯器
+          button.btn.start.js-start Run

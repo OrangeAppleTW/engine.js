@@ -1,5 +1,6 @@
 var gulp = require('gulp');
 var browserify = require('gulp-browserify');
+var sass = require('gulp-sass');
 var jade = require('gulp-jade');
 var webserver = require('gulp-webserver');
 var gutil = require('gulp-util');
@@ -12,6 +13,13 @@ gulp.task('scripts', function() {
         .pipe(gulp.dest('./'))
         .pipe(minify())
         .pipe(gulp.dest('./'));
+});
+
+gulp.task('scss', function() {
+  gulp.src('docs/index.scss')
+    .pipe(sass())
+    .on('error', gutil.log)
+    .pipe(gulp.dest('docs/'));
 });
 
 gulp.task('templates', function() {
@@ -33,6 +41,7 @@ gulp.task('webserver', function() {
 gulp.task('watch', function () {
   gulp.watch(['docs/index.jade','docs/sections/*.jade'],['templates']);
   gulp.watch('src/*.js',['scripts']);
+  gulp.watch('docs/index.scss',['scss']);
 });
 
-gulp.task('default', ['scripts','templates','webserver','watch']);
+gulp.task('default', ['scripts','scss','templates','webserver','watch']);
