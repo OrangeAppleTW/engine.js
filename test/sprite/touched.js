@@ -1,7 +1,7 @@
-var bird_1 = createSprite("./assets/bird.png");
-var bird_2 = createSprite("./assets/bird.png");
+var bird_1 = Game.createSprite("./assets/bird.png");
+var bird_2 = Game.createSprite("./assets/bird_2.png");
 
-forever(function() {
-    bird_1.moveTo(cursor);
+Game.forever(function() {
+    bird_1.moveTo(Game.cursor);
     print(bird_1.touched(bird_2), 100, 100, 'red', 50);
 });

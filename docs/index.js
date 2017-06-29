@@ -1,8 +1,5 @@
 $(document).ready(function() {
 
-    $('.treemenu a').click(function() {
-    });
-
     var links = [];
     var lis = $('.treemenu li');
     lis.each(function() {
@@ -25,7 +22,6 @@ $(document).ready(function() {
         var distance = $(document).scrollTop();
         for(var i=0; i<links.length; i++) {
             if(links[i].data('scroll-top') > distance) {
-                console.log(links[i].data('scroll-top'))
                 focus(links[i]);
                 break;
             }
@@ -41,6 +37,7 @@ $(document).ready(function() {
 
     $('#editor-toggle,.js-popup').click(function() {
         $('.popup').toggleClass('active');
+        stop();
     });
 
     $('.popup-content').click(function(event) {
@@ -55,19 +52,8 @@ $(document).ready(function() {
         matchBrackets: true
     });
 
-    $('.js-start').click(function() {
-        var code = editor.getValue();
-        var sandbox = document.getElementById('sandbox');
-        sandbox.contentWindow.location.reload();
-        sandbox.onload = function() {
-            sandbox.contentWindow.postMessage({fn: 'exec', code: code}, "*");
-            sandbox.contentWindow.document.getElementsByTagName('canvas')[0].focus();
-        };
-    });
-
-    $('.js-stop').click(function() {
-        sandbox.contentWindow.postMessage({fn: 'stop'}, "*");
-    });
+    $('.js-start').click(runCode);
+    $('.js-stop').click(stop);
 
     $('.js-example-code').click(function() {
         editor.setValue('');
@@ -79,7 +65,63 @@ $(document).ready(function() {
             success: function (data) {
                 editor.setValue(data);
             }
-        });
+        }).done(runCode);
     });
 
+    $('.popup').on('mousewheel', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    function runCode () {
+        var code = editor.getValue();
+        var sandbox = document.getElementById('sandbox');
+        sandbox.contentWindow.location.reload();
+        sandbox.onload = function() {
+            sandbox.contentWindow.postMessage({fn: 'exec', code: code}, "*");
+            sandbox.contentWindow.document.getElementsByTagName('canvas')[0].focus();
+        };
+    }
+
+    function stop () {
+        sandbox.contentWindow.postMessage({fn: 'stop'}, "*");
+    }
+
+
+    function Runner (containerId) {
+        this.editor = CodeMirror.fromTextArea(document.getElementById("editor-textarea"), {
+            lineNumbers: true,
+            mode:  "javascript",
+            theme: "mbo",
+            styleActiveLine: true,
+            matchBrackets: true
+        });
+        this.sandbox = document.getElementById('sandbox');
+        this.container = document.getElementById(containerId);
+    }
+
+    Runner.prototype.setCode = function (code) {
+        this.editor.setValue(code);
+    }
+    Runner.prototype.clearCode = function () {
+        this.editor.setValue('');
+    }
+    Runner.prototype.show = function () {
+        $(this.container).toggleClass('active');
+    }
+    Runner.prototype.hide = function () {
+        $(this.container).toggleClass('active');
+        this.stop();
+    }
+    Runner.prototype.runCode = function () {
+        var code = this.editor.getValue();
+        this.sandbox.contentWindow.location.reload();
+        this.sandbox.onload = function() {
+            sandbox.contentWindow.postMessage({fn: 'exec', code: code}, "*");
+            sandbox.contentWindow.document.getElementsByTagName('canvas')[0].focus();
+        };
+    }
+    Runner.prototype.stop = function () {
+        this.sandbox.contentWindow.postMessage({fn: 'stop'}, "*");
+    }
 });

@@ -1,13 +1,13 @@
-setBackdrop("./assets/background.png", 0, 0, 470, 400);
+Game.setBackdrop("./assets/background.png", 0, 0, 520, 390);
 
-var bird = createSprite("./assets/bird.png");
-var tubeUp = createSprite({
+var bird = Game.createSprite("./assets/bird.png");
+var tubeUp = Game.createSprite({
     costumes: "./assets/up-tube.png",
-    x: 450,
+    x: 400,
   	y: -30
 });
-var tubeDown = createSprite({
+var tubeDown = Game.createSprite({
   	costumes: "./assets/down-tube.png",
-	x: 450,
+	x: 400,
   	y: 430
 });

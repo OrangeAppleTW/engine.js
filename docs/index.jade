@@ -33,7 +33,7 @@ html(lang='en')
               li
                 a(href='#start-game') 創造遊戲
               li
-                a(href='#start-assets') 素材載入
+                a(href='#start-preload') 素材載入
               li
                 a(href='#start-setBackdrop') 設定背景圖
               li
@@ -42,6 +42,8 @@ html(lang='en')
                 a(href='#start-forever') 遊戲迴圈
               li
                 a(href='#start-event') 遊戲事件
+              li
+                a(href='#start-sound') 遊戲音效
               li
                 a(href='#start-else') 完成
           li
@@ -80,6 +82,8 @@ html(lang='en')
                 a(href='#sprite-methods-touched') 碰撞檢測
               li
                 a(href='#sprite-methods-forever') 角色遊戲迴圈
+              li
+                a(href='#sprite-methods-animate') 播放動畫
               li
                 a(href='#sprite-methods-destroy') 銷毀
           li
@@ -186,10 +190,8 @@ html(lang='en')
     .popup.js-popup
       .popup-content
         .stage
-          .textarea-container
-            textarea#editor-textarea(name='')
-          .iframe-container
-            iframe#sandbox(src='../test/sandbox.html', frameborder='0')
+          textarea#editor-textarea(name='')
+          iframe#sandbox(src='../test/sandbox.html', frameborder='0', scrolling="no")
         .btns
           button.btn.start.js-start 開始
           button.btn.stop.js-stop 停止

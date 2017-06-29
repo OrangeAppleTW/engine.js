@@ -1,9 +1,5 @@
-var bird = createSprite({
-    costumes: "./assets/bird.png",
-    x: 10,
-    y: 10
-});
+var bird = Game.createSprite("./assets/bird.png");
 
 bird.when('click', function () {
-    this.scale = 3;
+    this.scale += 1;
 });

@@ -1,14 +1,5 @@
-Game.setBackdrop('white');
-
-var pen = Game.pen;
-
 Game.forever(function() {
-
-    pen.fillColor = 'red';
-    pen.size = 60;
-    pen.drawText('測試123', 100, 100);
-    pen.fill = null;
-
+    Game.pen.fillColor = 'red';
+    Game.pen.size = 60;
+    Game.pen.drawText('Hello~~', 100, 100);
 });
-
-Game.start();

@@ -1,6 +1,6 @@
-var bird = createSprite("./assets/bird.png");
+var bird = Game.createSprite("./assets/bird.png");
 
-forever(function() {
+Game.forever(function() {
     bird.direction += 1;
-    print(bird.direction, 10, 10, 'red', 30);
+    Game.print(bird.direction, 10, 10, 'red', 30);
 });

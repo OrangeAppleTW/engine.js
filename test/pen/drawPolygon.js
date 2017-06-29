@@ -1,13 +1,5 @@
-Game.setBackdrop('white');
-
-var pen = Game.pen;
-
 Game.forever(function() {
-
-    pen.color = 'pink';
-    pen.size = 2;
-    pen.drawPolygon(320, 240, 520, 120, 520, 420, 100, 400, 100, 200);
-
+    Game.pen.color = 'green';
+    Game.pen.size = 10;
+    Game.pen.drawPolygon(150, 50, 170, 130, 250, 150, 170, 170, 150, 250, 130, 170, 50, 150, 130, 130);
 });
-
-Game.start();

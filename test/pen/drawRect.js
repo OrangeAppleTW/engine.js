@@ -1,13 +1,6 @@
-Game.setBackdrop('white');
-
-var pen = Game.pen;
-
 Game.forever(function() {
-
-    pen.color = 'yellow';
-    pen.size = 4;
-    pen.drawRect(400, 40, 200, 100);
-
+    Game.pen.size = 20;
+    Game.pen.color = "purple";
+    Game.pen.fillColor = "red";
+    Game.pen.drawRect(30, 30, 300, 200);
 });
-
-Game.start();

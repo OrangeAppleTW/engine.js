@@ -1,17 +1,13 @@
-var bird_1 = createSprite({
-    costumes: "./assets/bird.png",
-    x: 100,
-    y: 100
+var bird_1 = Game.createSprite("./assets/bird.png");
+
+var bird_2 = Game.createSprite({
+    costumes: "./assets/bird_2.png",
+    x: 30,
+    y: 30
 });
 
-var bird_2 = createSprite({
-    costumes: "./assets/bird.png",
-    x: 200,
-    y: 200
-});
-
-forever(function(){
-    bird_1.moveTo(cursor);
+Game.forever(function(){
+    bird_2.moveTo(Game.cursor);
     if(bird_1.touched(bird_2)) {
         bird_1.destroy();
         bird_2.destroy();

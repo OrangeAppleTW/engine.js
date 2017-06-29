@@ -1,13 +1,5 @@
-Game.setBackdrop('white');
-
-var pen = Game.pen;
-
 Game.forever(function() {
-    
-    pen.color = 'red';
-    pen.size = 10;
-    pen.drawLine(10, 10, 150, 150);
-
+    Game.pen.color = 'red';
+    Game.pen.size = 10;
+    Game.pen.drawLine(10, 10, 300, 300);
 });
-
-Game.start();

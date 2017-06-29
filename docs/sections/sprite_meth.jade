@@ -55,6 +55,9 @@ section
   p player.when(eventName, callback)
   p
   pre.javascript
+    code
+      | bird.when('click',function() {});
+  span.example-code.js-example-code(code-path='../test/sprite/when.js') 範例程式
 section
   h3
     span#sprite-methods-touched #
@@ -77,6 +80,15 @@ section
     code
       | player.forever(fun);
   span.example-code.js-example-code(code-path='../test/sprite/forever.js') 範例程式
+section
+  h3
+    span#sprite-methods-animate #
+    | 播放動畫
+  p player.animate(frames, time, callback);
+  pre.javascript
+    code
+      | player.animate([0, 1, 2, 3, 4, 5], 100);
+  span.example-code.js-example-code(code-path='../test/sprite/animate.js') 範例程式
 section
   h3
     span#sprite-methods-destroy #

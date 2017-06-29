@@ -1,1 +1,1 @@
-setBackdrop("./assets/background.png", 0, 0, 470, 400);
+Game.setBackdrop("./assets/background.png", 0, 0, 520, 390);

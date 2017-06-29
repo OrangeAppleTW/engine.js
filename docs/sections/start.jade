@@ -20,7 +20,7 @@ section
   pre.javascript
 section
   h3
-    span#start-assets #
+    span#start-preload #
     | 載入素材
   p
   p.syntax Game.preloadImages([path1, path2, path3], completeCallback, progressCallback);
@@ -133,6 +133,18 @@ section
       |  status = 'gameOver';
       | }
   span.example-code.js-example-code(code-path='../test/start/event.js') 範例程式
+section
+  h3
+    span#start-sound #
+    | 遊戲音效
+  p
+  p.syntax Game.sound.play(path);
+  p
+  pre.javascript
+    code
+      |  Game.sound.play('./assets/jump.ogg');
+  span.example-code.js-example-code(code-path='../test/start/sound.js') 範例程式
+section
 section
   h3
     span#start-else #

@@ -1,7 +1,13 @@
-var bird = createSprite({
+var bird_1 = createSprite({
     costumes: "./assets/bird.png",
-    x: 10,
-    y: 10
+    x: 30,
+    y: 30
 });
 
-bird.moveTo(200, 200);
+var bird_2 = createSprite({
+    costumes: "./assets/bird.png",
+    x: 30,
+    y: 30
+});
+
+bird_2.moveTo(200, 200);

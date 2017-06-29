@@ -1,22 +1,18 @@
-setBackdrop("./assets/background.png", 0, 0, 470, 400);
-
-var bird = createSprite("./assets/bird.png");
-var tubeUp = createSprite({
+Game.setBackdrop("./assets/background.png", 0, 0, 520, 390);
+var bird = Game.createSprite("./assets/bird.png");
+var tubeUp = Game.createSprite({
     costumes: "./assets/up-tube.png",
-    x: 450,
+    x: 400,
   	y: -30
 });
-var tubeDown = createSprite({
+var tubeDown = Game.createSprite({
   	costumes: "./assets/down-tube.png",
-	x: 450,
+	x: 400,
   	y: 430
 });
 
-when('click', function() { vy = -5; });
-bird.when('touch', [tubeUp, tubeDown], gameOver);
-
 var vy = 0;
-forever(function() {
+Game.forever(function() {
     tubeUp.x -= 2;
     tubeDown.x -= 2;
     if(tubeUp.x < 0) {
@@ -26,15 +22,17 @@ forever(function() {
     vy += 0.2;
 });
 
+Game.when('click', function() { 
+    vy = -5; 
+});
+bird.when('touch', [tubeUp, tubeDown], function() {
+    Game.stop();
+});
+
 function resetTube () {
     var pos = Math.random()*300 + 50;
     tubeUp.x = 450;
     tubeDown.x = 450;
     tubeUp.y = pos - 230;
     tubeDown.y = pos + 230;
-}
-
-function gameOver () {
-    startBtn.hidden = false;
-	status = 'gameOver';
 }

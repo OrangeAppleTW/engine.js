@@ -1,62 +1,67 @@
-setBackdrop("./assets/background.png", 0, 0, 470, 400);
+Game.setBackdrop("./assets/background.png", 0, 0, 520, 390);
 
-var bird = createSprite("./assets/bird.png");
-var tubeUp = createSprite({
+var bird = Game.createSprite("./assets/bird.png");
+var tubeUp = Game.createSprite({
     costumes: "./assets/up-tube.png",
-    x: 450,
+    x: 400,
   	y: -30
 });
-var tubeDown = createSprite({
+var tubeDown = Game.createSprite({
   	costumes: "./assets/down-tube.png",
-	x: 450,
+	x: 400,
   	y: 430
 });
-var startBtn = createSprite("./assets/start-button.png");
-var gameOverLogo = createSprite({
+var startBtn = Game.createSprite("./assets/start-button.png");
+var gameOverLogo = Game.createSprite({
     costumes: "./assets/gameOver.png",
     hidden: true,
     y: 100
 });
 
-var scores = 0;
+var bgm = Game.sound.play('./assets/bgm.ogg');
+bgm.loop = true;
+
 var vy = 0;
-
-when('click', function() { vy = -5; });
-startBtn.when('click', start);
-bird.when('touch', [tubeUp, tubeDown], gameOver);
-
-forever(function() {
-  	if(status == 'start') {
-      tubeUp.x -= 2;
-      tubeDown.x -= 2;
-      if(tubeUp.x < 0) {
-          randomPos();
-          scores += 1;
-      } 
-      vy += 0.2;
-      bird.y += vy;
+var scores = 0;
+var flying = false;
+Game.forever(function() {
+    if(flying) {
+        tubeUp.x -= 2;
+        tubeDown.x -= 2;
+        if(tubeUp.x < 0) {
+            resetTube();
+            scores += 1;
+        }
+        bird.y += vy;
+        vy += 0.2;
+        Game.print(scores, 10, 10, 'white', 45);
+        if(bird.y > 400 || bird.y < 0) gameOver();
     }
-    print(scores, 10, 10, 'red', 45);
-    if(bird.y > 400 || bird.y < 0) gameOver();
 });
 
-function start () {
-  	startBtn.hidden = true;
-    gameOverLogo.hidden = true;
-  	status = 'start';
-    bird.y = 200;
-    scores = 0;
-    randomPos();
-}
-function randomPos () {
+Game.when('click', function() { 
+    vy = -5;
+    Game.sound.play('./assets/jump.ogg');
+});
+bird.when('touch', [tubeUp, tubeDown], gameOver);
+startBtn.when('click', start);
+
+function resetTube () {
     var pos = Math.random()*300 + 50;
     tubeUp.x = 450;
     tubeDown.x = 450;
     tubeUp.y = pos - 230;
     tubeDown.y = pos + 230;
 }
+function start () {
+  	startBtn.hidden = true;
+    gameOverLogo.hidden = true;
+    bird.y = 200;
+    scores = 0;
+    flying = true;
+}
 function gameOver () {
     gameOverLogo.hidden = false;
     startBtn.hidden = false;
-	status = 'gameOver';
+    flying = false;
 }

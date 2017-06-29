@@ -1,12 +1,12 @@
-setBackdrop("#000000");
-forever(function(){
+Game.setBackdrop("#000000");
 
-    var y = 80
-
-    print('**滑鼠測試**', 30, y, 'white');
-    print('cursor.x: ' + cursor.x, 30, y+ 20, 'white');
-    print('cursor.y: ' + cursor.y, 30, y + 2*20, 'white');
-    print('cursor.left: ' + cursor.left, 30, y + 3*20, 'white');
-    print('cursor.right: ' + cursor.right, 30, y + 4*20, 'white');
-    print('cursor.isDown: ' + cursor.isDown, 30, y + 5*20, 'white');
+var print = Game.print;
+var cursor = Game.cursor;
+Game.forever(function(){
+    print('**滑鼠測試**', 100, 100, 'white');
+    print('cursor.x: ' + cursor.x, 100, 130, 'white');
+    print('cursor.y: ' + cursor.y, 100, 160, 'white');
+    print('cursor.left: ' + cursor.left, 100, 190, 'white');
+    print('cursor.right: ' + cursor.right, 100, 220, 'white');
+    print('cursor.isDown: ' + cursor.isDown, 100, 250, 'white');
 });

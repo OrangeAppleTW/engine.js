@@ -1,5 +1,7 @@
-var bird = createSprite("./assets/bird.png");
+Game.when("click", function() {
+    Game.sound.play("./assets/jump.ogg");
+});
 
-bird.when('click', function () {
-    sound.play("./assets/BonusCube.mp3");
+Game.forever(function() {
+    Game.print("點擊畫面", 200, 170, "red", 30);
 });

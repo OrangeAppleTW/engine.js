@@ -1,9 +1,5 @@
-var bird = createSprite({
-    costumes: "./assets/bird.png",
-    x: 100,
-    y: 100
-});
+var bird = Game.createSprite("./assets/bird.png");
 
-forever(function() {
-    bird.toward(cursor);
+Game.forever(function() {
+    bird.toward(Game.cursor);
 });

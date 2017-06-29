@@ -12,12 +12,26 @@ var tubeDown = Game.createSprite({
   	y: 430
 });
 
+var bgm = Game.sound.play('./assets/bgm.ogg');
+bgm.loop = true;
+
+var vy = 0;
 Game.forever(function() {
     tubeUp.x -= 2;
     tubeDown.x -= 2;
-    if(tubeUp.x < -30) {
+    if(tubeUp.x < 0) {
         resetTube();
-    } 
+    }
+    bird.y += vy;
+    vy += 0.2;
+});
+
+Game.when('click', function() { 
+    vy = -5; 
+    Game.sound.play('./assets/jump.ogg');
+});
+bird.when('touch', [tubeUp, tubeDown], function() {
+    Game.stop();
 });
 
 function resetTube () {
