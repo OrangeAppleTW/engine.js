@@ -1,34 +1,34 @@
-var bird_1 = createSprite({
+var bird_1 = Game.createSprite({
     costumes: "./assets/bird.png",
     x: 50,
-    y: 100,
+    y: 200,
     scale: 0.6
 });
 
-var bird_2 = createSprite({
+var bird_2 = Game.createSprite({
     costumes: "./assets/bird.png",
-    x: 120,
-    y: 100,
+    x: 150,
+    y: 200,
     scale: 1
 });
 
-var bird_3 = createSprite({
+var bird_3 = Game.createSprite({
     costumes: "./assets/bird.png",
-    x: 190,
-    y: 100,
+    x: 250,
+    y: 200,
     scale: 1.4
 });
 
-var bird_4 = createSprite({
+var bird_4 = Game.createSprite({
     costumes: "./assets/bird.png",
-    x: 260,
-    y: 100,
+    x: 350,
+    y: 200,
     scale: 1.8
 });
 
-var bird_5 = createSprite({
+var bird_5 = Game.createSprite({
     costumes: "./assets/bird.png",
-    x: 330,
-    y: 100,
+    x: 450,
+    y: 200,
     scale: 2.2
 })

@@ -2,101 +2,111 @@ section
   h3
     span#sprite-methods-moveTo #
     | 移動到
-  p 角色移動到
-  p player.moveTo(x, v);
-  p
+  p 
+    span.syntax Sprite.moveTo(x, y);
     | x: 目的位置 x 座標
+    br
     | y: 目的位置 y 座標
   pre.javascript
     code
-      | player.moveTo(100, 100);
+      | bird.moveTo(100, 100);
   span.example-code.js-example-code(code-path='../test/sprite/moveTo.js') 範例程式
 section
   h3
     span#sprite-methods-move #
     | 移動
-  p 角色移動
-  p player.move(vx, vy);
-  p
+  p 
+    span.syntax Sprite.move(vx, vy);
     | vx: 水平移動距離 vx
+    br
     | vy: 垂直移動距離 vy
   pre.javascript
-    cpde
-      | player.move(100, 100);
+    code
+      | Sprite.move(100, 100);
   span.example-code.js-example-code(code-path='../test/sprite/move.js') 範例程式
 section
   h3
     span#sprite-methods-stepForward #
-    | 朝向前方移動
-  p 朝向前方移動
-  p player.stepForward(d);
-  p d: 移動的步數
+    | 朝向前移動
+  p 
+    span.syntax Sprite.stepForward(d);
+    | d: 移動的步數
   pre.javascript
     code
-      | player.stepForward(50);
+      | Sprite.stepForward(50);
   span.example-code.js-example-code(code-path='../test/sprite/stepForward.js') 範例程式
 section
   h3
     span#sprite-methods-toward #
     | 朝向
-  p 角色朝向另一個角色
-  p player.toward(target);
-  p
-    | target: 角色對象
+  p 
+    span.syntax Sprite.toward(target);
+    | target: Sprite 角色對象
   pre.javascript
     code
-      | player.toward(target);                           
+      | Sprite.toward(target);                           
   span.example-code.js-example-code(code-path='../test/sprite/toward.js') 範例程式
 section
   h3
     span#sprite-methods-event #
     | 綁定事件
-  p 綁定事件在角色身上
-  p player.when(eventName, callback)
-  p
+  p 
+    span.syntax Sprite.when(eventName, fun);
+    | eventname: "click", "touched", "hover"
+    br
+    | fun: 事件觸發執行的函式
   pre.javascript
     code
-      | bird.when('click',function() {});
+      | bird.when('click',function() {
+      |     this.scale += 0.5;
+      | });
   span.example-code.js-example-code(code-path='../test/sprite/when.js') 範例程式
 section
   h3
     span#sprite-methods-touched #
     | 碰撞檢測
-  p
-  p spriteA.touched(spriteB);
-  p spriteB: 碰撞的對象，若碰撞返回 true
+  p 
+    span.syntax sprite.touched(target);
+    | target: 若 sprite 碰撞到 target 返回 true
   pre.javascript
     code
-      | player.touched(target);
+      | Sprite.touched(target);
   span.example-code.js-example-code(code-path='../test/sprite/touched.js') 範例程式
 section
   h3
     span#sprite-methods-forever #
     | 角色迴圈
-  p
-  p player.forever(fun);
-  p fun: 不斷執行的函示，this 綁定角色對象
+  p 
+    span.syntax Sprite.forever(fun);
+    | fun: 不斷執行的函式，this 綁定角色對象
   pre.javascript
     code
-      | player.forever(fun);
+      | bird.forever(function() {
+      |     this.stepForward(1);
+      | });
   span.example-code.js-example-code(code-path='../test/sprite/forever.js') 範例程式
 section
   h3
     span#sprite-methods-animate #
     | 播放動畫
-  p player.animate(frames, time, callback);
+  p 
+    span.syntax Sprite.animate(frames, time, callback);
+    | frames: 動畫造型的順序
+    br
+    | time: 動畫每一秒切換的幀數
+    br
+    | callback: 動畫結束後執行的回呼函式
   pre.javascript
     code
-      | player.animate([0, 1, 2, 3, 4, 5], 100);
+      | bird.animate([0, 1, 2, 3, 4, 5], 100);
   span.example-code.js-example-code(code-path='../test/sprite/animate.js') 範例程式
 section
   h3
     span#sprite-methods-destroy #
     | 銷毀
-  p 刪除角色
-  p player.destroy();
-  p
+  p 
+    span.syntax Sprite.destroy();
   pre.javascript
     code
-      | player.destroy();
+      | bird.destroy();
   span.example-code.js-example-code(code-path='../test/sprite/destroy.js') 範例程式

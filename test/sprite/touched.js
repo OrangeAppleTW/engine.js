@@ -3,5 +3,5 @@ var bird_2 = Game.createSprite("./assets/bird_2.png");
 
 Game.forever(function() {
     bird_1.moveTo(Game.cursor);
-    print(bird_1.touched(bird_2), 100, 100, 'red', 50);
+    Game.print(bird_1.touched(bird_2), 200, 100, 'red', 50);
 });

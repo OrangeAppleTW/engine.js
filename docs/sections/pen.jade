@@ -4,11 +4,12 @@ section
     | 畫筆的屬性
   p 設定繪筆的顏色、大小
   p
-    | pen.color: 繪筆線條的顏色
-    br
-    | pen.size: 繪筆線條的寬度尺寸
-    br
-    | pen.fillColor: 幾何圖形的填充的顏色
+    span.syntax pen.color
+    | 繪筆線條的顏色
+    span.syntax pen.size
+    | 繪筆線條的寬度尺寸
+    span.syntax pen.fillColor
+    | 幾何圖形的填充的顏色
   pre.javascript
     code
       | var pen = Game.pen;
@@ -21,7 +22,8 @@ section
   h3
     span#pen-drawLine #
     | 線條
-  p.syntax Game.pen.drawLine(x1, y1, x2, y2);
+  p
+    span.syntax Game.pen.drawLine(x1, y1, x2, y2);
   p
     | x1: 起點 x 座標
     br
@@ -37,7 +39,8 @@ section
   h3
     span#pen-drawRect #
     | 矩形
-  p.syntax Game.pen.drawRect(x, y, width, height);
+  p
+    span.syntax Game.pen.drawRect(x, y, width, height);
   p
     | x: x 座標
     br
@@ -54,7 +57,8 @@ section
   h3
     span#pen-drawCircle #
     | 圓形
-  p.syntax Game.pen.drawCircle(x, y, r);
+  p
+    span.syntax Game.pen.drawCircle(x, y, r);
   p
     | x: 圓心 x 座標
     br
@@ -69,7 +73,8 @@ section
   h3
     span#pen-drawTriangle #
     | 三角形
-  p.syntax Game.pen.drawTriangle(x1, y1, x2, y2, x3, y3);
+  p
+    span.syntax Game.pen.drawTriangle(x1, y1, x2, y2, x3, y3);
   p
     | x1, y1: 角 1 的座標
     br
@@ -84,7 +89,8 @@ section
   h3
     span#pen-drawPolygon #
     | 多邊形
-  p.syntax pen.drawCircle(x1, y1, x2, y2, x3, y3, ...);
+  p
+    span.syntax pen.drawCircle(x1, y1, x2, y2, x3, y3, ...);
   p
   pre.javascript
     code
@@ -94,7 +100,8 @@ section
   h3
     span#pen-drawText #
     | 文字
-  p.syntax pen.drawText(text, x, y, font);
+  p
+    span.syntax pen.drawText(text, x, y, font);
   p
     | text: 文字的內容
     br

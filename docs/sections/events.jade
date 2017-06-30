@@ -2,70 +2,75 @@ section
 	h3
 		span#event-click #
 		| 點擊事件
-	p 滑鼠點擊
+	p 
+		span.syntax Game.when("click", sprite, callback);
+		| 當滑鼠點擊 sprite 執行函式
 	p
 	pre.javascript
 		code
-			| when('click', enemies, function () {
-			| 	 life -= 1;
-			| })
+			| Game.when("click", bird, function () {
+			|     bird.scale += 0.5;
+			| });
 	span.example-code.js-example-code(code-path='../test/events/click.js') 範例程式
 section
 	h3
 		span#event-touch #
 		| 碰撞
-	p 角色碰撞檢測
 	p
-		| when('touch',[Sprite1, Sprite2], function () {});
+		span.syntax Game.when("touch",[Sprite1, Sprite2], callback);
 	p
 	pre.javascript
 		code
-			| when('touch',[Sprite1, Sprite2], function () {});
+			| when("touch",[Sprite1, Sprite2], callback);
 	span.example-code.js-example-code(code-path='../test/events/touch.js') 範例程式
 section
 	h3
 		span#event-hover #
 		| 滑鼠碰撞
-	p 滑鼠覆蓋
 	p
-	p
+		span.syntax Game.when("hover", sprite, callback);
 	pre.javascript
 		code
-			| when("hover", target, function() {});
+			| Game.when("hover", bird, function() {
+			|     setBackdrop("pink");
+			| });
 	span.example-code.js-example-code(code-path='../test/events/hover.js') 範例程式
 section
 	h3
 		span#event-keydown #
 		| 鍵盤按下
-	p 當特定按鍵按下時
 	p
-		| when('keydown', keyName, function () {});
+		span.syntax Game.when("keydown", keyName, callback);
 	p
 	pre.javascript
 		code
-			| when('keydown', keyName, function () {});
+			| Game.when('keydown', "space", function() {
+			|     bird.scale += 0.5;        
+			| });
 	span.example-code.js-example-code(code-path='../test/events/keydown.js') 範例程式
 section
 	h3
 		span#event-keyup #
 		| 鍵盤放開
-	p 當特定按鍵放開時
 	p
-		| when(&apos;keyup&apos;, keyName, function () {});
+		span.syntax when("keyup";, keyName, callback);
 	p
 	pre.javascript
 		code
-			| pwhen('keyup', keyName, function () {});
+			| Game.when("keyup", "space", , function() {
+			|     bird.scale += 0.5;        
+			| });
 	span.example-code.js-example-code(code-path='../test/events/keyup.js') 範例程式
 section
 	h3
 		span#event-holding #
 		| 按鍵持續按壓
-	p 當特定按鍵持續被按住時
 	p
-		| pwhen('holding', keyName, function () {});
+		span.syntax Game.when("holding", keyName, callback);
 	p
 	pre.javascript
 		code
-			| when('holding', keyName, function () {});
+			| Game.when("holding", "right", function() {
+			|     bird.x += 1;        
+			| });
 	span.example-code.js-example-code(code-path='../test/events/holding.js') 範例程式

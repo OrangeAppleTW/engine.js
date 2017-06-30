@@ -3,11 +3,8 @@ section
     span#sound-play #
     | 播放
   p
-    | 播放聲音
-  p
-    | sound.play(fileName);
-  p
-    | fileName String: 音效素材的名字
+    span.syntax sound.play(fileName);
+    | fileName: 音效素材的路徑
   pre.javascript
     code
       | sound.play("shoot.mp3");
@@ -17,11 +14,8 @@ section
     span#sound-setVolume #
     | 設定音量
   p
-    | 設定音量
-  p
-    | sound.setVolume(num);
-  p
-    | num Number: 0 ~ 1 的音量大小
+    span.syntax sound.setVolume(num);
+    | num: 0 ~ 1 的音量大小
   pre.javascript
     code
       | sound.setVolume(0.5);
@@ -31,11 +25,8 @@ section
     span#sound-mute #
     | 靜音
   p
-    | 全部音效設定是否靜音
-  p
-    | sound.mute(bool);
-  p
-    | bool Boolean: 若為 true 則將所有音效靜音
+    span.syntax sound.mute(bool);
+    | bool: 若為 true 則將所有音效靜音
   pre.javascript
     code
       | sound.mute(true);
@@ -45,11 +36,8 @@ section
     span#sound-stop #
     | 停止播放
   p
+    span.syntax sound.stop();
     | 停止所有的音效
-  p
-    | sound.stop();
-  p
-    | 無
   pre.javascript
     code
       | sound.stop();
