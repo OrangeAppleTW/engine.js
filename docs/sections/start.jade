@@ -1,7 +1,7 @@
+p 這個章節將會一步一步帶你做出一個完整的小遊戲，所有的步驟都會附上程式碼與實際範例，可以點擊範例程式執行並觀察成果。
 section
   h3
-    span#start-game #
-    | 創造遊戲
+    span#start-game 創造遊戲
   p.syntax Engine(canvasId);
   p canvasId: canvas 元素的 ID
   pre.javascript
@@ -18,8 +18,7 @@ section
   pre.javascript
 section
   h3
-    span#start-preload #
-    | 載入素材
+    span#start-preload 載入素材
   p
   p.syntax Game.preloadImages([path1, path2, path3], completeCallback, progressCallback);
   p
@@ -38,8 +37,7 @@ section
       | });
 section
   h3
-    span#start-setBackdrop #
-    | 設定背景
+    span#start-setBackdrop 設定背景
   p
   p
     span.syntax Game.setBackdrop(path, x, y, width, height);
@@ -59,8 +57,7 @@ section
   span.example-code.js-example-code(href='', code-path='../test/start/setBackdrop.js') 範例程式
 section
   h3
-    span#start-createSprite #
-    | 創造角色
+    span#start-createSprite 創造角色
   p 創造出小鳥，預設位置為場景中央
   pre.javascript
     code
@@ -81,8 +78,7 @@ section
   span.example-code.js-example-code(code-path='../test/start/createSprite.js') 範例程式
 section
   h3
-    span#start-forever #
-    | 遊戲迴圈
+    span#start-forever 遊戲迴圈
   p
     span.syntax Game.forever(fn) | Game.aways(fn) | Game.update(fn)
     |                         fn: 遊戲迴圈，重複不斷執行的函式
@@ -109,8 +105,7 @@ section
   span.example-code.js-example-code(code-path='../test/start/forever.js') 範例程式
 section
   h3
-    span#start-event #
-    | 遊戲事件
+    span#start-event 遊戲事件
   p 幫鳥加上重力，創造變數 vx 表示鳥的下降速度
     pre.javascript
       code
@@ -134,8 +129,7 @@ section
   span.example-code.js-example-code(code-path='../test/start/event.js') 範例程式
 section
   h3
-    span#start-sound #
-    | 遊戲音效
+    span#start-sound 遊戲音效
   p 當滑鼠點擊銀幕時，播放跳耀的音效
   pre.javascript
     code
@@ -151,8 +145,7 @@ section
   span.example-code.js-example-code(code-path='../test/start/sound.js') 範例程式
 section
   h3
-    span#start-print #
-      | 顯示文字
+    span#start-print 顯示文字
   p 設計計分板並顯示在畫面左上方
   pre.javascript
     code
@@ -166,8 +159,7 @@ section
   span.example-code.js-example-code(code-path='../test/start/print.js') 範例程式
 section
   h3
-    span#start-final #
-    | 完成
+    span#start-final 完成
   p 創造開始按鈕與遊戲結束Logo，並隱藏結束Logo
   pre.javascript
     code

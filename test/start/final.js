@@ -13,7 +13,7 @@ var tubeDown = Game.createSprite({
 });
 var startBtn = Game.createSprite("./assets/start-button.png");
 var gameOverLogo = Game.createSprite({
-    costumes: "./assets/gameOver.png",
+    costumes: "./assets/gameover.png",
     hidden: true,
     y: 100
 });
