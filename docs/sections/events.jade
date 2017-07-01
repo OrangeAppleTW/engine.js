@@ -1,37 +1,68 @@
+p
+	span.syntax Game.when | Game.on
+	| 綁定遊戲的事件的方法 
+	pan.syntax Sprite.when | Sprite.on
+	| 綁定角色事件的方法
+section
+	h3
+		span#event-touch 碰撞
+	p
+		span.syntax Sprite.when("touch", target, callback);
+		| 單一對象的碰撞
+	pre.javascript
+		code
+			| bird.when("touch", bird, callback);
+	span.example-code.js-example-code(code-path='../test/events/touch.js') 範例程式
+	p
+		span.syntax Sprite.when("touch", [target], callback);
+		| 多個對象的碰撞，可以傳入陣列
+	pre.javascript
+		code
+			| bird.when("touch",[bird_1, bird_2], callback);
+	span.example-code.js-example-code(code-path='../test/events/touch_multi.js') 範例程式
 section
 	h3
 		span#event-click 點擊事件
 	p 
 		span.syntax Game.when("click", sprite, callback);
 		| 當滑鼠點擊 sprite 執行函式
-	p
 	pre.javascript
 		code
 			| Game.when("click", bird, function () {
 			|     bird.scale += 0.5;
 			| });
 	span.example-code.js-example-code(code-path='../test/events/click.js') 範例程式
-section
-	h3
-		span#event-touch 碰撞
-	p
-		span.syntax Game.when("touch",[Sprite1, Sprite2], callback);
-	p
+	p 
+		span.syntax Sprite.when("click", callback);
+		| 當滑鼠點擊 sprite 執行函式
 	pre.javascript
 		code
-			| when("touch",[Sprite1, Sprite2], callback);
-	span.example-code.js-example-code(code-path='../test/events/touch.js') 範例程式
-section
-	h3
-		span#event-hover 滑鼠碰撞
-	p
-		span.syntax Game.when("hover", sprite, callback);
-	pre.javascript
-		code
-			| Game.when("hover", bird, function() {
-			|     setBackdrop("pink");
+			| bird.when("click", function () {
+			|     this.scale += 0.5;
 			| });
-	span.example-code.js-example-code(code-path='../test/events/hover.js') 範例程式
+	span.example-code.js-example-code(code-path='../test/sprite/when.js') 範例程式
+section
+	h3
+		span#event-mousedown 滑鼠按下
+	p
+		span.syntax Game.when("mousedown", callback);
+	pre.javascript
+		code
+			| Game.when("mousedown", bird, function() {
+			|     bird.scale += 1;
+			| });
+	span.example-code.js-example-code(code-path='../test/events/mousedown.js') 範例程式
+section
+	h3
+		span#event-mouseup 滑鼠放開
+	p
+		span.syntax Game.when("mouseup", callback);
+	pre.javascript
+		code
+			| Game.when("mouseup", bird, function() {
+			|     bird.scale += 1;
+			| });
+	span.example-code.js-example-code(code-path='../test/events/mouseup.js') 範例程式
 section
 	h3
 		span#event-keydown 鍵盤按下
