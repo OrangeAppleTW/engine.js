@@ -18,8 +18,7 @@ EventList.prototype.traverse = function (){
                 continue;
             }
         }
-        if      (pool[i].event=="hover")        hoverJudger(   pool[i].sprite, pool[i].handler, io.cursor,  debugMode);
-        else if (pool[i].event=="click")        mouseJudger(   pool[i].sprite, pool[i].handler, io.clicked, debugMode);
+        if      (pool[i].event=="click")        mouseJudger(   pool[i].sprite, pool[i].handler, io.clicked, debugMode);
         else if (pool[i].event=="mousedown")    mouseJudger(   pool[i].sprite, pool[i].handler, io.mousedown, debugMode);
         else if (pool[i].event=="mouseup")      mouseJudger(   pool[i].sprite, pool[i].handler, io.mouseup, debugMode);
         else if (pool[i].event=="keydown")      keyJudger(     pool[i].key,    pool[i].handler, io.keydown, debugMode);
@@ -69,15 +68,6 @@ EventList.prototype.register = function(){
 
 EventList.prototype.emit = function (eventName) {
     this.messages.push(eventName);
-}
-
-function hoverJudger(sprite, handler, cursor, debugMode){
-    if(sprite.touched(cursor)){
-        handler.call(sprite);
-        if(debugMode){
-            console.log("Just fired a hover handler at: ("+cursor.x+","+cursor.y+")");
-        }
-    }
 }
 
 // 用來判斷 click, mousedown, mouseup 的 function
