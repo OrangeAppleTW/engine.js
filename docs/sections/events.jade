@@ -68,34 +68,61 @@ section
 		span#event-keydown 鍵盤按下
 	p
 		span.syntax Game.when("keydown", keyName, callback);
-	p
+	p 當按下特定按鍵，觸發執行函式
 	pre.javascript
 		code
 			| Game.when('keydown', "space", function() {
-			|     bird.scale += 0.5;        
+			|     bird.scale += 0.2;        
 			| });
 	span.example-code.js-example-code(code-path='../test/events/keydown.js') 範例程式
+	p
+		span.syntax Game.when("keydown", keyName, callback);
+	p 當按下任意按鍵，觸發執行函式，觸發執行函式，可以傳入 "any" 或是省略參數
+	pre.javascript
+		code
+			| Game.when('keydown', function() {
+			|     bird.scale += 0.2;        
+			| });
+	span.example-code.js-example-code(code-path='../test/events/keydown_any.js') 範例程式
 section
 	h3
 		span#event-keyup 鍵盤放開
 	p
 		span.syntax when("keyup";, keyName, callback);
-	p
+	p 當放開特定按鍵，觸發執行函式
 	pre.javascript
 		code
-			| Game.when("keyup", "space", , function() {
+			| Game.when("keyup", "space" , function() {
 			|     bird.scale += 0.5;        
 			| });
 	span.example-code.js-example-code(code-path='../test/events/keyup.js') 範例程式
+	p
+		span.syntax when("keyup";, keyName, callback);
+	p 當放開任意按鍵，觸發執行函式，可以傳入 "any" 或是省略參數
+	pre.javascript
+		code
+			| Game.when("keyup", function() {
+			|     bird.scale += 0.5;        
+			| });
+	span.example-code.js-example-code(code-path='../test/events/keyup_any.js') 範例程式
 section
 	h3
 		span#event-holding 按鍵持續按壓
 	p
 		span.syntax Game.when("holding", keyName, callback);
-	p
+	p 持續按壓特定按鍵，觸發執行函式
 	pre.javascript
 		code
 			| Game.when("holding", "right", function() {
-			|     bird.x += 1;        
+			|     bird.x += 1;
 			| });
 	span.example-code.js-example-code(code-path='../test/events/holding.js') 範例程式
+	p
+		span.syntax Game.when("holding", callback);
+	p 持續按壓任意按鍵，觸發執行函式，可以傳入 "any" 或是省略參數
+	pre.javascript
+		code
+			| Game.when("holding", function() {
+			|     bird.direction += 3;
+			| });
+	span.example-code.js-example-code(code-path='../test/events/holding_any.js') 範例程式

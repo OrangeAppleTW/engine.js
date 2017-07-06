@@ -95,13 +95,19 @@ Sprite.layer = 2;</code></pre><span code-path="../test/sprite/layer.js" class="e
     bird.scale += 1;
 });</code></pre><span code-path="../test/events/mousedown.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="event-mouseup">滑鼠放開</span></h3><p><span class="syntax">Game.when("mouseup", callback);</span></p><pre class="javascript"><code>Game.when("mouseup", bird, function() {
     bird.scale += 1;
-});</code></pre><span code-path="../test/events/mouseup.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="event-keydown">鍵盤按下</span></h3><p><span class="syntax">Game.when("keydown", keyName, callback);</span></p><p></p><pre class="javascript"><code>Game.when('keydown', "space", function() {
+});</code></pre><span code-path="../test/events/mouseup.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="event-keydown">鍵盤按下</span></h3><p><span class="syntax">Game.when("keydown", keyName, callback);</span></p><p>當按下特定按鍵，觸發執行函式</p><pre class="javascript"><code>Game.when('keydown', "space", function() {
+    bird.scale += 0.2;        
+});</code></pre><span code-path="../test/events/keydown.js" class="example-code js-example-code">範例程式</span><p><span class="syntax">Game.when("keydown", keyName, callback);</span></p><p>當按下任意按鍵，觸發執行函式，觸發執行函式，可以傳入 "any" 或是省略參數</p><pre class="javascript"><code>Game.when('keydown', function() {
+    bird.scale += 0.2;        
+});</code></pre><span code-path="../test/events/keydown_any.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="event-keyup">鍵盤放開</span></h3><p><span class="syntax">when("keyup";, keyName, callback);</span></p><p>當放開特定按鍵，觸發執行函式</p><pre class="javascript"><code>Game.when("keyup", "space" , function() {
     bird.scale += 0.5;        
-});</code></pre><span code-path="../test/events/keydown.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="event-keyup">鍵盤放開</span></h3><p><span class="syntax">when("keyup";, keyName, callback);</span></p><p></p><pre class="javascript"><code>Game.when("keyup", "space", , function() {
+});</code></pre><span code-path="../test/events/keyup.js" class="example-code js-example-code">範例程式</span><p><span class="syntax">when("keyup";, keyName, callback);</span></p><p>當放開任意按鍵，觸發執行函式，可以傳入 "any" 或是省略參數</p><pre class="javascript"><code>Game.when("keyup", function() {
     bird.scale += 0.5;        
-});</code></pre><span code-path="../test/events/keyup.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="event-holding">按鍵持續按壓</span></h3><p><span class="syntax">Game.when("holding", keyName, callback);</span></p><p></p><pre class="javascript"><code>Game.when("holding", "right", function() {
-    bird.x += 1;        
-});</code></pre><span code-path="../test/events/holding.js" class="example-code js-example-code">範例程式</span></section></section><section><h2><span id="keyboard-cursor">鍵盤&滑鼠</span></h2><section><h3><span id="cursor">滑鼠</span></h3><p><span class="syntax">Game.cursor.x, Game.cursor.y</span>滑鼠 x,y 座標<span class="syntax">Game.cursor.left, Game.cursor.right</span>滑鼠左右鍵狀態<span class="syntax">Game.cursor.isDown</span>滑鼠是否被按住</p><pre class="javascript"><code>var cursor = Game.cursor;
+});</code></pre><span code-path="../test/events/keyup_any.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="event-holding">按鍵持續按壓</span></h3><p><span class="syntax">Game.when("holding", keyName, callback);</span></p><p>持續按壓特定按鍵，觸發執行函式</p><pre class="javascript"><code>Game.when("holding", "right", function() {
+    bird.x += 1;
+});</code></pre><span code-path="../test/events/holding.js" class="example-code js-example-code">範例程式</span><p><span class="syntax">Game.when("holding", callback);</span></p><p>持續按壓任意按鍵，觸發執行函式，可以傳入 "any" 或是省略參數</p><pre class="javascript"><code>Game.when("holding", function() {
+    bird.direction += 3;
+});</code></pre><span code-path="../test/events/holding_any.js" class="example-code js-example-code">範例程式</span></section></section><section><h2><span id="keyboard-cursor">鍵盤&滑鼠</span></h2><section><h3><span id="cursor">滑鼠</span></h3><p><span class="syntax">Game.cursor.x, Game.cursor.y</span>滑鼠 x,y 座標<span class="syntax">Game.cursor.left, Game.cursor.right</span>滑鼠左右鍵狀態<span class="syntax">Game.cursor.isDown</span>滑鼠是否被按住</p><pre class="javascript"><code>var cursor = Game.cursor;
 forever(function(){
     var y = 80
     print('**滑鼠測試**', 30, y, 'white');
