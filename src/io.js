@@ -1,18 +1,14 @@
 var keycode = require('keycode');
 
 function IO(canvas, settings, debugMode){
-    var exports={},
-        cursor={ x:0, y:0, isDown:false, left: false, right: false },
-        key=[],
-        clicked={x:null, y:null},
-        mousedown={x:null, y:null},
-        mouseup={x:null, y:null},
-        keyup={},
-        keydown={},
-        holding={};
 
-    this.mousedown = mousedown;
-    this.mouseup = mouseup;
+    var cursor    = this.cursor    = { x: 0, y: 0, isDown: false, left: false, right: false }
+    var clicked   = this.clicked   = { x: null, y: null }
+    var mousedown = this.mousedown = { x: null, y: null }
+    var mouseup   = this.mouseup   = { x: null, y: null }
+    var keyup     = this.keyup     = { any: false }
+    var keydown   = this.keydown   = { any: false }
+    var holding   = this.holding   = { any: false, count: 0 }
 
     debugMode = debugMode || false;
 
@@ -55,6 +51,8 @@ function IO(canvas, settings, debugMode){
 
     canvas.addEventListener("keydown", function(e){
         var key = keycode(e.keyCode);
+        if(!holding[key]) holding.any = (holding.count += 1) > 0;
+        keydown.any = true;
         keydown[key] = true;
         holding[key] = true;
         if(debugMode){
@@ -64,30 +62,26 @@ function IO(canvas, settings, debugMode){
 
     canvas.addEventListener("keyup", function(e){
         var key = keycode(e.keyCode);
+        holding.any = (holding.count -= 1) > 0;
+        keyup.any = true;
         keyup[key] = true;
         holding[key] = false;
         if(debugMode){
             console.log( "Keyup! key:"+key );
         }
     });
-
-    this.cursor = cursor;
-    this.clicked = clicked;
-    this.keyup = keyup;
-    this.keydown = keydown;
-    this.holding = holding;
 };
 
 IO.prototype.clearEvents = function(){
-    this.clicked.x=null;
-    this.clicked.y=null;
-    this.mousedown.x=null;
-    this.mousedown.y=null;
-    this.mouseup.x=null;
-    this.mouseup.y=null;
+    this.clicked.x = null;
+    this.clicked.y = null;
+    this.mousedown.x = null;
+    this.mousedown.y = null;
+    this.mouseup.x = null;
+    this.mouseup.y = null;
     for(var key in this.keydown){
-        this.keydown[key]=false;
-        this.keyup[key]=false;
+        this.keydown[key] = false;
+        this.keyup[key] = false;
     }
 }
 

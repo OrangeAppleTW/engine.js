@@ -22,9 +22,9 @@ EventList.prototype.traverse = function (){
         else if (pool[i].event=="click")        mouseJudger(   pool[i].sprite, pool[i].handler, io.clicked, debugMode);
         else if (pool[i].event=="mousedown")    mouseJudger(   pool[i].sprite, pool[i].handler, io.mousedown, debugMode);
         else if (pool[i].event=="mouseup")      mouseJudger(   pool[i].sprite, pool[i].handler, io.mouseup, debugMode);
-        else if (pool[i].event=="keydown")      keydownJudger( pool[i].key,    pool[i].handler, io.keydown, debugMode);
-        else if (pool[i].event=="keyup")        keydownJudger( pool[i].key,    pool[i].handler, io.keyup,   debugMode);
-        else if (pool[i].event=="holding")      holdingJudger( pool[i].key,    pool[i].handler, io.holding, debugMode);
+        else if (pool[i].event=="keydown")      keyJudger(     pool[i].key,    pool[i].handler, io.keydown, debugMode);
+        else if (pool[i].event=="keyup")        keyJudger(     pool[i].key,    pool[i].handler, io.keyup,   debugMode);
+        else if (pool[i].event=="holding")      keyJudger(     pool[i].key,    pool[i].handler, io.holding, debugMode);
         else if (pool[i].event=="listen")       listenJudger(  pool[i].sprite, pool[i].handler, messages,   pool[i].message, debugMode);
         else if (pool[i].event=="touch")        touchJudger(   pool[i].sprite, pool[i].handler, pool[i].targets, debugMode );
     }
@@ -55,9 +55,9 @@ EventList.prototype.register = function(){
         } else {
             eventObj.targets = [arguments[2]];
         }
-    } else if (event === "keydown" || event === "keyup" || event === "holding"){
-        eventObj.key = arguments[1];
-    } else if ( ["mousedown", "mouseup", "hover", "click"].includes(event) ) {
+    } else if (["keydown", "keyup", "holding"].includes(event)){
+       eventObj.key = arguments[1] || "any"; // 如果對象為 null 則為任意按鍵 "any"
+    } else if (["mousedown", "mouseup", "click"].includes(event)) {
         eventObj.sprite = arguments[1];
     } else if (event === "listen") {
         eventObj.message = arguments[1];
@@ -99,29 +99,12 @@ function mouseJudger(sprite, handler, mouse, debugMode){
     }
 }
 
-function keydownJudger(key, handler, keydown, debugMode){
-    if(keydown[key]){
+// 用來判斷 keydown, keyup, holding 的 function
+function keyJudger(target, handler, keys, debugMode){
+    if(keys[target]){
         handler();
         if(debugMode){
             console.log("Just fired a keydown handler on: "+key);
-        }
-    }
-}
-
-function keyupJudger(key, handler, keyup, debugMode){
-    if(keyup[key]){
-        handler();
-        if(debugMode){
-            console.log("Just fired a keyup handler on: "+key);
-        }
-    }
-}
-
-function holdingJudger(key, handler, holding, debugMode){
-    if(holding[key]){
-        handler();
-        if(debugMode){
-            console.log("Just fired a holding handler on: "+key);
         }
     }
 }
