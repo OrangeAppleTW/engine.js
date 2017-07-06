@@ -14,17 +14,17 @@ section
       |     width: 400, // Default: 640px
       |     height: 400, // Default: 480px
       |     debugMode: true // Default: false
-      | });                                  
-  pre.javascript
+      | });
+  p.warning koding.school 平台編輯程式，不需要初始化遊戲
 section
   h3
     span#start-preload 載入素材
   p
-  p.syntax Game.preloadImages([path1, path2, path3], completeCallback, progressCallback);
+  p.syntax Game.preload([path1, path2, path3], completeCallback, progressCallback);
   p
   pre.javascript
     code
-      | Game.preloadImages([
+      | Game.preload([
       |     "./assets/bird.png",
       |     "./assets/up-tube.png",
       |     "./assets/down-tube.png",
@@ -35,6 +35,7 @@ section
       | ],function() {
       |     Game.start();
       | });
+  p.warning koding.school 平台編輯程式，不需要載入素材
 section
   h3
     span#start-setBackdrop 設定背景

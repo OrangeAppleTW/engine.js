@@ -3,7 +3,7 @@
     width: 400, // Default: 640px
     height: 400, // Default: 480px
     debugMode: true // Default: false
-});                                  </code></pre><pre class="javascript"></pre></section><section><h3><span id="start-preload">載入素材</span></h3><p></p><p class="syntax">Game.preloadImages([path1, path2, path3], completeCallback, progressCallback);</p><p></p><pre class="javascript"><code>Game.preloadImages([
+});</code></pre><p class="warning">koding.school 平台編輯程式，不需要初始化遊戲</p></section><section><h3><span id="start-preload">載入素材</span></h3><p></p><p class="syntax">Game.preload([path1, path2, path3], completeCallback, progressCallback);</p><p></p><pre class="javascript"><code>Game.preload([
     "./assets/bird.png",
     "./assets/up-tube.png",
     "./assets/down-tube.png",
@@ -13,7 +13,7 @@
     "./assets/bgm.ogg"
 ],function() {
     Game.start();
-});</code></pre></section><section><h3><span id="start-setBackdrop">設定背景</span></h3><p></p><p><span class="syntax">Game.setBackdrop(path, x, y, width, height);</span>path: 素材的網址<br>x: 背景圖左上角 x 座標<br>y: 背景圖左上角 y 座標<br>width: 長度<br>height: 寬度</p><p></p><pre class="javascript"><code>Game.setBackdrop("./assets/background.png", 0, 0, 470, 400);</code></pre><span href="" code-path="../test/start/setBackdrop.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="start-createSprite">創造角色</span></h3><p>創造出小鳥，預設位置為場景中央</p><pre class="javascript"><code>var bird = Game.createSprite("./assets/bird.png");</code></pre><p>創造出上下水管，並設定座標位置</p><pre class="javascript"><code>var tubeUp = Game.createSprite({
+});</code></pre><p class="warning">koding.school 平台編輯程式，不需要載入素材</p></section><section><h3><span id="start-setBackdrop">設定背景</span></h3><p></p><p><span class="syntax">Game.setBackdrop(path, x, y, width, height);</span>path: 素材的網址<br>x: 背景圖左上角 x 座標<br>y: 背景圖左上角 y 座標<br>width: 長度<br>height: 寬度</p><p></p><pre class="javascript"><code>Game.setBackdrop("./assets/background.png", 0, 0, 470, 400);</code></pre><span href="" code-path="../test/start/setBackdrop.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="start-createSprite">創造角色</span></h3><p>創造出小鳥，預設位置為場景中央</p><pre class="javascript"><code>var bird = Game.createSprite("./assets/bird.png");</code></pre><p>創造出上下水管，並設定座標位置</p><pre class="javascript"><code>var tubeUp = Game.createSprite({
     costumes: "./assets/up-tube.png",
     x: 450,
     y: -30
@@ -91,9 +91,9 @@ Sprite.layer = 2;</code></pre><span code-path="../test/sprite/layer.js" class="e
     bird.scale += 0.5;
 });</code></pre><span code-path="../test/events/click.js" class="example-code js-example-code">範例程式</span><p> <span class="syntax">Sprite.when("click", callback);</span>當滑鼠點擊 sprite 執行函式</p><pre class="javascript"><code>bird.when("click", function () {
     this.scale += 0.5;
-});</code></pre><span code-path="../test/sprite/when.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="event-mousedown">滑鼠按下</span></h3><p><span class="syntax">Game.when("mousedown", callback);</span></p><pre class="javascript"><code>Game.when("mousedown", bird, function() {
+});</code></pre><span code-path="../test/sprite/when.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="event-mousedown">滑鼠按下</span></h3><p><span class="syntax">Game.when("mousedown", callback);</span></p><pre class="javascript"><code>Game.when("mousedown", function() {
     bird.scale += 1;
-});</code></pre><span code-path="../test/events/mousedown.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="event-mouseup">滑鼠放開</span></h3><p><span class="syntax">Game.when("mouseup", callback);</span></p><pre class="javascript"><code>Game.when("mouseup", bird, function() {
+});</code></pre><span code-path="../test/events/mousedown.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="event-mouseup">滑鼠放開</span></h3><p><span class="syntax">Game.when("mouseup", callback);</span></p><pre class="javascript"><code>Game.when("mouseup", function() {
     bird.scale += 1;
 });</code></pre><span code-path="../test/events/mouseup.js" class="example-code js-example-code">範例程式</span></section><section><h3><span id="event-keydown">鍵盤按下</span></h3><p><span class="syntax">Game.when("keydown", keyName, callback);</span></p><p>當按下特定按鍵，觸發執行函式</p><pre class="javascript"><code>Game.when('keydown', "space", function() {
     bird.scale += 0.2;        

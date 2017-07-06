@@ -57,7 +57,11 @@ EventList.prototype.register = function(){
     } else if (["keydown", "keyup", "holding"].includes(event)){
        eventObj.key = arguments[1] || "any"; // 如果對象為 null 則為任意按鍵 "any"
     } else if (["mousedown", "mouseup", "click"].includes(event)) {
-        eventObj.sprite = arguments[1];
+        if(arguments[1].constructor === Array) {
+            eventObj.sprite = arguments[1];
+        } else {
+            eventObj.sprite = [arguments[1]];
+        }
     } else if (event === "listen") {
         eventObj.message = arguments[1];
         eventObj.sprite = arguments[2];
@@ -71,19 +75,21 @@ EventList.prototype.emit = function (eventName) {
 }
 
 // 用來判斷 click, mousedown, mouseup 的 function
-function mouseJudger(sprite, handler, mouse, debugMode){
-    if(mouse.x && mouse.y){ // 如果有點擊記錄才檢查
-        if(sprite){ // 如果是 Sprite, 則對其做判定
-            if( sprite.touched(mouse.x,mouse.y) ){
-                handler.call(sprite);
-                if(debugMode){
-                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(mouse)+")");
+function mouseJudger(sprites, handler, mouse, debugMode){
+    for(var i=0, sprite; sprite = sprites[i]; i++) {
+        if(mouse.x && mouse.y){ // 如果有點擊記錄才檢查
+            if(sprite){ // 如果是 Sprite, 則對其做判定
+                if( sprite.touched(mouse.x,mouse.y) ){
+                    handler.call(sprite);
+                    if(debugMode){
+                        console.log("Just fired a click handler on a sprite! ("+JSON.stringify(mouse)+")");
+                    }
                 }
-            }
-        } else { // 如果為 null, 則對整個遊戲舞台做判定
-            handler();
-            if(debugMode){
-                console.log("Just fired a click handler on stage! ("+JSON.stringify(mouse)+")");
+            } else { // 如果為 null, 則對整個遊戲舞台做判定
+                handler();
+                if(debugMode){
+                    console.log("Just fired a click handler on stage! ("+JSON.stringify(mouse)+")");
+                }
             }
         }
     }

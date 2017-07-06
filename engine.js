@@ -214,8 +214,7 @@ EventList.prototype.traverse = function (){
                 continue;
             }
         }
-        if      (pool[i].event=="hover")        hoverJudger(   pool[i].sprite, pool[i].handler, io.cursor,  debugMode);
-        else if (pool[i].event=="click")        mouseJudger(   pool[i].sprite, pool[i].handler, io.clicked, debugMode);
+        if      (pool[i].event=="click")        mouseJudger(   pool[i].sprite, pool[i].handler, io.clicked, debugMode);
         else if (pool[i].event=="mousedown")    mouseJudger(   pool[i].sprite, pool[i].handler, io.mousedown, debugMode);
         else if (pool[i].event=="mouseup")      mouseJudger(   pool[i].sprite, pool[i].handler, io.mouseup, debugMode);
         else if (pool[i].event=="keydown")      keyJudger(     pool[i].key,    pool[i].handler, io.keydown, debugMode);
@@ -254,7 +253,11 @@ EventList.prototype.register = function(){
     } else if (["keydown", "keyup", "holding"].includes(event)){
        eventObj.key = arguments[1] || "any"; // 如果對象為 null 則為任意按鍵 "any"
     } else if (["mousedown", "mouseup", "click"].includes(event)) {
-        eventObj.sprite = arguments[1];
+        if(arguments[1].constructor === Array) {
+            eventObj.sprite = arguments[1];
+        } else {
+            eventObj.sprite = [arguments[1]];
+        }
     } else if (event === "listen") {
         eventObj.message = arguments[1];
         eventObj.sprite = arguments[2];
@@ -267,29 +270,22 @@ EventList.prototype.emit = function (eventName) {
     this.messages.push(eventName);
 }
 
-function hoverJudger(sprite, handler, cursor, debugMode){
-    if(sprite.touched(cursor)){
-        handler.call(sprite);
-        if(debugMode){
-            console.log("Just fired a hover handler at: ("+cursor.x+","+cursor.y+")");
-        }
-    }
-}
-
 // 用來判斷 click, mousedown, mouseup 的 function
-function mouseJudger(sprite, handler, mouse, debugMode){
-    if(mouse.x && mouse.y){ // 如果有點擊記錄才檢查
-        if(sprite){ // 如果是 Sprite, 則對其做判定
-            if( sprite.touched(mouse.x,mouse.y) ){
-                handler.call(sprite);
-                if(debugMode){
-                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(mouse)+")");
+function mouseJudger(sprites, handler, mouse, debugMode){
+    for(var i=0, sprite; sprite = sprites[i]; i++) {
+        if(mouse.x && mouse.y){ // 如果有點擊記錄才檢查
+            if(sprite){ // 如果是 Sprite, 則對其做判定
+                if( sprite.touched(mouse.x,mouse.y) ){
+                    handler.call(sprite);
+                    if(debugMode){
+                        console.log("Just fired a click handler on a sprite! ("+JSON.stringify(mouse)+")");
+                    }
                 }
-            }
-        } else { // 如果為 null, 則對整個遊戲舞台做判定
-            handler();
-            if(debugMode){
-                console.log("Just fired a click handler on stage! ("+JSON.stringify(mouse)+")");
+            } else { // 如果為 null, 則對整個遊戲舞台做判定
+                handler();
+                if(debugMode){
+                    console.log("Just fired a click handler on stage! ("+JSON.stringify(mouse)+")");
+                }
             }
         }
     }
@@ -1047,12 +1043,12 @@ Sprite.prototype.when = Sprite.prototype.on = function() {
 
     if(event=="listen") {
         return eventList.register(event, arguments[1], this, arguments[2]);
-    } else if(["mousedown", "mouseup", "hover", "click"].includes(event)){
+    } else if(["mousedown", "mouseup", "click"].includes(event)){
         return eventList.register(event, this, arguments[1]);
     } else if (event=="touch"){
         return eventList.register(event, this, arguments[1], arguments[2]);
     } else {
-        console.log('Sprite.on() does only support "listen", "click", hover" and "touch" events');
+        console.log('Sprite.on() does only support "listen", "click" and "touch" events');
         return false;
     }
 };

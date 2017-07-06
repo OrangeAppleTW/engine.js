@@ -48,7 +48,7 @@ section
 		span.syntax Game.when("mousedown", callback);
 	pre.javascript
 		code
-			| Game.when("mousedown", bird, function() {
+			| Game.when("mousedown", function() {
 			|     bird.scale += 1;
 			| });
 	span.example-code.js-example-code(code-path='../test/events/mousedown.js') 範例程式
@@ -59,7 +59,7 @@ section
 		span.syntax Game.when("mouseup", callback);
 	pre.javascript
 		code
-			| Game.when("mouseup", bird, function() {
+			| Game.when("mouseup", function() {
 			|     bird.scale += 1;
 			| });
 	span.example-code.js-example-code(code-path='../test/events/mouseup.js') 範例程式
