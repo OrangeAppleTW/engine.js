@@ -9,12 +9,9 @@ EventList.prototype.traverse = function (){
         io = this.io,
         debugMode = this.debugMode;
     for(var i=0; i<pool.length; i++){
-        if (pool[i].sprite || pool[i].sprites) {
-            var sprite = pool[i].sprite || pool[i].sprites[0];
-            if (sprite.constructor.name=="Sprite" && sprite._deleted){ 
-                pool.splice(i,1);
-                continue;
-            }
+        if (pool[i].sprite && pool[i]._deleted) {
+            pool.splice(i--, 1);
+            continue;
         }
         if      (pool[i].event=="click")        mouseJudger(   pool[i].sprite, pool[i].handler, io.clicked, debugMode);
         else if (pool[i].event=="mousedown")    mouseJudger(   pool[i].sprite, pool[i].handler, io.mousedown, debugMode);
