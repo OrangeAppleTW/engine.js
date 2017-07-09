@@ -52,10 +52,10 @@ section
     | fun: 事件觸發執行的函式
   pre.javascript
     code
-      | bird.when('click',function() {
-      |     this.scale += 0.5;
+      | bird_1.when('touch', bird_2, function() {
+      |     bird_2.moveTo(10, 10);
       | });
-  span.example-code.js-example-code(code-path='../test/sprite/when.js') 範例程式
+  span.example-code.js-example-code(code-path='../test/sprite/when_touch.js') 範例程式
 section
   h3
     span#sprite-methods-touched 碰撞檢測
@@ -101,3 +101,24 @@ section
     code
       | bird.destroy();
   span.example-code.js-example-code(code-path='../test/sprite/destroy.js') 範例程式
+section
+  h3
+    span#sprite-methods-broadcast 廣播
+  p 
+    span.syntax Sprite.destroy();
+  pre.javascript
+    code
+      | bird.when('listen', 'gameOver', function () {
+      |     this.destroy();
+      | });
+      | Game.broadcast("gameOver");
+  span.example-code.js-example-code(code-path='../test/sprite/when_listen.js') 範例程式
+section
+  h3
+    span#sprite-methods-distanceTo 角色之間的距離
+  p 
+    span.syntax Sprite.distanceTo();
+  pre.javascript
+    code
+      | bird_1.distanceTo(bird_2);
+  span.example-code.js-example-code(code-path='../test/sprite/distanceTo.js') 範例程式

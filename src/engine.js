@@ -84,7 +84,7 @@ function engine(stageId, debugMode){
     }
 
     // for proxy.on / when: 
-    var when = function(event, target, handler){
+    function when (event, target, handler){
         // Global when() only accepts followed events:
         if(["keydown", "keyup", "mousedown", "mouseup", "holding", "click"].includes(event)){
             if(typeof target === "function"){ // 如果不指定對象，直接傳入 handler
@@ -94,6 +94,15 @@ function engine(stageId, debugMode){
             }
         }
     }
+
+    function forever (func) {
+        settings.updateFunctions.push(func);
+    }
+
+    function preload (assets, completeFunc, progressFunc) {
+        loader.preload(assets, completeFunc, progressFunc);
+    }
+
     var proxy = {
         createSprite: function(args){
             var newSprite = new Sprite(args, eventList, settings, renderer)
@@ -111,19 +120,14 @@ function engine(stageId, debugMode){
         set: set,
         stop: function(){ clock.stop(); sound.stop(); },
         start: function(){ clock.start(); },
-        update: function(func){ settings.updateFunctions.push(func); },
-        always: function(func){ settings.updateFunctions.push(func); },
-        forever: function(func){ settings.updateFunctions.push(func); },
-        ctx: ctx,
+        forever: forever,
+        update: forever,
+        always: forever,
         clear: function(){ renderer.clear(); },
-        preload: function(assets, completeFunc, progressFunc) { loader.preload(assets, completeFunc, progressFunc) },
+        preload: preload,
         sound: sound,
         broadcast: eventList.emit.bind(eventList),
-        pen: pen,
-
-        // Will be deprecated:
-        drawBackdrop: function(src, x, y, width, height){ renderer.drawBackdrop(src, x, y, width, height); },
-        drawSprites: function(){ renderer.drawSprites(sprites); }
+        pen: pen
     };
     if(debugMode){
         proxy.eventList = eventList;

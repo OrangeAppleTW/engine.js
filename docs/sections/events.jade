@@ -40,7 +40,7 @@ section
 			| bird.when("click", function () {
 			|     this.scale += 0.5;
 			| });
-	span.example-code.js-example-code(code-path='../test/sprite/when.js') 範例程式
+	span.example-code.js-example-code(code-path='../test/sprite/when_click.js') 範例程式
 section
 	h3
 		span#event-mousedown 滑鼠按下
@@ -52,6 +52,14 @@ section
 			|     bird.scale += 1;
 			| });
 	span.example-code.js-example-code(code-path='../test/events/mousedown.js') 範例程式
+	p
+		span.syntax Sprite.when("mousedown", callback);
+	pre.javascript
+		code
+			| bird.when("mousedown", function() {
+			|     this.scale += 1;
+			| });
+	span.example-code.js-example-code(code-path='../test/sprite/when_mousedown.js') 範例程式
 section
 	h3
 		span#event-mouseup 滑鼠放開
@@ -63,6 +71,14 @@ section
 			|     bird.scale += 1;
 			| });
 	span.example-code.js-example-code(code-path='../test/events/mouseup.js') 範例程式
+	p
+		span.syntax Sprite.when("mouseup", callback);
+	pre.javascript
+		code
+			| bird.when("mouseup", function() {
+			|     bird.scale += 1;
+			| });
+	span.example-code.js-example-code(code-path='../test/sprite/when_mouseup.js') 範例程式
 section
 	h3
 		span#event-keydown 鍵盤按下

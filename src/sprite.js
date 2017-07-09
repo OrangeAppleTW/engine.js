@@ -2,7 +2,6 @@ var util = require("./util");
 var hitCanvas = document.createElement('canvas'),
     hitTester = hitCanvas.getContext('2d');
 
-// @TODO:  
 function Sprite(args, eventList, settings, renderer) {
 
     if (args.constructor === String || args.constructor === Array) {
