@@ -103,6 +103,45 @@ function engine(stageId, debugMode){
         loader.preload(assets, completeFunc, progressFunc);
     }
 
+    function addPlugin(plugin) {
+        var pluginName = plugin.name;
+        if (!pluginName) throw '未設定 Plugin 名稱';
+        if (!!this[pluginName]) throw '重複的 plugin 名稱';
+
+        extendSprite = plugin.extendSprite;
+        // 擴充 Sprite 屬性 / 方法
+        if (!!extendSprite) {
+            for(var key in extendSprite) {
+                if (!!Sprite.prototype[key]) throw '重複的 extendSpirte 名稱';
+                
+                Sprite.prototype[key] = extendSprite[key];
+            }
+        }
+
+        // 初始化 plugin
+        this[pluginName] = {
+            'sprites': sprites._sprites,
+            'game': this
+        };
+
+        // 設定 plugin 資料
+        var data = plugin.data;
+        for(var key in data) {
+            this[pluginName][key] = data[key];
+        }
+
+        // 設定 plugin 方法
+        var methods = plugin.methods;
+        for(var key in methods) {
+            this[pluginName][key] = methods[key];
+        }
+
+        // 執行 init
+        if (typeof plugin.init === 'function') {
+            plugin.init.bind(this[pluginName])();
+        }
+    }
+
     var proxy = {
         createSprite: function(args){
             var newSprite = new Sprite(args, eventList, settings, renderer)
@@ -127,11 +166,14 @@ function engine(stageId, debugMode){
         preload: preload,
         sound: sound,
         broadcast: eventList.emit.bind(eventList),
-        pen: pen
+        pen: pen,
+        addPlugin: addPlugin
     };
+
     if(debugMode){
         proxy.eventList = eventList;
     }
+    
     return proxy;
 }
 
