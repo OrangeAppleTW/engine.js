@@ -205,12 +205,9 @@ EventList.prototype.traverse = function (){
         io = this.io,
         debugMode = this.debugMode;
     for(var i=0; i<pool.length; i++){
-        if (pool[i].sprite || pool[i].sprites) {
-            var sprite = pool[i].sprite || pool[i].sprites[0];
-            if (sprite.constructor.name=="Sprite" && sprite._deleted){ 
-                pool.splice(i,1);
-                continue;
-            }
+        if (pool[i].sprite && pool[i]._deleted) {
+            pool.splice(i--, 1);
+            continue;
         }
         if      (pool[i].event=="click")        mouseJudger(   pool[i].sprite, pool[i].handler, io.clicked, debugMode);
         else if (pool[i].event=="mousedown")    mouseJudger(   pool[i].sprite, pool[i].handler, io.mousedown, debugMode);
@@ -335,7 +332,7 @@ function engine(stageId, debugMode){
     var io = new IO(canvas, settings, debugMode);
     var eventList = new EventList(io, debugMode);
     var renderer = new Renderer(ctx, settings, loader.images, debugMode);
-    var sound = new Sound(loader.sounds, debugMode);
+    var sound = new Sound(loader, debugMode);
     var pen = new Pen(ctx);
     var clock = new Clock(function(){
         eventList.traverse();
@@ -590,8 +587,15 @@ Loader.prototype = {
     _loadSound: function (path) {
         var instance = this;
         var audio = new Audio();
-        audio.src = path;
-        audio.addEventListener('canplaythrough', function() {instance._loaded()});
+            this._loadFromAjax(path, function(data){
+            instance._convertBinToBase64(data.response, function(base64) {
+               audio.src = base64;
+            });
+        });
+        audio.addEventListener('canplaythrough', function() {
+            instance._loaded()
+        });
+        
         this.sounds[path] = audio;
     },
 
@@ -603,6 +607,54 @@ Loader.prototype = {
         if(this.loaded === this.paths.length && this.completeFunc) {
             this.completeFunc();
         }
+    },
+    _loadFromAjax: function (url, callback) {
+        var xhr;
+        
+        if(typeof XMLHttpRequest !== 'undefined') xhr = new XMLHttpRequest();
+        else {
+            var versions = ["MSXML2.XmlHttp.5.0", 
+                            "MSXML2.XmlHttp.4.0",
+                            "MSXML2.XmlHttp.3.0", 
+                            "MSXML2.XmlHttp.2.0",
+                            "Microsoft.XmlHttp"]
+
+            for(var i = 0, len = versions.length; i < len; i++) {
+                try {
+                    xhr = new ActiveXObject(versions[i]);
+                    break;
+                }
+                catch(e){}
+            } // end for
+        }
+        
+        xhr.onreadystatechange = ensureReadiness;
+        
+        function ensureReadiness() {
+            if(xhr.readyState < 4) {
+                return;
+            }
+            
+            if(xhr.status !== 200) {
+                return;
+            }
+
+            // all is well  
+            if(xhr.readyState === 4) {
+                callback(xhr);
+            }           
+        }
+        
+        xhr.open('GET', url, true);
+        xhr.responseType = 'blob';
+        xhr.send('');
+    },
+    _convertBinToBase64: function getData(audioFile, callback) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            callback(event.target.result);
+        };
+        reader.readAsDataURL(audioFile);
     }
 
 }
@@ -840,8 +892,9 @@ function Renderer(ctx, settings, images, debugMode){
 
 module.exports = Renderer;
 },{"./util":13}],10:[function(require,module,exports){
-function Sound (sounds, debugMode){
-    this.sounds = sounds;
+function Sound (loader, debugMode){
+    this.loader = loader;
+    this.sounds = loader.sounds;
     this.playing = [];
     this.muted = false;
     this.volume = 1;
@@ -856,8 +909,9 @@ Sound.prototype = {
             this.playing.push(audio);
             audio.play();
         } else {
-            audio = new Audio(url);
-            this.sounds[url] = audio;
+            // 用 preload 載入音檔 src 作為 cache
+            this.loader.preload([url]);
+            audio = this.sounds[url];
             this.playing.push(audio);
             audio.play();
         }
