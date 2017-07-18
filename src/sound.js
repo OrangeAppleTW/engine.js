@@ -1,5 +1,6 @@
-function Sound (sounds, debugMode){
-    this.sounds = sounds;
+function Sound (loader, debugMode){
+    this.loader = loader;
+    this.sounds = loader.sounds;
     this.playing = [];
     this.muted = false;
     this.volume = 1;
@@ -14,8 +15,9 @@ Sound.prototype = {
             this.playing.push(audio);
             audio.play();
         } else {
-            audio = new Audio(url);
-            this.sounds[url] = audio;
+            // 用 preload 載入音檔 src 作為 cache
+            this.loader.preload([url]);
+            audio = this.sounds[url];
             this.playing.push(audio);
             audio.play();
         }

@@ -27,7 +27,7 @@ function engine(stageId, debugMode){
     var io = new IO(canvas, settings, debugMode);
     var eventList = new EventList(io, debugMode);
     var renderer = new Renderer(ctx, settings, loader.images, debugMode);
-    var sound = new Sound(loader.sounds, debugMode);
+    var sound = new Sound(loader, debugMode);
     var pen = new Pen(ctx);
     var clock = new Clock(function(){
         eventList.traverse();
