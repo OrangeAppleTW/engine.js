@@ -332,7 +332,7 @@ function engine(stageId, debugMode){
     var io = new IO(canvas, settings, debugMode);
     var eventList = new EventList(io, debugMode);
     var renderer = new Renderer(ctx, settings, loader.images, debugMode);
-    var sound = new Sound(loader.sounds, debugMode);
+    var sound = new Sound(loader, debugMode);
     var pen = new Pen(ctx);
     var clock = new Clock(function(){
         eventList.traverse();
@@ -592,9 +592,11 @@ Loader.prototype = {
                audio.src = base64;
             });
         });
-        audio.addEventListener('canplaythrough', function() {instance._loaded()});
+        audio.addEventListener('canplaythrough', function() {
+            instance._loaded()
+        });
+        
         this.sounds[path] = audio;
-
     },
 
     _loaded: function () {
@@ -606,7 +608,6 @@ Loader.prototype = {
             this.completeFunc();
         }
     },
-
     _loadFromAjax: function (url, callback) {
         var xhr;
         
@@ -891,8 +892,9 @@ function Renderer(ctx, settings, images, debugMode){
 
 module.exports = Renderer;
 },{"./util":13}],10:[function(require,module,exports){
-function Sound (sounds, debugMode){
-    this.sounds = sounds;
+function Sound (loader, debugMode){
+    this.loader = loader;
+    this.sounds = loader.sounds;
     this.playing = [];
     this.muted = false;
     this.volume = 1;
@@ -907,8 +909,9 @@ Sound.prototype = {
             this.playing.push(audio);
             audio.play();
         } else {
-            audio = new Audio(url);
-            this.sounds[url] = audio;
+            // 用 preload 載入音檔 src 作為 cache
+            this.loader.preload([url]);
+            audio = this.sounds[url];
             this.playing.push(audio);
             audio.play();
         }

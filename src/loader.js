@@ -46,9 +46,11 @@ Loader.prototype = {
                audio.src = base64;
             });
         });
-        audio.addEventListener('canplaythrough', function() {instance._loaded()});
+        audio.addEventListener('canplaythrough', function() {
+            instance._loaded()
+        });
+        
         this.sounds[path] = audio;
-
     },
 
     _loaded: function () {
@@ -60,7 +62,6 @@ Loader.prototype = {
             this.completeFunc();
         }
     },
-
     _loadFromAjax: function (url, callback) {
         var xhr;
         
