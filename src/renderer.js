@@ -8,16 +8,20 @@ function Renderer(ctx, settings, images, debugMode){
 
     var imageCache = images;
 
+    var self = this;
+
     this.clear = function() {
         ctx.clearRect(0,0,settings.width,settings.height);
     };
 
     this.drawSprites = function(sprites){
         sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
-        sprites.each(this.drawInstance);
+        sprites.each(function(instance) {
+            self.drawInstance(instance, ctx);
+        });
     };
 
-    this.drawInstance = function(instance){
+    this.drawInstance = function(instance, ctx){
         // console.log(instance);
         if(!instance.hidden){
             // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
