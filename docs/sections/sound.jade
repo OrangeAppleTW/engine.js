@@ -2,12 +2,16 @@ section
   h3
     span#sound-play 播放
   p
-    span.syntax sound.play(fileName);
+    span.syntax sound.play(fileName, loop);
     | fileName: 音效素材的路徑
+    br
+    | loop: 非必要參數，傳入 true 則音效會不斷反覆播放
   pre.javascript
     code
       | sound.play("shoot.mp3");
   span.example-code.js-example-code(code-path='../test/sound/play.js') 範例程式
+  br
+  span.example-code.js-example-code(code-path='../test/sound/play_loop.js') 範例程式
 section
   h3
     span#sound-setVolume 設定音量

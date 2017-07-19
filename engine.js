@@ -804,16 +804,20 @@ function Renderer(ctx, settings, images, debugMode){
 
     var imageCache = images;
 
+    var self = this;
+
     this.clear = function() {
         ctx.clearRect(0,0,settings.width,settings.height);
     };
 
     this.drawSprites = function(sprites){
         sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
-        sprites.each(this.drawInstance);
+        sprites.each(function(instance) {
+            self.drawInstance(instance, ctx);
+        });
     };
 
-    this.drawInstance = function(instance){
+    this.drawInstance = function(instance, ctx){
         // console.log(instance);
         if(!instance.hidden){
             // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
@@ -1049,16 +1053,16 @@ Sprite.prototype.toward = function(){
     this.direction = util.radToDegree(rad);
 }
 
-Sprite.prototype.touched = function(){
+Sprite.prototype.touched = function () {
     if (arguments[0].constructor === Array) {
         for(var i=0; i<arguments[0].length; i++){
-            if ( isTouched.call(this, arguments[0][i]) ){
+            if (this._isTouched(arguments[0][i])){
                 return true;
             }
         }
         return false;
     } else {
-        return isTouched.apply(this, arguments);
+        return this._isTouched.apply(this, arguments);
     }
     
 };
@@ -1068,6 +1072,8 @@ Sprite.prototype.distanceTo = function(){
         return util.distanceBetween( this, arguments[0] );
     } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ){
         return util.distanceBetween( this.x, this.y, arguments[0], arguments[1] );
+    } else {
+        throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
     }
 };
 
@@ -1117,132 +1123,49 @@ Sprite.prototype.nextCostume = function () {
     }
 }
 
-function isTouched(sprite, args){
+Sprite.prototype._isTouched = function () {
 
-    // 如果此角色為隱藏或已被銷毀，不進行檢驗，直接回傳 false
-    if (this.hidden || this._deleted) { return false; }
-
-    // 由於效能考量，先用成本最小的「座標範圍演算法」判斷是否有機會「像素重疊」
-    var crossX = crossY = false;
-
-    if( arguments[0] instanceof Sprite ){
-
-        // 如果目標角色是自己，不進行檢驗，直接回傳 false (因為自己一定會碰到自己)
-        if (this == arguments[0]) { return false; }
-
-        // 如果目標角色為隱藏，不進行檢驗，直接回傳 false
-        if (arguments[0].hidden) { return false; }
-
+    // 自己或是對象狀態是隱藏或銷毀，則回傳 false
+    if (this.hidden || this._deleted) return false;
+    if (arguments[0] instanceof Sprite) {
         var target = arguments[0];
-        if (target._deleted) {
-            return false;
-        }
-        // 用兩個 Sprite 最大距離來判斷是否有可能 touch
-        maxThisLength = Math.sqrt(Math.pow(this.width / 2, 2) + Math.pow(this.height / 2, 2))
-        maxTargetLength = Math.sqrt(Math.pow(target.width / 2, 2) + Math.pow(target.height / 2, 2))
-        if (this.distanceTo(target) <= maxThisLength + maxTargetLength) {
-            crossX = true;
-            crossY = true;
-        }
-    } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
-        var targetX = arguments[0].x,
-            targetY = arguments[0].y;
-        crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
-        crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
-    } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
-        var targetX = arguments[0],
-            targetY = arguments[1];
-        crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
-        crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
+        if (target.hidden || target._deleted || target === this) return false;
+    }
+
+    // 由於效能考量，先用成本最小的「圓形範圍演算法」判斷是否有機會「像素重疊」
+    var range = Math.sqrt(Math.pow(this.width / 2, 2) + Math.pow(this.height / 2, 2));
+    if (arguments[0] instanceof Sprite) {
+        range += Math.sqrt(Math.pow(target.width / 2, 2) + Math.pow(target.height / 2, 2));
+    }
+    if (this.distanceTo.apply(this, arguments) > range) {
+        return false;
+    }
+
+    // 如果經過「圓形範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
+    hitCanvas.width = this._settings.width;
+    hitCanvas.height = this._settings.height;
+
+    hitTester.globalCompositeOperation = 'source-over';
+    if (arguments[0] instanceof Sprite){
+        this._renderer.drawInstance(arguments[0], hitTester);
+    } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
+        hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
+    } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
+        hitTester.fillRect(arguments[0],arguments[1],1,1);
     } else {
         throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
     }
 
-    // 如果經過「座標範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
-    if (crossX && crossY) {
-        var renderer = this._renderer;
-        var settings = this._settings;
-        hitCanvas.width = settings.width;
-        hitCanvas.height = settings.height;
+    hitTester.globalCompositeOperation = 'source-in';
+    this._renderer.drawInstance(this, hitTester);
 
-        if(!this._renderer) return console.log(this);
-        
-        hitTester.globalCompositeOperation = 'source-over';
-        if( arguments[0] instanceof Sprite ){
-            var target = arguments[0];
-            // 繪製前設定旋轉原點與旋轉
-            rad = util.degreeToRad(target.direction - 90);
-
-            if (target.rotationStyle === 'flipped') {
-                if(target.direction > 180) {
-                    hitTester.scale(-1, 1);
-                } else {
-                    var rad = 0;
-                }
-            }
-            
-            if(target.rotationStyle === 'fixed') {
-                var rad = 0;
-            }
-
-            hitTester.translate(target.x, target.y);
-            hitTester.rotate(rad);
-            hitTester.drawImage( renderer.getImgFromCache(target.getCurrentCostume()),
-                        (-target.width / 2),
-                        (-target.height / 2),
-                        target.width,
-                        target.height
-            );
-            // 繪製後還原旋轉原點與旋轉
-            hitTester.rotate(-rad);
-            hitTester.translate(-target.x, -target.y);
-            
-        } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
-            hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
-        } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
-            hitTester.fillRect(arguments[0],arguments[1],1,1);
-        } else {
-            return false
-        }
-
-        // 繪製前設定旋轉原點與旋轉
-        hitTester.globalCompositeOperation = 'source-in';
-        var rad = util.degreeToRad(this.direction - 90);
-
-        if (this.rotationStyle === 'flipped') {
-            if(this.direction > 180) {
-                hitTester.scale(-1, 1);
-            } else {
-                var rad = 0;
-            }
-        }
-
-        if(this.rotationStyle === 'fixed') {
-            var rad = 0;
-        }
-
-        hitTester.translate(this.x, this.y);
-        hitTester.rotate(rad);
-        hitTester.drawImage( renderer.getImgFromCache(this.getCurrentCostume()),
-                    (-this.width / 2),
-                    (-this.height / 2),
-                    this.width,
-                    this.height
-        );
-        
-        // 繪製後還原旋轉原點與旋轉
-        hitTester.rotate(-rad);
-        hitTester.translate(-this.x, -this.y);
-
-
-        // 只要對 sprite 的大小範圍取樣即可，不需對整張 canvas 取樣
-        var maxLength = Math.max(this.width, this.height); // 根據最大邊取得範圍 （因應圖片旋轉修正）
-        var aData = hitTester.getImageData(this.x-maxLength/2, this.y-maxLength/2, maxLength, maxLength).data;
-        var pxCount = aData.length;
-        for (var i = 0; i < pxCount; i += 4) {
-            if (aData[i+3] > 0) {
-                return true;
-            }
+    // 只要對 sprite 的大小範圍取樣即可，不需對整張 canvas 取樣
+    var maxLength = Math.max(this.width, this.height); // 根據最大邊取得範圍 （因應圖片旋轉修正）
+    var aData = hitTester.getImageData(this.x-maxLength/2, this.y-maxLength/2, maxLength, maxLength).data;
+    var pxCount = aData.length;
+    for (var i = 0; i < pxCount; i += 4) {
+        if (aData[i+3] > 0) {
+            return true;
         }
     }
     return false;
