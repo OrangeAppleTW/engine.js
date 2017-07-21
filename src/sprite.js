@@ -79,6 +79,33 @@ Sprite.prototype.stepForward = function(distance){
     this.y -= Math.cos(rad)*distance;
 };
 
+Sprite.prototype.edgeBounce = function () {
+    if (this.x < 0) {
+        this.x = 0;
+        if (this.direction > 180 && this.direction > 0) {
+            this.direction = -this.direction;
+        }
+    }
+    if (this.x > this._settings.width) {
+        this.x = this._settings.width;
+        if (this.direction < 180) {
+            this.direction = -this.direction;
+        }
+    }
+    if (this.y < 0) {
+        this.y = 0;
+        if (this.direction < 90 || this.direction > 270) {
+            this.direction = -this.direction + 180;
+        }
+    }
+    if (this.y > this._settings.height) {
+        this.y = this._settings.height;
+        if (this.direction > 90 || this.direction < 270) {
+            this.direction = -this.direction + 180;
+        }
+    }
+}
+
 Sprite.prototype.toward = function(){
     var targetX, targetY, offsetX, offsetY, rad;
     if(util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)){
