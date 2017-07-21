@@ -34,6 +34,18 @@ section
   span.example-code.js-example-code(code-path='../test/sprite/stepForward.js') 範例程式
 section
   h3
+    span#sprite-methods-edgeBounce 碰到邊界就反彈
+  p 
+    span.syntax Sprite.edgeBounce();
+  pre.javascript
+    code
+      | bird.forever(function() {
+      |     this.stepForward(10);
+      |     this.edgeBounce();
+      | });
+  span.example-code.js-example-code(code-path='../test/sprite/edgeBounce.js') 範例程式
+section
+  h3
     span#sprite-methods-toward 朝向
   p 
     span.syntax Sprite.toward(target);
