@@ -1,0 +1,15 @@
+extends ./layout/layout.jade
+
+block content
+  .examples
+    h1 Examples Page
+    span.example-code.js-example-code(code-path='../test/examples/example_1.js') 範例程式1
+    .popup.js-popup#editor
+      .popup-shadow
+      .popup-content
+        .stage
+          textarea#editor-textarea(name='')
+          iframe#sandbox(src='../test/sandbox.html', frameborder='0', scrolling="no")
+          button.btn.close.js-close
+            i.fa.fa-times
+          button.btn.start.js-start Run

@@ -1,0 +1,11 @@
+extends ./layout/layout.jade
+
+block content
+  .homepage
+    span.example-code.js-example-code(code-path='../test/examples/games/flappybird.js',style="display:none;") 範例程式
+    .popup.js-popup.active#editor
+      .popup-content
+        .stage
+          textarea#editor-textarea(name='')
+          iframe#sandbox(src='../test/sandbox.html', frameborder='0', scrolling="no")
+          button.btn.start.js-start Run

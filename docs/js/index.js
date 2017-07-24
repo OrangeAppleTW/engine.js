@@ -106,5 +106,4 @@ $(document).ready(function() {
     }
     if ($('.examples').length > 0) {
     }
-    
 });
