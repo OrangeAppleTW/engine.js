@@ -3,5 +3,5 @@ bird.direction = 30;
 
 bird.forever(function() {
     this.stepForward(5);
-    this.edgeBounce();
+    this.bounceEdge();
 });

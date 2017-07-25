@@ -79,7 +79,7 @@ Sprite.prototype.stepForward = function(distance){
     this.y -= Math.cos(rad)*distance;
 };
 
-Sprite.prototype.edgeBounce = function () {
+Sprite.prototype.bounceEdge = function () {
     if (this.x < 0) {
         this.x = 0;
         if (this.direction > 180 && this.direction > 0) {
