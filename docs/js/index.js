@@ -107,4 +107,43 @@ $(document).ready(function() {
     if ($('.examples').length > 0) {
     }
 
+    var now = (location.pathname).split('/');
+    if(now[now.length-1] == "docs.html"){
+        function search(text) {
+            var pattern = text.toLowerCase();
+            var targetId = "";
+            
+            var h3s = $("h3");
+            for (var i = 0; i < h3s.length; i++) {
+                var span = $(h3s[i]).find("span")[0];
+                var index = span.innerText.toLowerCase().indexOf(pattern);
+                if (index != -1) {
+                    targetId = span.id;
+                    location.hash = "#"+targetId;
+                    break;
+                }
+            }  
+        }
+        $(".header").css("position", "absolute");
+        $("#search, #search_btn").show();
+        $("#search").on("keypress", function(e){
+            if(e.keyCode == 13)
+                search($(this).val());
+        });
+        $("#search_btn").click(function(e){
+                search($("#search").val());
+        });
+    }
+
+    $("#top").click(function(){
+        $("body").animate({scrollTop:0}, '500');
+    });
+
+    $(window).scroll(function(){
+        if($("body").prop("scrollTop") != 0)
+            $("#top").fadeIn(200);
+        else
+            $("#top").fadeOut(200);
+    });
+
 });

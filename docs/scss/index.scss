@@ -438,3 +438,19 @@ code {}
         }
     }
 }
+
+#top {
+    position: fixed;
+    display: none;
+    bottom: 20px;
+    right: 20px;
+    width: 64px;
+    height: 64px;
+    filter: invert(.3);
+    transition: filter 0.3s;
+    
+    &:hover {
+        filter: invert(0);
+    }
+
+}
