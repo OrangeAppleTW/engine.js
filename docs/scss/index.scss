@@ -355,8 +355,8 @@ code {}
     }
 
     @keyframes flappy {
-        from {transform: translateY(0px);}
-        to {transform: translateY(-400px);}
+        from {transform: translateY(0px) rotate(0deg);}
+        to {transform: translateY(-400px) rotate(25deg);}
     }
 }
 

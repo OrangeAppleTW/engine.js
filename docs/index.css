@@ -281,9 +281,9 @@ section:last-child {
 
 @keyframes flappy {
   from {
-    transform: translateY(0px); }
+    transform: translateY(0px) rotate(0deg); }
   to {
-    transform: translateY(-400px); } }
+    transform: translateY(-400px) rotate(25deg); } }
 
 .example-tags {
   width: 20%;
