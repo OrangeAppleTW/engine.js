@@ -346,7 +346,31 @@ code {}
         position: absolute;
         bottom: 0px;
         right: 50px;
-        animation: flappy 2s ease-in-out 0s infinite alternate;
+        animation: flappy 2s linear 0s infinite alternate;
+    }
+
+    #snake_head {
+        width: 100px;
+        height: 100px;
+        position: absolute;
+        animation: snake_head 2s 0s infinite alternate;
+    }
+
+    #snake_body {
+        width: 100px;
+        height: 100px;
+        position: absolute;
+        animation: snake_body 2s 0s infinite alternate;
+    }
+
+    #food {
+        width: 100px;
+        height: 100px;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        z-index: -2;
+        animation: food 2s 0s infinite alternate;
     }
 
     @keyframes koding {
@@ -358,6 +382,34 @@ code {}
         from {transform: translateY(0px) rotate(0deg);}
         to {transform: translateY(-400px) rotate(25deg);}
     }
+
+    @keyframes snake_head {
+        0% {top: 0px; left: 200px;}
+        20% {top: 0px; left: 100px;}
+        40% {top: 0px; left: 0px;}
+        60% {top: 100px; left: 0px;}
+        80% {top: 200px; left:0px;}
+        100% {top: 300px; left:0px;}
+    }
+    
+    @keyframes snake_body {
+        0% {top: 0px; left: 300px;}
+        20% {top: 0px; left: 200px;}
+        40% {top: 0px; left: 100px;}
+        60% {top: 0px; left: 0px;}
+        80% {top: 100px; left: 0px;}
+        100% {top: 200px; left: 0px;}
+    }
+
+    @keyframes food {
+        0% {visibility: show;}
+        20% {visibility: show;}
+        40% {visibility: hidden;}
+        60% {visibility: hidden;}
+        80% {visibility: hidden;}
+        100% {visibility: hidden;}
+    }
+
 }
 
 .example-tags {
