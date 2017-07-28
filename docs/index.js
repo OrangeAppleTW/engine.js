@@ -1,5 +1,5 @@
 $(document).ready(function() {
-
+    
     var links = [];
     var lis = $('.treemenu li');
     lis.each(function() {
@@ -106,5 +106,5 @@ $(document).ready(function() {
     }
     if ($('.examples').length > 0) {
     }
-    
+
 });

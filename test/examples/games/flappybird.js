@@ -1,24 +1,24 @@
-Game.setBackdrop("./assets/background.png", 0, 0, 520, 390);
+Game.setBackdrop("/test/assets/background.png", 0, 0, 520, 390);
 
-var bird = Game.createSprite("./assets/bird.png");
+var bird = Game.createSprite("/test/assets/bird.png");
 var tubeUp = Game.createSprite({
-    costumes: "./assets/up-tube.png",
+    costumes: "/test/assets/up-tube.png",
     x: 400,
   	y: -30
 });
 var tubeDown = Game.createSprite({
-  	costumes: "./assets/down-tube.png",
+  	costumes: "/test/assets/down-tube.png",
 	x: 400,
   	y: 430
 });
-var startBtn = Game.createSprite("./assets/start-button.png");
+var startBtn = Game.createSprite("/test/assets/start-button.png");
 var gameOverLogo = Game.createSprite({
-    costumes: "./assets/gameover.png",
+    costumes: "/test/assets/gameover.png",
     hidden: true,
     y: 100
 });
 
-var bgm = Game.sound.play('./assets/bgm.ogg');
+var bgm = Game.sound.play('/test/assets/bgm.ogg');
 bgm.loop = true;
 
 var vy = 0;
@@ -44,7 +44,7 @@ Game.forever(function() {
 
 Game.when('click', function() { 
     vy = -5;
-    Game.sound.play('./assets/jump.ogg');
+    Game.sound.play('/test/assets/jump.ogg');
 });
 bird.when('touch', [tubeUp, tubeDown], gameOver);
 startBtn.when('click', start);

@@ -1,0 +1,1 @@
+$("li").click(function(){var t=$(this).text();"All"!=t?($("h1").text('Examples (Sort By "'+t+'")'),$(".example").each(function(){if($(this).hide(),tag=$(this).attr("tag"),void 0!=tag){tags=tag.split(" ");for(var a=0;a<tags.length;a++)t==tags[a]&&$(this).show()}})):($("h1").text("Examples"),$(".example").show())});

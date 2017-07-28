@@ -1,15 +1,39 @@
 extends ./layout/layout.jade
 
 block content
+  .example-tags
+    ul
+      li All
+      li Animated
+      li Physic
   .examples
-    h1 Examples Page
-    span.example-code.js-example-code(code-path='../test/examples/example_1.js') 範例程式1
-    .popup.js-popup#editor
-      .popup-shadow
-      .popup-content
-        .stage
-          textarea#editor-textarea(name='')
-          iframe#sandbox(src='../test/sandbox.html', frameborder='0', scrolling="no")
-          button.btn.close.js-close
-            i.fa.fa-times
-          button.btn.start.js-start Run
+    h1 Examples
+    .example(tag="Physic Animated")
+      img(src="../test/examples/bump.png", alt="bump")
+      a.example-code.js-example-code(code-path='../test/examples/bump.js') 落地彈起動畫
+    .example(tag="Physic Animated")
+      img(src="../test/examples/bump-1.png", alt="bump-1")
+      a.example-code.js-example-code(code-path='../test/examples/bump-1.js') 落地彈起動畫(不科學)
+    .example(tag="Animated")
+      img(src="../test/examples/shake.png", alt="shake")
+      a.example-code.js-example-code(code-path='../test/examples/shake.js') 加速抖動
+    .example
+      img(src="../test/examples/bump.png", alt="bump")
+      a.example-code.js-example-code(code-path='../test/examples/bump.js') 範例程式1
+    .example
+      img(src="../test/examples/bump.png", alt="bump")
+      a.example-code.js-example-code(code-path='../test/examples/bump.js') 範例程式1
+    .example
+      img(src="../test/examples/bump.png", alt="bump")
+      a.example-code.js-example-code(code-path='../test/examples/bump.js') 範例程式1
+  .popup.js-popup#editor
+    .popup-shadow
+    .popup-content
+      .stage
+        textarea#editor-textarea(name='')
+        iframe#sandbox(src='../test/sandbox.html', frameborder='0', scrolling="no")
+        button.btn.close.js-close
+          i.fa.fa-times
+        button.btn.start.js-start Run
+        button.btn.stop.js-stop Stop
+  script(src="js/examples.js")

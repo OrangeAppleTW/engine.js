@@ -1,0 +1,1 @@
+$(".example-tags, ul, li").click(function(){var t=this.text();$(".example").each(function(){this.hide(),tag=this.prop("tag"),tags=tag.splice(" ");for(var a=0;a<tags.length;a++)t==tags[a]&&this.show()})});
