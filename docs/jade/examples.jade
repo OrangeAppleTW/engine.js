@@ -6,26 +6,41 @@ block content
       li All
       li Animated
       li Physic
+      li Sound
+      li Drawing
+      li Control
+      li Random
+      li Game
   .examples
     h1 Examples
     .example(tag="Physic Animated")
-      img(src="../test/examples/bump.png", alt="bump")
+      img(src="../test/examples/bump.png")
       a.example-code.js-example-code(code-path='../test/examples/bump.js') 落地彈起動畫
     .example(tag="Physic Animated")
-      img(src="../test/examples/bump-1.png", alt="bump-1")
+      img(src="../test/examples/bump-1.png")
       a.example-code.js-example-code(code-path='../test/examples/bump-1.js') 落地彈起動畫(不科學)
     .example(tag="Animated")
-      img(src="../test/examples/shake.png", alt="shake")
+      img(src="../test/examples/shake.png")
       a.example-code.js-example-code(code-path='../test/examples/shake.js') 加速抖動
-    .example
-      img(src="../test/examples/bump.png", alt="bump")
-      a.example-code.js-example-code(code-path='../test/examples/bump.js') 範例程式1
-    .example
-      img(src="../test/examples/bump.png", alt="bump")
-      a.example-code.js-example-code(code-path='../test/examples/bump.js') 範例程式1
-    .example
-      img(src="../test/examples/bump.png", alt="bump")
-      a.example-code.js-example-code(code-path='../test/examples/bump.js') 範例程式1
+    .example(tag="Sound")
+      img(src="../test/examples/sound.png")
+      a.example-code.js-example-code(code-path='../test/examples/sound.js') 音效
+    .example(tag="Animated Control")
+      img(src="../test/examples/arrow.png")
+      a.example-code.js-example-code(code-path='../test/examples/arrow.js') 方向鍵控制
+    .example(tag="Animated Control")
+      img(src="../test/examples/cursor.png")
+      a.example-code.js-example-code(code-path='../test/examples/cursor.js') 跟著滑鼠移動
+    .example(tag="Animated Control")
+      img(src="../test/examples/LRControl.png")
+      a.example-code.js-example-code(code-path='../test/examples/LRControl.js') 左右控制
+    .example(tag="Random Game")
+      img(src="../test/examples/pss.png")
+      a.example-code.js-example-code(code-path='../test/examples/pss.js') 猜拳
+    .example(tag="Random Game")
+      img(src="../test/examples/randBin.png")
+      a.example-code.js-example-code(code-path='../test/examples/randBin.js') 籤筒
+
   .popup.js-popup#editor
     .popup-shadow
     .popup-content

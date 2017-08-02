@@ -30,7 +30,7 @@ Game.forever(function() {
     }
     tubeUp.x -= 2;
     tubeDown.x -= 2;
-    if(tubeUp.x < 0) {
+    if(tubeUp.x < -(tubeUp.width/2)) {
         resetTube();
         scores += 1;
     }
