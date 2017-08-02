@@ -113,9 +113,22 @@ section:last-child {
   width: 100vw;
   height: calc(100vh - 75px);
   padding: 0px; }
+  .container .homepage #title {
+    position: absolute;
+    font-size: 5em;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: title 0.5s ease-in-out 1;
+    filter: drop-shadow(8px 8px 5px #333333); }
+
+@keyframes title {
+  from {
+    top: -500px; }
+  to {
+    top: 0px; } }
   .container .homepage .popup.js-popup.active#editor .popup-content {
     position: absolute;
-    top: 60%;
+    top: 50%;
     transform: translate(-50%, -50%); }
 
 .content {
@@ -275,7 +288,7 @@ section:last-child {
     position: absolute;
     bottom: 0px;
     right: 50px;
-    animation: flappy 2s linear 0s infinite alternate;
+    animation: flappy 2s ease-in-out 0s infinite alternate;
     filter: drop-shadow(10px 10px 5px #333333); }
 
 @keyframes koding {
