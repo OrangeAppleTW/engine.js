@@ -267,14 +267,16 @@ section:last-child {
     position: absolute;
     bottom: 0px;
     left: -100px;
-    animation: koding 2s linear 0s infinite alternate; }
+    animation: koding 2s linear 0s infinite alternate;
+    filter: drop-shadow(10px 10px 5px #333333); }
   .animations #flappy {
     width: 100px;
     height: 100px;
     position: absolute;
     bottom: 0px;
     right: 50px;
-    animation: flappy 2s linear 0s infinite alternate; }
+    animation: flappy 2s linear 0s infinite alternate;
+    filter: drop-shadow(10px 10px 5px #333333); }
 
 @keyframes koding {
   from {

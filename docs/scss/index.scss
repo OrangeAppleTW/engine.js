@@ -343,6 +343,7 @@ code {}
         bottom: 0px;
         left: -100px;
         animation: koding 2s linear 0s infinite alternate;
+        filter: drop-shadow(10px 10px 5px #333333);
     }
 
     #flappy {
@@ -352,6 +353,7 @@ code {}
         bottom: 0px;
         right: 50px;
         animation: flappy 2s linear 0s infinite alternate;
+        filter: drop-shadow(10px 10px 5px #333333);
     }
 
     @keyframes koding {
