@@ -10,6 +10,8 @@ function Renderer(ctx, settings, images, debugMode){
 
     var self = this;
 
+    this.autoRender = false;
+
     this.clear = function() {
         ctx.clearRect(0,0,settings.width,settings.height);
     };
@@ -81,7 +83,7 @@ function Renderer(ctx, settings, images, debugMode){
                 imageCache[src]=img;
             }
             ctx.drawImage(img, (x||0), (y||0), (width||img.width), (height||img.height));
-        } else {
+        } else if(src) {
             ctx.fillStyle=src;
             ctx.fillRect(0,0,settings.width, settings.height);
         }
