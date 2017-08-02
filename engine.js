@@ -326,6 +326,8 @@ function engine(stageId, debugMode){
         updateFunctions: []
     };
 
+    var autoRendering = true;
+
     var loader = new Loader();
     var sprites = new Sprites();
     var inspector = new Inspector();
@@ -339,14 +341,14 @@ function engine(stageId, debugMode){
         for(var i=0; i<settings.updateFunctions.length; i++){
             settings.updateFunctions[i]();
         };
-        if(background.path){
-            renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
-        }
         sprites.removeDeletedSprites();
         sprites.runOnTick();
         inspector.updateFPS();
-        renderer.drawSprites(sprites);
-        pen.draw();
+        if(autoRendering){
+            renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
+            renderer.drawSprites(sprites);
+            pen.draw();
+        }
     });
 
     var background={
@@ -423,7 +425,18 @@ function engine(stageId, debugMode){
         when: when,
         on: when,
         set: set,
-        stop: function(){ clock.stop(); sound.stop(); },
+        stop: function(){ 
+            clock.stop(); 
+            sound.stop();
+            // 下面幾行是為了讓畫筆畫畫後馬上停止時，能夠正常顯現，所以最後需要畫一次
+            // @TODO: 模組化
+            if(autoRendering){
+                renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
+                renderer.drawSprites(sprites);
+                pen.draw();
+            }
+        },
+        stopRendering: function(){ autoRendering=false; },
         start: function(){ clock.start(); },
         forever: forever,
         update: forever,
@@ -432,7 +445,11 @@ function engine(stageId, debugMode){
         preload: preload,
         sound: sound,
         broadcast: eventList.emit.bind(eventList),
-        pen: pen
+        pen: pen,
+        // 以下指令是給繪圖用的
+        drawBackdrop: renderer.drawBackdrop,
+        drawBackground: renderer.drawBackdrop,
+        drawSprites: renderer.drawSprites
     };
     if(debugMode){
         proxy.eventList = eventList;
@@ -806,6 +823,8 @@ function Renderer(ctx, settings, images, debugMode){
 
     var self = this;
 
+    this.autoRender = false;
+
     this.clear = function() {
         ctx.clearRect(0,0,settings.width,settings.height);
     };
@@ -877,7 +896,7 @@ function Renderer(ctx, settings, images, debugMode){
                 imageCache[src]=img;
             }
             ctx.drawImage(img, (x||0), (y||0), (width||img.width), (height||img.height));
-        } else {
+        } else if(src) {
             ctx.fillStyle=src;
             ctx.fillRect(0,0,settings.width, settings.height);
         }
