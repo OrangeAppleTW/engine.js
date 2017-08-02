@@ -109,10 +109,10 @@ section:last-child {
 
 .container {
   position: absolute;
-  top: 80px;
-  width: calc(100vw - 10px);
-  height: calc(100% - 100px);
-  padding: 5px; }
+  top: 75px;
+  width: 100vw;
+  height: calc(100vh - 75px);
+  padding: 0px; }
   .container .homepage .popup.js-popup.active#editor .popup-content {
     position: absolute;
     top: 60%;
@@ -125,6 +125,8 @@ section:last-child {
   margin-top: 60px;
   box-sizing: border-box;
   color: #333; }
+  .content * {
+    width: 95%; }
 
 .hljs {
   padding: 15px 10px;
@@ -205,7 +207,8 @@ section:last-child {
   position: fixed;
   width: 230px;
   height: 100vh;
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  top: 80px; }
   .treemenu a {
     border-left: 3px solid transparent;
     padding: 2px 7px;
@@ -272,24 +275,6 @@ section:last-child {
     bottom: 0px;
     right: 50px;
     animation: flappy 2s linear 0s infinite alternate; }
-  .animations #snake_head {
-    width: 100px;
-    height: 100px;
-    position: absolute;
-    animation: snake_head 2s 0s infinite normal; }
-  .animations #snake_body {
-    width: 100px;
-    height: 100px;
-    position: absolute;
-    animation: snake_body 2s 0s infinite normal; }
-  .animations #food {
-    width: 100px;
-    height: 100px;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    z-index: -2;
-    animation: food 2s 0s infinite normal; }
 
 @keyframes koding {
   from {
@@ -302,90 +287,6 @@ section:last-child {
     transform: translateY(0px) rotate(0deg); }
   to {
     transform: translateY(-400px) rotate(25deg); } }
-
-@keyframes snake_head {
-  0% {
-    top: 0px;
-    left: 200px; }
-  20% {
-    top: 0px;
-    left: 100px; }
-  40% {
-    top: 0px;
-    left: 0px; }
-  60% {
-    top: 100px;
-    left: 0px; }
-  80% {
-    top: 200px;
-    left: 0px; }
-  100% {
-    top: 300px;
-    left: 0px; } }
-
-@keyframes snake_body {
-  0% {
-    visibility: hidden;
-    top: 0px;
-    left: 300px; }
-  20% {
-    visibility: hidden;
-    top: 0px;
-    left: 200px; }
-  40% {
-    visibility: hidden;
-    top: 0px;
-    left: 100px; }
-  60% {
-    visibility: show;
-    top: 0px;
-    left: 0px; }
-  80% {
-    visibility: show;
-    top: 100px;
-    left: 0px; }
-  100% {
-    visibility: show;
-    top: 200px;
-    left: 0px; } }
-
-@keyframes food {
-  0% {
-    visibility: show;
-    width: 100px;
-    height: 100px;
-    top: 0px;
-    left: 0px; }
-  20% {
-    visibility: show;
-    width: 100px;
-    height: 100px;
-    top: 0px;
-    left: 0px; }
-  40% {
-    visibility: hidden;
-    width: 150px;
-    height: 150px;
-    top: -25px;
-    left: -25px; }
-  60% {
-    visibility: hidden;
-    width: 100px;
-    height: 100px;
-    top: 0px;
-    left: 0px; }
-  80% {
-    visibility: hidden;
-    width: 100px;
-    height: 100px;
-    top: 0px;
-    left: 0px; }
-  100% {
-    visibility: hidden;
-    width: 100px;
-    height: 100px;
-    top: 0px;
-    left: 0px; } }
 
 .example-tags {
   width: 20%;
