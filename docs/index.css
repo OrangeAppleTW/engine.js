@@ -306,7 +306,8 @@ section:last-child {
 .example-tags {
   width: 20%;
   height: 100%;
-  top: 100px;
+  top: 5%;
+  overflow-y: auto;
   position: fixed;
   display: block; }
   .example-tags ul {
