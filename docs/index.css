@@ -348,7 +348,7 @@ section:last-child {
     position: relative;
     border-radius: 4px;
     margin-left: 2em;
-    margin-top: 1em; }
+    margin-bottom: 1em; }
     .examples .example img {
       position: absolute;
       width: 240px;
