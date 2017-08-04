@@ -69,6 +69,7 @@ code {}
     position: fixed;
     background-color: #273238;
     z-index: 100;
+    box-shadow: 1px 0.3em 1em #333333;
     
     a {
         display: inline-block;
@@ -317,6 +318,7 @@ code {}
     box-shadow:0 10px 16px 0 rgba(0,0,0,0.2);
     border-radius: 3px;
     padding: 5px 15px;
+    cursor: pointer;
     &.start {
         background-color: #d13b21
     }
@@ -469,7 +471,8 @@ code {}
     height: 64px;
     filter: invert(.3);
     transition: filter 0.3s;
-    
+    cursor: pointer;
+
     &:hover {
         filter: invert(0);
     }

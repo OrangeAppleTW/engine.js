@@ -59,7 +59,8 @@ section:last-child {
   height: 50px;
   position: fixed;
   background-color: #273238;
-  z-index: 100; }
+  z-index: 100;
+  box-shadow: 1px 0.3em 1em #333333; }
   .header a {
     display: inline-block;
     margin-right: 2%;
@@ -252,7 +253,8 @@ section:last-child {
   color: white;
   box-shadow: 0 10px 16px 0 rgba(0, 0, 0, 0.2);
   border-radius: 3px;
-  padding: 5px 15px; }
+  padding: 5px 15px;
+  cursor: pointer; }
   .btn.start {
     background-color: #d13b21; }
   .btn.start:hover {
@@ -374,6 +376,7 @@ section:last-child {
   width: 64px;
   height: 64px;
   filter: invert(0.3);
-  transition: filter 0.3s; }
+  transition: filter 0.3s;
+  cursor: pointer; }
   #top:hover {
     filter: invert(0); }
