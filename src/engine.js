@@ -109,6 +109,9 @@ function engine(stageId, debugMode){
             sprites._sprites.push(newSprite);
             return newSprite;
         },
+        Sprite: function(args) {
+            return proxy.createSprite(args);
+        },
         print: print,
         setBackground: setBackground,
         setBackdrop: setBackground,
