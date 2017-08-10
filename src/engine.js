@@ -128,11 +128,11 @@ function engine(stageId, debugMode){
             sound.stop();
             // 下面幾行是為了讓畫筆畫畫後馬上停止時，能夠正常顯現，所以最後需要畫一次
             // @TODO: 模組化
-            if(autoRendering){
-                renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
-                renderer.drawSprites(sprites);
-                pen.draw();
-            }
+            // if(autoRendering){
+            //     renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
+            //     renderer.drawSprites(sprites);
+            //     pen.draw();
+            // }
         },
         stopRendering: function(){ autoRendering=false; pen.cache=false; },
         start: function(){ clock.start(); },
