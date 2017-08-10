@@ -9,6 +9,10 @@ function Pen (ctx, settings) {
 
 Pen.prototype = {
 
+    clear: function () {
+        this.shapes = [];
+    },
+
     draw: function () {
 
         var s;
@@ -40,8 +44,6 @@ Pen.prototype = {
                 this._drawPolygon.apply(this, s.points);
             }
         }
-
-        this.shapes = [];
     },
 
     drawText: function (text, x, y, font) {
