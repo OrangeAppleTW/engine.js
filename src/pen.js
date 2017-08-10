@@ -1,8 +1,9 @@
-function Pen (ctx) {
+function Pen (ctx, settings) {
     this.ctx = ctx;
     this.size = 1;
     this.color = 'black';
     this.fillColor = null;
+    this.cache = true;
     this.shapes = [];
 }
 
@@ -20,48 +21,31 @@ Pen.prototype = {
             ctx.strokeStyle = s.color;
             ctx.fillStyle = s.fillColor;
 
-            ctx.beginPath();
-
             if (s.type == 'text') {
-                ctx.textBaseline = "top";
-                ctx.font = s.size + "px " + s.font;
-                ctx.fillText(s.t, s.x, s.y);
+                this._drawText(s.t, s.x, s.y);
             }
             else if (s.type == 'line') {
-                ctx.moveTo(s.x1,s.y1);
-                ctx.lineTo(s.x2,s.y2);
+                this._drawLine(s.x1,s.y1,s.x2,s.y2);
             }
             else if (s.type == 'circle') {
-                ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
+                this._drawCircle(s.x, s.y, s.r);
             }
             else if (s.type == 'triangle') {
-                ctx.moveTo(s.x1, s.y1);
-                ctx.lineTo(s.x2, s.y2);
-                ctx.lineTo(s.x3, s.y3);
+                this._drawTriangle(s.x1, s.y1, s.x2, s.y2, s.x3, s.y3);
             }
             else if (s.type == 'rect') {
-                ctx.moveTo(s.x, s.y);
-                ctx.lineTo(s.x + s.w, s.y);
-                ctx.lineTo(s.x + s.w, s.y + s.h);
-                ctx.lineTo(s.x, s.y + s.h);
+                this._drawRect(s.x, s.y, s.w, s.h);
             }
             else if (s.type == 'polygon') {
-                ctx.moveTo(s.points[0],s.points[1]);
-                for(var i=2; i<s.points.length; i+=2) {
-                     ctx.lineTo(s.points[i],s.points[i+1]);
-                }
+                this._drawPolygon.apply(this, s.points);
             }
-
-            ctx.closePath();
-
-            if(s.size) ctx.stroke();
-            if(s.fillColor) ctx.fill();
         }
 
         this.shapes = [];
     },
 
     drawText: function (text, x, y, font) {
+        if (!this.cache) return this._drawText(text, x, y, font);
         var s = {};
         s.t = text;
         s.x = x;
@@ -72,6 +56,7 @@ Pen.prototype = {
     },
     
     drawLine: function (x1, y1, x2, y2) {
+        if (!this.cache) return this._drawLine(x1, y1, x2, y2);
         var s = {};
         s.x1 = x1;
         s.y1 = y1;
@@ -82,6 +67,7 @@ Pen.prototype = {
     },
 
     drawCircle: function (x, y ,r) {
+        if (!this.cache) return this._drawCircle(x, y ,r);
         var s = {};
         s.x = x;
         s.y = y;
@@ -91,6 +77,7 @@ Pen.prototype = {
     },
 
     drawTriangle: function (x1, y1, x2, y2, x3, y3) {
+        if (!this.cache) return this._drawTriangle(x1, y1, x2, y2, x3, y3);
         var s = {};
         s.x1 = x1;
         s.y1 = y1;
@@ -103,6 +90,7 @@ Pen.prototype = {
     },
 
     drawRect: function (x, y, width, height) {
+        if (!this.cache) return this._drawRect(x, y, width, height);
         var s = {};
         s.x = x;
         s.y = y;
@@ -113,10 +101,83 @@ Pen.prototype = {
     },
     
     drawPolygon: function () {
+        if (!this.cache) return this._drawPolygon.apply(this, arguments);
         var s = {};
         s.points = Array.prototype.slice.call(arguments);
         s.type = 'polygon';
         this._addShape(s);
+    },
+
+    _drawText: function (text, x, y, font) {
+        if(!this.cache) this._setPenAttr();
+        this.ctx.beginPath();
+        this.ctx.textBaseline = "top";
+        this.ctx.font = this.size + "px " + font;
+        this.ctx.fillText(text, x, y);
+        this.ctx.closePath();
+        if(this.size) this.ctx.stroke();
+        if(this.fillColor) this.ctx.fill();
+    },
+
+    _drawLine: function (x1, y1, x2, y2) {
+        if(!this.cache) this._setPenAttr();
+        this.ctx.beginPath();
+        this.ctx.moveTo(x1, y1);
+        this.ctx.lineTo(x2, y2);
+        this.ctx.closePath();
+        if(this.size) this.ctx.stroke();
+        if(this.fillColor) this.ctx.fill();
+    },
+
+    _drawCircle: function (x, y ,r) {
+        if(!this.cache) this._setPenAttr();
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, r, 0, 2 * Math.PI);
+        this.ctx.closePath();
+        if(this.size) this.ctx.stroke();
+        if(this.fillColor) this.ctx.fill();
+    },
+
+    _drawTriangle: function (x1, y1, x2, y2, x3, y3) {
+        if(!this.cache) this._setPenAttr();
+        this.ctx.beginPath();
+        this.ctx.moveTo(x1, y1);
+        this.ctx.lineTo(x2, y2);
+        this.ctx.lineTo(x3, y3);
+        this.ctx.closePath();
+        if(this.size) this.ctx.stroke();
+        if(this.fillColor) this.ctx.fill();
+    },
+
+    _drawRect: function (x, y, w, h) {
+        if(!this.cache) this._setPenAttr();
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y);
+        this.ctx.lineTo(x+w, y);
+        this.ctx.lineTo(x+w, y+h);
+        this.ctx.lineTo(x, y+h);
+        this.ctx.closePath();
+        if(this.size) this.ctx.stroke();
+        if(this.fillColor) this.ctx.fill();
+    },
+
+    _drawPolygon: function () {
+        if(!this.cache) this._setPenAttr();
+        var points = Array.prototype.slice.call(arguments);
+        this.ctx.beginPath();
+        this.ctx.moveTo(points[0],points[1]);
+        for(var i=2; i<points.length; i+=2) {
+                this.ctx.lineTo(points[i],points[i+1]);
+        }
+        this.ctx.closePath();
+        if(this.size) this.ctx.stroke();
+        if(this.fillColor) this.ctx.fill();
+    },
+
+    _setPenAttr: function () {
+        this.ctx.lineWidth = this.size;
+        this.ctx.strokeStyle = this.color;
+        this.ctx.fillStyle = this.fillColor;
     },
 
     _addShape: function (s) {
