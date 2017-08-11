@@ -163,9 +163,10 @@ for (var alias in aliases) {
 //  (1) -> (2) -> (3) -> (1)
 
 
-function Clock(update){
+function Clock( onTick, render ){
     this._state = "readyToStart"; //"readyToStart", "stopping", "running";
-    this._update = update;
+    this._onTick = onTick;
+    this._render = render;
 }
 
 Clock.prototype.start = function(){
@@ -174,7 +175,8 @@ Clock.prototype.start = function(){
         this._state = "running";
         onTick = (function(){
             if(this._state==="running"){
-                this._update();
+                this._onTick();
+                if(this._state!="stopping") this._render();
                 requestAnimationFrame(onTick);
             } else {
                 this._state = "readyToStart";
@@ -187,8 +189,9 @@ Clock.prototype.start = function(){
 }
 
 Clock.prototype.stop = function(){
-    if(this._state==="running"){
+    if(this._state==="running" || this._state==="readyToStart"){
         this._state = "stopping";
+        this._render();
     }
 }
 
@@ -336,20 +339,27 @@ function engine(stageId, debugMode){
     var renderer = new Renderer(ctx, settings, loader.images, debugMode);
     var sound = new Sound(loader, debugMode);
     var pen = new Pen(ctx);
-    var clock = new Clock(function(){
-        eventList.traverse();
-        for(var i=0; i<settings.updateFunctions.length; i++){
-            settings.updateFunctions[i]();
-        };
-        sprites.removeDeletedSprites();
-        sprites.runOnTick();
-        inspector.updateFPS();
-        if(autoRendering){
-            renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
-            renderer.drawSprites(sprites);
-            pen.draw();
+    var clock = new Clock(
+        // onTick function
+        function(){
+            eventList.traverse();
+            for(var i=0; i<settings.updateFunctions.length; i++){
+                settings.updateFunctions[i]();
+            };
+            sprites.removeDeletedSprites();
+            sprites.runOnTick();
+            inspector.updateFPS();
+        },
+        // render function
+        function(){
+            if(autoRendering){
+                renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
+                pen.drawShapes();
+                renderer.drawSprites(sprites);
+                pen.drawTexts();
+            }
         }
-    });
+    );
 
     var background={
         path: "#ffffff"
@@ -378,18 +388,6 @@ function engine(stageId, debugMode){
         background.h = h;
     }
 
-    function print (text, x, y, color ,size, font) {
-        var tmp_1 = pen.fillCOlor;
-        var tmp_2 = pen.size;
-        pen.fillColor = color || 'black';
-        pen.size = size || 16;
-        x = x == undefined ? 10 : x;
-        y = y == undefined ? 10 : y;
-        pen.drawText(text, x, y, font);
-        pen.fillColor = tmp_1;
-        pen.size = tmp_2;
-    }
-
     // for proxy.on / when: 
     function when (event, target, handler){
         // Global when() only accepts followed events:
@@ -416,7 +414,10 @@ function engine(stageId, debugMode){
             sprites._sprites.push(newSprite);
             return newSprite;
         },
-        print: print,
+        Sprite: function(args) {
+            return proxy.createSprite(args);
+        },
+        print: function(text, x, y, color ,size, font){ pen.print(text, x, y, color ,size, font) },
         setBackground: setBackground,
         setBackdrop: setBackground,
         cursor: io.cursor,
@@ -428,15 +429,8 @@ function engine(stageId, debugMode){
         stop: function(){ 
             clock.stop(); 
             sound.stop();
-            // 下面幾行是為了讓畫筆畫畫後馬上停止時，能夠正常顯現，所以最後需要畫一次
-            // @TODO: 模組化
-            if(autoRendering){
-                renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
-                renderer.drawSprites(sprites);
-                pen.draw();
-            }
         },
-        stopRendering: function(){ autoRendering=false; },
+        stopRendering: function(){ autoRendering=false; pen.drawingMode="instant"; },
         start: function(){ clock.start(); },
         forever: forever,
         update: forever,
@@ -679,17 +673,19 @@ Loader.prototype = {
 module.exports = Loader;
 
 },{}],8:[function(require,module,exports){
-function Pen (ctx) {
+function Pen (ctx, settings) {
     this.ctx = ctx;
     this.size = 1;
     this.color = 'black';
     this.fillColor = null;
+    this.drawingMode = "onTick"; // ["onTick", "instant"]
     this.shapes = [];
+    this.texts = [];
 }
 
 Pen.prototype = {
 
-    draw: function () {
+    drawShapes: function () {
 
         var s;
         var ctx = this.ctx;
@@ -701,58 +697,60 @@ Pen.prototype = {
             ctx.strokeStyle = s.color;
             ctx.fillStyle = s.fillColor;
 
-            ctx.beginPath();
-
             if (s.type == 'text') {
-                ctx.textBaseline = "top";
-                ctx.font = s.size + "px " + s.font;
-                ctx.fillText(s.t, s.x, s.y);
+                this._drawText(s.t, s.x, s.y);
             }
             else if (s.type == 'line') {
-                ctx.moveTo(s.x1,s.y1);
-                ctx.lineTo(s.x2,s.y2);
+                this._drawLine(s.x1,s.y1,s.x2,s.y2);
             }
             else if (s.type == 'circle') {
-                ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
+                this._drawCircle(s.x, s.y, s.r);
             }
             else if (s.type == 'triangle') {
-                ctx.moveTo(s.x1, s.y1);
-                ctx.lineTo(s.x2, s.y2);
-                ctx.lineTo(s.x3, s.y3);
+                this._drawTriangle(s.x1, s.y1, s.x2, s.y2, s.x3, s.y3);
             }
             else if (s.type == 'rect') {
-                ctx.moveTo(s.x, s.y);
-                ctx.lineTo(s.x + s.w, s.y);
-                ctx.lineTo(s.x + s.w, s.y + s.h);
-                ctx.lineTo(s.x, s.y + s.h);
+                this._drawRect(s.x, s.y, s.w, s.h);
             }
             else if (s.type == 'polygon') {
-                ctx.moveTo(s.points[0],s.points[1]);
-                for(var i=2; i<s.points.length; i+=2) {
-                     ctx.lineTo(s.points[i],s.points[i+1]);
-                }
+                this._drawPolygon.apply(this, s.points);
             }
-
-            ctx.closePath();
-
-            if(s.size) ctx.stroke();
-            if(s.fillColor) ctx.fill();
         }
-
-        this.shapes = [];
+        this.shapes=[];
     },
 
-    drawText: function (text, x, y, font) {
-        var s = {};
-        s.t = text;
-        s.x = x;
-        s.y = y;
-        s.font = font || 'Arial';
-        s.type = 'text';
-        this._addShape(s);
+    drawTexts: function () {
+        var s;
+        var ctx = this.ctx;
+        for(var i=0; i<this.texts.length; i++) {
+            t = this.texts[i];
+            this._drawText(t.text, t.x, t.y, t.color, t.size, t.font);
+        }
+        this.texts=[];
+    },
+
+    print: function (text, x, y, color ,size, font) {
+        x = x == undefined ? 10 : x;
+        y = y == undefined ? 10 : y;
+        color = color || 'black';
+        size = size || 16;
+        font = font || 'Arial';
+
+        // 如果不是 autoRender 模式，直接畫
+        if (this.drawingMode=="instant") return this._drawText(text, x, y, color ,size, font);
+        // 如果是 autoRener，存起來
+        this._addText({
+            text: text,
+            x: x,
+            y: y,
+            color: color,
+            size: size,
+            font: font
+        });
     },
     
     drawLine: function (x1, y1, x2, y2) {
+        if (this.drawingMode=="instant") return this._drawLine(x1, y1, x2, y2);
         var s = {};
         s.x1 = x1;
         s.y1 = y1;
@@ -763,6 +761,7 @@ Pen.prototype = {
     },
 
     drawCircle: function (x, y ,r) {
+        if (this.drawingMode=="instant") return this._drawCircle(x, y ,r);
         var s = {};
         s.x = x;
         s.y = y;
@@ -772,6 +771,7 @@ Pen.prototype = {
     },
 
     drawTriangle: function (x1, y1, x2, y2, x3, y3) {
+        if (this.drawingMode=="instant") return this._drawTriangle(x1, y1, x2, y2, x3, y3);
         var s = {};
         s.x1 = x1;
         s.y1 = y1;
@@ -784,6 +784,7 @@ Pen.prototype = {
     },
 
     drawRect: function (x, y, width, height) {
+        if (this.drawingMode=="instant") return this._drawRect(x, y, width, height);
         var s = {};
         s.x = x;
         s.y = y;
@@ -794,10 +795,80 @@ Pen.prototype = {
     },
     
     drawPolygon: function () {
+        if (this.drawingMode=="instant") return this._drawPolygon.apply(this, arguments);
         var s = {};
         s.points = Array.prototype.slice.call(arguments);
         s.type = 'polygon';
         this._addShape(s);
+    },
+
+    _drawText: function (text, x, y, color ,size, font) {
+        if(this.drawingMode=="instant") this._setPenAttr();
+        this.ctx.textBaseline = "top";
+        this.ctx.font = size + "px " + font;
+        this.ctx.fillStyle = color;
+        this.ctx.fillText(text, x, y);
+    },
+
+    _drawLine: function (x1, y1, x2, y2) {
+        if(this.drawingMode=="instant") this._setPenAttr();
+        this.ctx.beginPath();
+        this.ctx.moveTo(x1, y1);
+        this.ctx.lineTo(x2, y2);
+        this.ctx.closePath();
+        if(this.size) this.ctx.stroke();
+        if(this.fillColor) this.ctx.fill();
+    },
+
+    _drawCircle: function (x, y ,r) {
+        if(this.drawingMode=="instant") this._setPenAttr();
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, r, 0, 2 * Math.PI);
+        this.ctx.closePath();
+        if(this.size) this.ctx.stroke();
+        if(this.fillColor) this.ctx.fill();
+    },
+
+    _drawTriangle: function (x1, y1, x2, y2, x3, y3) {
+        if(this.drawingMode=="instant") this._setPenAttr();
+        this.ctx.beginPath();
+        this.ctx.moveTo(x1, y1);
+        this.ctx.lineTo(x2, y2);
+        this.ctx.lineTo(x3, y3);
+        this.ctx.closePath();
+        if(this.size) this.ctx.stroke();
+        if(this.fillColor) this.ctx.fill();
+    },
+
+    _drawRect: function (x, y, w, h) {
+        if(this.drawingMode=="instant") this._setPenAttr();
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y);
+        this.ctx.lineTo(x+w, y);
+        this.ctx.lineTo(x+w, y+h);
+        this.ctx.lineTo(x, y+h);
+        this.ctx.closePath();
+        if(this.size) this.ctx.stroke();
+        if(this.fillColor) this.ctx.fill();
+    },
+
+    _drawPolygon: function () {
+        if(this.drawingMode=="instant") this._setPenAttr();
+        var points = Array.prototype.slice.call(arguments);
+        this.ctx.beginPath();
+        this.ctx.moveTo(points[0],points[1]);
+        for(var i=2; i<points.length; i+=2) {
+                this.ctx.lineTo(points[i],points[i+1]);
+        }
+        this.ctx.closePath();
+        if(this.size) this.ctx.stroke();
+        if(this.fillColor) this.ctx.fill();
+    },
+
+    _setPenAttr: function () {
+        this.ctx.lineWidth = this.size;
+        this.ctx.strokeStyle = this.color;
+        this.ctx.fillStyle = this.fillColor;
     },
 
     _addShape: function (s) {
@@ -805,6 +876,10 @@ Pen.prototype = {
         s.color = this.color;
         s.fillColor = this.fillColor;
         this.shapes.push(s);
+    },
+
+    _addText: function (t) {
+        this.texts.push(t);
     }
 
 }
