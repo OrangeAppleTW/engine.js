@@ -3,7 +3,7 @@ function Pen (ctx, settings) {
     this.size = 1;
     this.color = 'black';
     this.fillColor = null;
-    this.cache = true;
+    thisautoRender = true;
     this.shapes = [];
 }
 
@@ -47,7 +47,7 @@ Pen.prototype = {
     },
 
     drawText: function (text, x, y, font) {
-        if (!this.cache) return this._drawText(text, x, y, font);
+        if (!thisautoRender) return this._drawText(text, x, y, font);
         var s = {};
         s.t = text;
         s.x = x;
@@ -58,7 +58,7 @@ Pen.prototype = {
     },
     
     drawLine: function (x1, y1, x2, y2) {
-        if (!this.cache) return this._drawLine(x1, y1, x2, y2);
+        if (!thisautoRender) return this._drawLine(x1, y1, x2, y2);
         var s = {};
         s.x1 = x1;
         s.y1 = y1;
@@ -69,7 +69,7 @@ Pen.prototype = {
     },
 
     drawCircle: function (x, y ,r) {
-        if (!this.cache) return this._drawCircle(x, y ,r);
+        if (!thisautoRender) return this._drawCircle(x, y ,r);
         var s = {};
         s.x = x;
         s.y = y;
@@ -79,7 +79,7 @@ Pen.prototype = {
     },
 
     drawTriangle: function (x1, y1, x2, y2, x3, y3) {
-        if (!this.cache) return this._drawTriangle(x1, y1, x2, y2, x3, y3);
+        if (!thisautoRender) return this._drawTriangle(x1, y1, x2, y2, x3, y3);
         var s = {};
         s.x1 = x1;
         s.y1 = y1;
@@ -92,7 +92,7 @@ Pen.prototype = {
     },
 
     drawRect: function (x, y, width, height) {
-        if (!this.cache) return this._drawRect(x, y, width, height);
+        if (!thisautoRender) return this._drawRect(x, y, width, height);
         var s = {};
         s.x = x;
         s.y = y;
@@ -103,7 +103,7 @@ Pen.prototype = {
     },
     
     drawPolygon: function () {
-        if (!this.cache) return this._drawPolygon.apply(this, arguments);
+        if (!thisautoRender) return this._drawPolygon.apply(this, arguments);
         var s = {};
         s.points = Array.prototype.slice.call(arguments);
         s.type = 'polygon';
@@ -111,7 +111,7 @@ Pen.prototype = {
     },
 
     _drawText: function (text, x, y, font) {
-        if(!this.cache) this._setPenAttr();
+        if(!thisautoRender) this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.textBaseline = "top";
         this.ctx.font = this.size + "px " + font;
@@ -122,7 +122,7 @@ Pen.prototype = {
     },
 
     _drawLine: function (x1, y1, x2, y2) {
-        if(!this.cache) this._setPenAttr();
+        if(!thisautoRender) this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.moveTo(x1, y1);
         this.ctx.lineTo(x2, y2);
@@ -132,7 +132,7 @@ Pen.prototype = {
     },
 
     _drawCircle: function (x, y ,r) {
-        if(!this.cache) this._setPenAttr();
+        if(!thisautoRender) this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.arc(x, y, r, 0, 2 * Math.PI);
         this.ctx.closePath();
@@ -141,7 +141,7 @@ Pen.prototype = {
     },
 
     _drawTriangle: function (x1, y1, x2, y2, x3, y3) {
-        if(!this.cache) this._setPenAttr();
+        if(!thisautoRender) this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.moveTo(x1, y1);
         this.ctx.lineTo(x2, y2);
@@ -152,7 +152,7 @@ Pen.prototype = {
     },
 
     _drawRect: function (x, y, w, h) {
-        if(!this.cache) this._setPenAttr();
+        if(!thisautoRender) this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.moveTo(x, y);
         this.ctx.lineTo(x+w, y);
@@ -164,7 +164,7 @@ Pen.prototype = {
     },
 
     _drawPolygon: function () {
-        if(!this.cache) this._setPenAttr();
+        if(!thisautoRender) this._setPenAttr();
         var points = Array.prototype.slice.call(arguments);
         this.ctx.beginPath();
         this.ctx.moveTo(points[0],points[1]);

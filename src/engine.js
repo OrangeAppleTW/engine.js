@@ -135,7 +135,7 @@ function engine(stageId, debugMode){
                 pen.draw();
             }
         },
-        stopRendering: function(){ autoRendering=false; pen.cache=false; },
+        stopRendering: function(){ autoRendering=false; pen.autoRender=false; },
         start: function(){ clock.start(); },
         forever: forever,
         update: forever,
