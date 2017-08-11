@@ -6,7 +6,7 @@ $(document).ready(function() {
         var link = $(this);
         var targetId = link.children('a').attr('href');
         if($(targetId).length > 0) {
-            link.data('scroll-top', $(targetId).position().top);
+            link.data('scroll-top', $(targetId).position().top + 75);
             links.push(link);
         }
         
@@ -132,6 +132,10 @@ $(document).ready(function() {
         });
         $("#search_btn").click(function(e){
                 search($("#search").val());
+        });
+        
+        $("#open_side").click(function(){
+            $(".treemenu").css({"width": "200px", "display": "block"});
         });
     }
 
