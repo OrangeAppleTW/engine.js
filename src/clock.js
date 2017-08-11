@@ -14,9 +14,10 @@
 //  (1) -> (2) -> (3) -> (1)
 
 
-function Clock(update){
+function Clock( onTick, render ){
     this._state = "readyToStart"; //"readyToStart", "stopping", "running";
-    this._update = update;
+    this._onTick = onTick;
+    this._render = render;
 }
 
 Clock.prototype.start = function(){
@@ -25,7 +26,8 @@ Clock.prototype.start = function(){
         this._state = "running";
         onTick = (function(){
             if(this._state==="running"){
-                this._update();
+                this._onTick();
+                if(this._state!="stopping") this._render();
                 requestAnimationFrame(onTick);
             } else {
                 this._state = "readyToStart";
@@ -38,8 +40,9 @@ Clock.prototype.start = function(){
 }
 
 Clock.prototype.stop = function(){
-    if(this._state==="running"){
+    if(this._state==="running" || this._state==="readyToStart"){
         this._state = "stopping";
+        this._render();
     }
 }
 

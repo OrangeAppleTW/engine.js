@@ -3,17 +3,14 @@ function Pen (ctx, settings) {
     this.size = 1;
     this.color = 'black';
     this.fillColor = null;
-    thisautoRender = true;
+    this.drawingMode = "onTick"; // ["onTick", "instant"]
     this.shapes = [];
+    this.texts = [];
 }
 
 Pen.prototype = {
 
-    clear: function () {
-        this.shapes = [];
-    },
-
-    draw: function () {
+    drawShapes: function () {
 
         var s;
         var ctx = this.ctx;
@@ -44,21 +41,41 @@ Pen.prototype = {
                 this._drawPolygon.apply(this, s.points);
             }
         }
+        this.shapes=[];
     },
 
-    drawText: function (text, x, y, font) {
-        if (!thisautoRender) return this._drawText(text, x, y, font);
-        var s = {};
-        s.t = text;
-        s.x = x;
-        s.y = y;
-        s.font = font || 'Arial';
-        s.type = 'text';
-        this._addShape(s);
+    drawTexts: function () {
+        var s;
+        var ctx = this.ctx;
+        for(var i=0; i<this.texts.length; i++) {
+            t = this.texts[i];
+            this._drawText(t.text, t.x, t.y, t.color, t.size, t.font);
+        }
+        this.texts=[];
+    },
+
+    print: function (text, x, y, color ,size, font) {
+        x = x == undefined ? 10 : x;
+        y = y == undefined ? 10 : y;
+        color = color || 'black';
+        size = size || 16;
+        font = font || 'Arial';
+
+        // 如果不是 autoRender 模式，直接畫
+        if (this.drawingMode=="instant") return this._drawText(text, x, y, color ,size, font);
+        // 如果是 autoRener，存起來
+        this._addText({
+            text: text,
+            x: x,
+            y: y,
+            color: color,
+            size: size,
+            font: font
+        });
     },
     
     drawLine: function (x1, y1, x2, y2) {
-        if (!thisautoRender) return this._drawLine(x1, y1, x2, y2);
+        if (this.drawingMode=="instant") return this._drawLine(x1, y1, x2, y2);
         var s = {};
         s.x1 = x1;
         s.y1 = y1;
@@ -69,7 +86,7 @@ Pen.prototype = {
     },
 
     drawCircle: function (x, y ,r) {
-        if (!thisautoRender) return this._drawCircle(x, y ,r);
+        if (this.drawingMode=="instant") return this._drawCircle(x, y ,r);
         var s = {};
         s.x = x;
         s.y = y;
@@ -79,7 +96,7 @@ Pen.prototype = {
     },
 
     drawTriangle: function (x1, y1, x2, y2, x3, y3) {
-        if (!thisautoRender) return this._drawTriangle(x1, y1, x2, y2, x3, y3);
+        if (this.drawingMode=="instant") return this._drawTriangle(x1, y1, x2, y2, x3, y3);
         var s = {};
         s.x1 = x1;
         s.y1 = y1;
@@ -92,7 +109,7 @@ Pen.prototype = {
     },
 
     drawRect: function (x, y, width, height) {
-        if (!thisautoRender) return this._drawRect(x, y, width, height);
+        if (this.drawingMode=="instant") return this._drawRect(x, y, width, height);
         var s = {};
         s.x = x;
         s.y = y;
@@ -103,26 +120,23 @@ Pen.prototype = {
     },
     
     drawPolygon: function () {
-        if (!thisautoRender) return this._drawPolygon.apply(this, arguments);
+        if (this.drawingMode=="instant") return this._drawPolygon.apply(this, arguments);
         var s = {};
         s.points = Array.prototype.slice.call(arguments);
         s.type = 'polygon';
         this._addShape(s);
     },
 
-    _drawText: function (text, x, y, font) {
-        if(!thisautoRender) this._setPenAttr();
-        this.ctx.beginPath();
+    _drawText: function (text, x, y, color ,size, font) {
+        if(this.drawingMode=="instant") this._setPenAttr();
         this.ctx.textBaseline = "top";
-        this.ctx.font = this.size + "px " + font;
+        this.ctx.font = size + "px " + font;
+        this.ctx.fillStyle = color;
         this.ctx.fillText(text, x, y);
-        this.ctx.closePath();
-        if(this.size) this.ctx.stroke();
-        if(this.fillColor) this.ctx.fill();
     },
 
     _drawLine: function (x1, y1, x2, y2) {
-        if(!thisautoRender) this._setPenAttr();
+        if(this.drawingMode=="instant") this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.moveTo(x1, y1);
         this.ctx.lineTo(x2, y2);
@@ -132,7 +146,7 @@ Pen.prototype = {
     },
 
     _drawCircle: function (x, y ,r) {
-        if(!thisautoRender) this._setPenAttr();
+        if(this.drawingMode=="instant") this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.arc(x, y, r, 0, 2 * Math.PI);
         this.ctx.closePath();
@@ -141,7 +155,7 @@ Pen.prototype = {
     },
 
     _drawTriangle: function (x1, y1, x2, y2, x3, y3) {
-        if(!thisautoRender) this._setPenAttr();
+        if(this.drawingMode=="instant") this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.moveTo(x1, y1);
         this.ctx.lineTo(x2, y2);
@@ -152,7 +166,7 @@ Pen.prototype = {
     },
 
     _drawRect: function (x, y, w, h) {
-        if(!thisautoRender) this._setPenAttr();
+        if(this.drawingMode=="instant") this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.moveTo(x, y);
         this.ctx.lineTo(x+w, y);
@@ -164,7 +178,7 @@ Pen.prototype = {
     },
 
     _drawPolygon: function () {
-        if(!thisautoRender) this._setPenAttr();
+        if(this.drawingMode=="instant") this._setPenAttr();
         var points = Array.prototype.slice.call(arguments);
         this.ctx.beginPath();
         this.ctx.moveTo(points[0],points[1]);
@@ -187,6 +201,10 @@ Pen.prototype = {
         s.color = this.color;
         s.fillColor = this.fillColor;
         this.shapes.push(s);
+    },
+
+    _addText: function (t) {
+        this.texts.push(t);
     }
 
 }

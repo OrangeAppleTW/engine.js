@@ -31,21 +31,27 @@ function engine(stageId, debugMode){
     var renderer = new Renderer(ctx, settings, loader.images, debugMode);
     var sound = new Sound(loader, debugMode);
     var pen = new Pen(ctx);
-    var clock = new Clock(function(){
-        eventList.traverse();
-        for(var i=0; i<settings.updateFunctions.length; i++){
-            settings.updateFunctions[i]();
-        };
-        sprites.removeDeletedSprites();
-        sprites.runOnTick();
-        inspector.updateFPS();
-        if(autoRendering){
-            renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
-            renderer.drawSprites(sprites);
-            pen.draw();
-            pen.clear();
+    var clock = new Clock(
+        // onTick function
+        function(){
+            eventList.traverse();
+            for(var i=0; i<settings.updateFunctions.length; i++){
+                settings.updateFunctions[i]();
+            };
+            sprites.removeDeletedSprites();
+            sprites.runOnTick();
+            inspector.updateFPS();
+        },
+        // render function
+        function(){
+            if(autoRendering){
+                renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
+                pen.drawShapes();
+                renderer.drawSprites(sprites);
+                pen.drawTexts();
+            }
         }
-    });
+    );
 
     var background={
         path: "#ffffff"
@@ -72,18 +78,6 @@ function engine(stageId, debugMode){
         background.y = y;
         background.w = w;
         background.h = h;
-    }
-
-    function print (text, x, y, color ,size, font) {
-        var tmp_1 = pen.fillCOlor;
-        var tmp_2 = pen.size;
-        pen.fillColor = color || 'black';
-        pen.size = size || 16;
-        x = x == undefined ? 10 : x;
-        y = y == undefined ? 10 : y;
-        pen.drawText(text, x, y, font);
-        pen.fillColor = tmp_1;
-        pen.size = tmp_2;
     }
 
     // for proxy.on / when: 
@@ -115,7 +109,7 @@ function engine(stageId, debugMode){
         Sprite: function(args) {
             return proxy.createSprite(args);
         },
-        print: print,
+        print: function(text, x, y, color ,size, font){ pen.print(text, x, y, color ,size, font) },
         setBackground: setBackground,
         setBackdrop: setBackground,
         cursor: io.cursor,
@@ -127,15 +121,8 @@ function engine(stageId, debugMode){
         stop: function(){ 
             clock.stop(); 
             sound.stop();
-            // 下面幾行是為了讓畫筆畫畫後馬上停止時，能夠正常顯現，所以最後需要畫一次
-            // @TODO: 模組化
-            if(autoRendering){
-                renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
-                renderer.drawSprites(sprites);
-                pen.draw();
-            }
         },
-        stopRendering: function(){ autoRendering=false; pen.autoRender=false; },
+        stopRendering: function(){ autoRendering=false; pen.drawingMode="instant"; },
         start: function(){ clock.start(); },
         forever: forever,
         update: forever,
