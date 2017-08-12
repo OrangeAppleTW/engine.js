@@ -53,6 +53,11 @@ function engine(stageId, debugMode){
         }
     );
 
+    Sprite.prototype._sprites = sprites;
+    Sprite.prototype._eventList = eventList;
+    Sprite.prototype._settings = settings;
+    Sprite.prototype._renderer = renderer;
+
     var background={
         path: "#ffffff"
     };    
@@ -102,13 +107,9 @@ function engine(stageId, debugMode){
 
     var proxy = {
         createSprite: function(args){
-            var newSprite = new Sprite(args, eventList, settings, renderer)
-            sprites._sprites.push(newSprite);
-            return newSprite;
+            return new Sprite(args);
         },
-        Sprite: function(args) {
-            return proxy.createSprite(args);
-        },
+        Sprite: Sprite,
         print: function(text, x, y, color ,size, font){ pen.print(text, x, y, color ,size, font) },
         setBackground: setBackground,
         setBackdrop: setBackground,

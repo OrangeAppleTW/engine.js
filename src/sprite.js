@@ -2,14 +2,14 @@ var util = require("./util");
 var hitCanvas = document.createElement('canvas'),
     hitTester = hitCanvas.getContext('2d');
 
-function Sprite(args, eventList, settings, renderer) {
+function Sprite(args) {
 
     if (args.constructor === String || args.constructor === Array) {
         args = { costumes: [].concat(args) }
     }
 
-    this.x = util.isNumeric(args.x) ? args.x : settings.width/2;
-    this.y = util.isNumeric(args.y) ? args.y : settings.height/2;
+    this.x = util.isNumeric(args.x) ? args.x : this._settings.width/2;
+    this.y = util.isNumeric(args.y) ? args.y : this._settings.height/2;
     this.width = 1;
     this.height = 1;
     this.direction = util.isNumeric(args.direction) ? args.direction : 90;
@@ -24,11 +24,14 @@ function Sprite(args, eventList, settings, renderer) {
     this._onTickFuncs = [];
     this._deleted = false;
 
-    this._eventList = eventList;
-    this._settings = settings;
-    this._renderer = renderer;
-
     this._animation = { frames: [], rate: 5, timer: 0 }
+
+    //== In prototype:
+    // * this._eventList;
+    // * this._settings;
+    // * this._renderer;
+    // * this._sprites;
+    this._sprites._sprites.push(newSprite);
 }
 
 Sprite.prototype.update = function () {
