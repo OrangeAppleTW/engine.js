@@ -31,7 +31,7 @@ function Sprite(args) {
     // * this._settings;
     // * this._renderer;
     // * this._sprites;
-    this._sprites._sprites.push(newSprite);
+    this._sprites._sprites.push(this);
 }
 
 Sprite.prototype.update = function () {
