@@ -361,6 +361,11 @@ function engine(stageId, debugMode){
         }
     );
 
+    Sprite.prototype._sprites = sprites;
+    Sprite.prototype._eventList = eventList;
+    Sprite.prototype._settings = settings;
+    Sprite.prototype._renderer = renderer;
+
     var background={
         path: "#ffffff"
     };    
@@ -410,13 +415,9 @@ function engine(stageId, debugMode){
 
     var proxy = {
         createSprite: function(args){
-            var newSprite = new Sprite(args, eventList, settings, renderer)
-            sprites._sprites.push(newSprite);
-            return newSprite;
+            return new Sprite(args);
         },
-        Sprite: function(args) {
-            return proxy.createSprite(args);
-        },
+        Sprite: Sprite,
         print: function(text, x, y, color ,size, font){ pen.print(text, x, y, color ,size, font) },
         setBackground: setBackground,
         setBackdrop: setBackground,
@@ -1053,14 +1054,14 @@ var util = require("./util");
 var hitCanvas = document.createElement('canvas'),
     hitTester = hitCanvas.getContext('2d');
 
-function Sprite(args, eventList, settings, renderer) {
+function Sprite(args) {
 
     if (args.constructor === String || args.constructor === Array) {
         args = { costumes: [].concat(args) }
     }
 
-    this.x = util.isNumeric(args.x) ? args.x : settings.width/2;
-    this.y = util.isNumeric(args.y) ? args.y : settings.height/2;
+    this.x = util.isNumeric(args.x) ? args.x : this._settings.width/2;
+    this.y = util.isNumeric(args.y) ? args.y : this._settings.height/2;
     this.width = 1;
     this.height = 1;
     this.direction = util.isNumeric(args.direction) ? args.direction : 90;
@@ -1075,11 +1076,14 @@ function Sprite(args, eventList, settings, renderer) {
     this._onTickFuncs = [];
     this._deleted = false;
 
-    this._eventList = eventList;
-    this._settings = settings;
-    this._renderer = renderer;
-
     this._animation = { frames: [], rate: 5, timer: 0 }
+
+    //== In prototype:
+    // * this._eventList;
+    // * this._settings;
+    // * this._renderer;
+    // * this._sprites;
+    this._sprites._sprites.push(this);
 }
 
 Sprite.prototype.update = function () {
