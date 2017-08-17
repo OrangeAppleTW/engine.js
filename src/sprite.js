@@ -205,12 +205,16 @@ Sprite.prototype._isTouched = function () {
         if (target.hidden || target._deleted || target === this) return false;
     }
 
+    var thisRange, targetRange;
+
     // 由於效能考量，先用成本最小的「圓形範圍演算法」判斷是否有機會「像素重疊」
-    var range = Math.sqrt(Math.pow(this.width / 2, 2) + Math.pow(this.height / 2, 2));
+    thisRange = Math.sqrt(Math.pow(this.width / 2, 2) + Math.pow(this.height / 2, 2));
     if (arguments[0] instanceof Sprite) {
-        range += Math.sqrt(Math.pow(target.width / 2, 2) + Math.pow(target.height / 2, 2));
+        targetRange = Math.sqrt(Math.pow(target.width / 2, 2) + Math.pow(target.height / 2, 2));
+    } else {
+        targetRange = 1;
     }
-    if (this.distanceTo.apply(this, arguments) > range) {
+    if (this.distanceTo.apply(this, arguments) > (thisRange + targetRange)) {
         return false;
     }
 
@@ -232,9 +236,19 @@ Sprite.prototype._isTouched = function () {
     hitTester.globalCompositeOperation = 'source-in';
     this._renderer.drawInstance(this, hitTester);
 
-    // 只要對 sprite 的大小範圍取樣即可，不需對整張 canvas 取樣
-    var maxLength = Math.max(this.width, this.height); // 根據最大邊取得範圍 （因應圖片旋轉修正）
-    var aData = hitTester.getImageData(this.x-maxLength/2, this.y-maxLength/2, maxLength, maxLength).data;
+        var aData;
+    if (arguments[0] instanceof Sprite){
+        if (thisRange < targetRange) {
+            aData = hitTester.getImageData(this.x-thisRange/2, this.y-thisRange/2, thisRange, thisRange).data;
+        } else {
+            aData = hitTester.getImageData(target.x-targetRange/2, target.y-targetRange/2, targetRange, targetRange).data;
+        }
+    } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
+        aData = hitTester.getImageData(arguments[0].x, arguments[0].x, 1, 1).data;
+    } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
+        aData = hitTester.getImageData(arguments[0], arguments[1], 1, 1).data;
+    }
+
     var pxCount = aData.length;
     for (var i = 0; i < pxCount; i += 4) {
         if (aData[i+3] > 0) {
