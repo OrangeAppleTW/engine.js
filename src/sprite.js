@@ -224,7 +224,10 @@ Sprite.prototype._isTouched = function () {
 
     hitTester.globalCompositeOperation = 'source-over';
     if (arguments[0] instanceof Sprite){
+        var tmp = arguments[0].opacity;
+        arguments[0].opacity = 1;
         this._renderer.drawInstance(arguments[0], hitTester);
+        arguments[0].opacity = tmp;
     } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
         hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
     } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
@@ -234,7 +237,10 @@ Sprite.prototype._isTouched = function () {
     }
 
     hitTester.globalCompositeOperation = 'source-in';
+    var tmp = this.opacity;
+    this.opacity = 1;
     this._renderer.drawInstance(this, hitTester);
+    this.opacity = tmp;
 
         var aData;
     if (arguments[0] instanceof Sprite){
