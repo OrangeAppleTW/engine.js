@@ -242,12 +242,12 @@ Sprite.prototype._isTouched = function () {
     this._renderer.drawInstance(this, hitTester);
     this.opacity = tmp;
 
-        var aData;
+    var aData;
     if (arguments[0] instanceof Sprite){
         if (thisRange < targetRange) {
-            aData = hitTester.getImageData(this.x-thisRange/2, this.y-thisRange/2, thisRange, thisRange).data;
+            aData = hitTester.getImageData(this.x-thisRange/2, this.y-thisRange/2, thisRange*2, thisRange*2).data;
         } else {
-            aData = hitTester.getImageData(target.x-targetRange/2, target.y-targetRange/2, targetRange, targetRange).data;
+            aData = hitTester.getImageData(target.x-targetRange/2, target.y-targetRange/2, targetRange*2, targetRange*2).data;
         }
     } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
         aData = hitTester.getImageData(arguments[0].x, arguments[0].x, 1, 1).data;
