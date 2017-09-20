@@ -41,6 +41,26 @@ function IO(canvas, settings, debugMode){
         cursor.y = e.offsetY / settings.zoom;
     });
 
+    canvas.addEventListener("touchstart", function (e) {
+        var touches = e.changedTouches;
+        cursor.isDown = true;
+        mousedown.x = touches[0].offsetX / settings.zoom;
+        mousedown.y = touches[0].offsetY / settings.zoom;
+    });
+
+    canvas.addEventListener("touchend", function (e) {
+        var touches = e.changedTouches;
+        mouseup.x = touches[0].offsetX / settings.zoom;
+        mouseup.y = touches[0].offsetY / settings.zoom;
+    });
+
+    canvas.addEventListener("touchmove", function (e) {
+        var touches = e.changedTouches;
+        console.log(touches[0])
+        cursor.x = (touches[0].pageX - canvas.offsetLeft) / settings.zoom;
+        cursor.y = (touches[0].pageY - canvas.offsetTop) / settings.zoom;
+    });
+
     canvas.addEventListener("click", function(e){
         clicked.x = e.offsetX / settings.zoom;
         clicked.y = e.offsetY / settings.zoom;
