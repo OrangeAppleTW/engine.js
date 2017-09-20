@@ -56,7 +56,6 @@ function IO(canvas, settings, debugMode){
 
     canvas.addEventListener("touchmove", function (e) {
         var touches = e.changedTouches;
-        console.log(touches[0])
         cursor.x = (touches[0].pageX - canvas.offsetLeft) / settings.zoom;
         cursor.y = (touches[0].pageY - canvas.offsetTop) / settings.zoom;
     });
