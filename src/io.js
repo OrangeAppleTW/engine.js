@@ -42,23 +42,31 @@ function IO(canvas, settings, debugMode){
     });
 
     canvas.addEventListener("touchstart", function (e) {
-        var touches = e.changedTouches;
         cursor.isDown = true;
-        mousedown.x = touches[0].offsetX / settings.zoom;
-        mousedown.y = touches[0].offsetY / settings.zoom;
+        var pos = getTouchPos(e.changedTouches[0]);
+        cursor.x = mousedown.x = pos.x;
+        cursor.y = mousedown.y = pos.x;
     });
 
     canvas.addEventListener("touchend", function (e) {
-        var touches = e.changedTouches;
-        mouseup.x = touches[0].offsetX / settings.zoom;
-        mouseup.y = touches[0].offsetY / settings.zoom;
+        cursor.isDown = false;
+        var pos = getTouchPos(e.changedTouches[0]);
+        cursor.x = mouseup.x = pos.x;
+        cursor.y = mouseup.y = pos.x;
     });
 
     canvas.addEventListener("touchmove", function (e) {
-        var touches = e.changedTouches;
-        cursor.x = (touches[0].pageX - canvas.offsetLeft) / settings.zoom;
-        cursor.y = (touches[0].pageY - canvas.offsetTop) / settings.zoom;
+        var pos = getTouchPos(e.changedTouches[0]);
+        cursor.x = pos.x;
+        cursor.y = pos.x;
     });
+
+    function getTouchPos (touch) {
+        return {
+            x: (touch.pageX - canvas.offsetLeft) / settings.zoom,
+            y: (touch.pageY - canvas.offsetTop) / settings.zoom
+        }
+    }
 
     canvas.addEventListener("click", function(e){
         clicked.x = e.offsetX / settings.zoom;
