@@ -322,6 +322,12 @@ function engine(stageId, debugMode){
     var canvas= document.getElementById(stageId);
     var ctx = canvas.getContext("2d");
 
+    var hitCanvas = document.createElement('canvas');
+    var hitTester = hitCanvas.getContext('2d');
+
+    hitCanvas.width = canvas.width;
+    hitCanvas.height = canvas.height;
+
     var settings = {
         width: canvas.width,
         height: canvas.height,
@@ -365,6 +371,7 @@ function engine(stageId, debugMode){
     Sprite.prototype._eventList = eventList;
     Sprite.prototype._settings = settings;
     Sprite.prototype._renderer = renderer;
+    Sprite.prototype._hitTester = hitTester;
 
     var background={
         path: "#ffffff"
@@ -373,8 +380,8 @@ function engine(stageId, debugMode){
     debugMode = debugMode || false;
 
     function set(args){
-        if(args.width) canvas.width = settings.width = args.width;
-        if(args.height) canvas.height = settings.height = args.height;
+        if(args.width) hitCanvas.width = canvas.width = settings.width = args.width;
+        if(args.height) hitCanvas.height = canvas.height = settings.height = args.height;
         if(args.zoom) {
             settings.zoom = args.zoom;
             canvas.style.width = canvas.width * settings.zoom + 'px';
@@ -509,6 +516,33 @@ function IO(canvas, settings, debugMode){
         cursor.x = e.offsetX / settings.zoom;
         cursor.y = e.offsetY / settings.zoom;
     });
+
+    canvas.addEventListener("touchstart", function (e) {
+        cursor.isDown = true;
+        var pos = getTouchPos(e.changedTouches[0]);
+        cursor.x = mousedown.x = pos.x;
+        cursor.y = mousedown.y = pos.x;
+    });
+
+    canvas.addEventListener("touchend", function (e) {
+        cursor.isDown = false;
+        var pos = getTouchPos(e.changedTouches[0]);
+        cursor.x = mouseup.x = pos.x;
+        cursor.y = mouseup.y = pos.x;
+    });
+
+    canvas.addEventListener("touchmove", function (e) {
+        var pos = getTouchPos(e.changedTouches[0]);
+        cursor.x = pos.x;
+        cursor.y = pos.x;
+    });
+
+    function getTouchPos (touch) {
+        return {
+            x: (touch.pageX - canvas.offsetLeft) / settings.zoom,
+            y: (touch.pageY - canvas.offsetTop) / settings.zoom
+        }
+    }
 
     canvas.addEventListener("click", function(e){
         clicked.x = e.offsetX / settings.zoom;
@@ -1051,8 +1085,6 @@ Sound.prototype = {
 module.exports = Sound;
 },{}],11:[function(require,module,exports){
 var util = require("./util");
-var hitCanvas = document.createElement('canvas'),
-    hitTester = hitCanvas.getContext('2d');
 
 function Sprite(args) {
 
@@ -1257,36 +1289,55 @@ Sprite.prototype._isTouched = function () {
         if (target.hidden || target._deleted || target === this) return false;
     }
 
+    var thisRange, targetRange;
+
     // 由於效能考量，先用成本最小的「圓形範圍演算法」判斷是否有機會「像素重疊」
-    var range = Math.sqrt(Math.pow(this.width / 2, 2) + Math.pow(this.height / 2, 2));
+    thisRange = Math.sqrt(Math.pow(this.width / 2, 2) + Math.pow(this.height / 2, 2));
     if (arguments[0] instanceof Sprite) {
-        range += Math.sqrt(Math.pow(target.width / 2, 2) + Math.pow(target.height / 2, 2));
+        targetRange = Math.sqrt(Math.pow(target.width / 2, 2) + Math.pow(target.height / 2, 2));
+    } else {
+        targetRange = 1;
     }
-    if (this.distanceTo.apply(this, arguments) > range) {
+    if (this.distanceTo.apply(this, arguments) > (thisRange + targetRange)) {
         return false;
     }
 
     // 如果經過「圓形範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
-    hitCanvas.width = this._settings.width;
-    hitCanvas.height = this._settings.height;
+    this._hitTester.clearRect(0,0,this._settings.width,this._settings.height);
 
-    hitTester.globalCompositeOperation = 'source-over';
+    this._hitTester.globalCompositeOperation = 'source-over';
     if (arguments[0] instanceof Sprite){
-        this._renderer.drawInstance(arguments[0], hitTester);
+        var tmp = arguments[0].opacity;
+        arguments[0].opacity = 1;
+        this._renderer.drawInstance(arguments[0], this._hitTester);
+        arguments[0].opacity = tmp;
     } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
-        hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
+        this._hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
     } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
-        hitTester.fillRect(arguments[0],arguments[1],1,1);
+        this._hitTester.fillRect(arguments[0],arguments[1],1,1);
     } else {
         throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
     }
 
-    hitTester.globalCompositeOperation = 'source-in';
-    this._renderer.drawInstance(this, hitTester);
+    this._hitTester.globalCompositeOperation = 'source-in';
+    var tmp = this.opacity;
+    this.opacity = 1;
+    this._renderer.drawInstance(this, this._hitTester);
+    this.opacity = tmp;
 
-    // 只要對 sprite 的大小範圍取樣即可，不需對整張 canvas 取樣
-    var maxLength = Math.max(this.width, this.height); // 根據最大邊取得範圍 （因應圖片旋轉修正）
-    var aData = hitTester.getImageData(this.x-maxLength/2, this.y-maxLength/2, maxLength, maxLength).data;
+    var aData;
+    if (arguments[0] instanceof Sprite){
+        if (thisRange < targetRange) {
+            aData = this._hitTester.getImageData(this.x - thisRange, this.y - thisRange, thisRange * 2, thisRange * 2).data;
+        } else {
+            aData = this._hitTester.getImageData(target.x - targetRange, target.y - targetRange, targetRange * 2, targetRange * 2).data;
+        }
+    } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
+        aData = this._hitTester.getImageData(arguments[0].x, arguments[0].y, 1, 1).data;
+    } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
+        aData = this._hitTester.getImageData(arguments[0], arguments[1], 1, 1).data;
+    }
+
     var pxCount = aData.length;
     for (var i = 0; i < pxCount; i += 4) {
         if (aData[i+3] > 0) {
