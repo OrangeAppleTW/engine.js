@@ -40,6 +40,10 @@
             e.preventDefault();
             e.stopPropagation();
         });
+
+        var script = document.createElement('script');
+        script.src = (new URL(document.location.href)).searchParams.get('script');;
+        document.head.appendChild(script); 
     </script>
 </body>
 </html>
