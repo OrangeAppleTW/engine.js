@@ -1,6 +1,4 @@
 var util = require("./util");
-var hitCanvas = document.createElement('canvas'),
-    hitTester = hitCanvas.getContext('2d');
 
 function Sprite(args) {
 
@@ -219,40 +217,39 @@ Sprite.prototype._isTouched = function () {
     }
 
     // 如果經過「圓形範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
-    hitCanvas.width = this._settings.width;
-    hitCanvas.height = this._settings.height;
+    this._hitTester.clearRect(0,0,this._settings.width,this._settings.height);
 
-    hitTester.globalCompositeOperation = 'source-over';
+    this._hitTester.globalCompositeOperation = 'source-over';
     if (arguments[0] instanceof Sprite){
         var tmp = arguments[0].opacity;
         arguments[0].opacity = 1;
-        this._renderer.drawInstance(arguments[0], hitTester);
+        this._renderer.drawInstance(arguments[0], this._hitTester);
         arguments[0].opacity = tmp;
     } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
-        hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
+        this._hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
     } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
-        hitTester.fillRect(arguments[0],arguments[1],1,1);
+        this._hitTester.fillRect(arguments[0],arguments[1],1,1);
     } else {
         throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
     }
 
-    hitTester.globalCompositeOperation = 'source-in';
+    this._hitTester.globalCompositeOperation = 'source-in';
     var tmp = this.opacity;
     this.opacity = 1;
-    this._renderer.drawInstance(this, hitTester);
+    this._renderer.drawInstance(this, this._hitTester);
     this.opacity = tmp;
 
     var aData;
     if (arguments[0] instanceof Sprite){
         if (thisRange < targetRange) {
-            aData = hitTester.getImageData(this.x - thisRange, this.y - thisRange, thisRange * 2, thisRange * 2).data;
+            aData = this._hitTester.getImageData(this.x - thisRange, this.y - thisRange, thisRange * 2, thisRange * 2).data;
         } else {
-            aData = hitTester.getImageData(target.x - targetRange, target.y - targetRange, targetRange * 2, targetRange * 2).data;
+            aData = this._hitTester.getImageData(target.x - targetRange, target.y - targetRange, targetRange * 2, targetRange * 2).data;
         }
     } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
-        aData = hitTester.getImageData(arguments[0].x, arguments[0].y, 1, 1).data;
+        aData = this._hitTester.getImageData(arguments[0].x, arguments[0].y, 1, 1).data;
     } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
-        aData = hitTester.getImageData(arguments[0], arguments[1], 1, 1).data;
+        aData = this._hitTester.getImageData(arguments[0], arguments[1], 1, 1).data;
     }
 
     var pxCount = aData.length;

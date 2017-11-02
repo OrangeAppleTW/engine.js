@@ -14,6 +14,12 @@ function engine(stageId, debugMode){
     var canvas= document.getElementById(stageId);
     var ctx = canvas.getContext("2d");
 
+    var hitCanvas = document.createElement('canvas');
+    var hitTester = hitCanvas.getContext('2d');
+
+    hitCanvas.width = canvas.width;
+    hitCanvas.height = canvas.height;
+
     var settings = {
         width: canvas.width,
         height: canvas.height,
@@ -57,6 +63,7 @@ function engine(stageId, debugMode){
     Sprite.prototype._eventList = eventList;
     Sprite.prototype._settings = settings;
     Sprite.prototype._renderer = renderer;
+    Sprite.prototype._hitTester = hitTester;
 
     var background={
         path: "#ffffff"
@@ -65,8 +72,8 @@ function engine(stageId, debugMode){
     debugMode = debugMode || false;
 
     function set(args){
-        if(args.width) canvas.width = settings.width = args.width;
-        if(args.height) canvas.height = settings.height = args.height;
+        if(args.width) hitCanvas.width = canvas.width = settings.width = args.width;
+        if(args.height) hitCanvas.height = canvas.height = settings.height = args.height;
         if(args.zoom) {
             settings.zoom = args.zoom;
             canvas.style.width = canvas.width * settings.zoom + 'px';
