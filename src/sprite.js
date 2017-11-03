@@ -215,6 +215,9 @@ Sprite.prototype._isTouched = function () {
     if (this.distanceTo.apply(this, arguments) > (thisRange + targetRange)) {
         return false;
     }
+    if (thisRange*2 < 1 || targetRange*2 < 1) {
+        return false;
+    }
 
     // 如果經過「圓形範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
     this._hitTester.clearRect(0,0,this._settings.width,this._settings.height);
