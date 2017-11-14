@@ -8,6 +8,7 @@ var Sound = require("./sound");
 var Loader = require("./loader");
 var IO = require("./io");
 var Pen = require("./pen");
+var Camera = require("./camera");
 
 function engine(stageId, debugMode){
 
@@ -32,6 +33,7 @@ function engine(stageId, debugMode){
     var loader = new Loader();
     var sprites = new Sprites();
     var inspector = new Inspector();
+    var camera = new Camera(settings);
     var io = new IO(canvas, settings, debugMode);
     var eventList = new EventList(io, debugMode);
     var renderer = new Renderer(ctx, settings, loader.images, debugMode);
@@ -140,6 +142,7 @@ function engine(stageId, debugMode){
         sound: sound,
         broadcast: eventList.emit.bind(eventList),
         pen: pen,
+        camera: camera,
         // 以下指令是給繪圖用的
         drawBackdrop: renderer.drawBackdrop,
         drawBackground: renderer.drawBackdrop,

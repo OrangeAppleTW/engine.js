@@ -41,9 +41,12 @@
             e.stopPropagation();
         });
 
-        var script = document.createElement('script');
-        script.src = (new URL(document.location.href)).searchParams.get('script');;
-        document.head.appendChild(script); 
+        var scriptPath = (new URL(document.location.href)).searchParams.get('script');
+        if (scriptPath) {
+            var script = document.createElement('script');
+            script.src = scriptPath;
+            document.head.appendChild(script);
+        }
     </script>
 </body>
 </html>
