@@ -1,6 +1,6 @@
 var util = require("./util");
 
-function Renderer(ctx, settings, images, debugMode){
+function Renderer(ctx, settings, images, camera, debugMode){
 
     // 不可以這麼做，因為當我們要取 canvas 大小時，他可能已經變了
     // var stageWidth = settings.width,
@@ -12,60 +12,57 @@ function Renderer(ctx, settings, images, debugMode){
 
     this.autoRender = false;
 
+    this.camera = camera;
+
     this.clear = function() {
         ctx.clearRect(0,0,settings.width,settings.height);
     };
 
     this.drawSprites = function(sprites){
-        sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
+        sprites._sprites.sort(function(a, b){return a.layer > b.layer ? 1 : -1}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
         sprites.each(function(instance) {
             self.drawInstance(instance, ctx);
         });
     };
 
     this.drawInstance = function(instance, ctx){
-        // console.log(instance);
-        if(!instance.hidden){
-            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
-            var img = getImgFromCache(instance.getCurrentCostume());
-            instance.width = img.width * instance.scale;
-            instance.height = img.height * instance.scale;
 
-            var rad = util.degreeToRad(instance.direction - 90);
-            ctx.globalAlpha = instance.opacity;
-            if (instance.rotationStyle === 'flipped') {
-                if(instance.direction > 180) {
-                    ctx.translate(instance.x*2, 0);
-                    ctx.scale(-1, 1);
-                    ctx.drawImage(  img,
-                                    (instance.x-instance.width/2),
-                                    (instance.y-instance.height/2),
-                                    instance.width,
-                                    instance.height
-                    )
-                    ctx.scale(-1, 1);
-                    ctx.translate(-instance.x*2, 0);
-                    ctx.globalAlpha = 1;
-                    return;
-                } else {
-                    var rad = 0;
-                }
-            }
-            if(instance.rotationStyle === 'fixed') {
+        if(instance.hidden) return;
+    
+        // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
+        var img = getImgFromCache(instance.getCurrentCostume());
+        instance.width = img.width * instance.scale;
+        instance.height = img.height * instance.scale;
+
+        var width = instance.width;
+        var height = instance.height;
+        var x = instance.x - this.camera.x + settings.width/2;
+        var y = instance.y - this.camera.y + settings.height/2;
+
+        var rad = util.degreeToRad(instance.direction - 90);
+        ctx.globalAlpha = instance.opacity;
+        if (instance.rotationStyle === 'flipped') {
+            if(instance.direction > 180) {
+                ctx.translate(x*2, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(img, (x-width/2), (y-height/2), width, height);
+                ctx.scale(-1, 1);
+                ctx.translate(-x*2, 0);
+                ctx.globalAlpha = 1;
+                return;
+            } else {
                 var rad = 0;
             }
-            ctx.translate(instance.x, instance.y);
-            ctx.rotate(rad);
-            ctx.drawImage( img,
-                        (-instance.width / 2),
-                        (-instance.height / 2),
-                        instance.width,
-                        instance.height
-            );
-            ctx.rotate(-rad);
-            ctx.translate(-instance.x, -instance.y);
-            ctx.globalAlpha = 1;
         }
+        if(instance.rotationStyle === 'fixed') {
+            var rad = 0;
+        }
+        ctx.translate(x, y);
+        ctx.rotate(rad);
+        ctx.drawImage(img, (-width / 2), (-height / 2), width, height);
+        ctx.rotate(-rad);
+        ctx.translate(-x, -y);
+        ctx.globalAlpha = 1;
     };
 
     this.getImgFromCache = getImgFromCache;

@@ -1,6 +1,6 @@
 var keycode = require('keycode');
 
-function IO(canvas, settings, debugMode){
+function IO(canvas, camera, settings, debugMode){
 
     var cursor    = this.cursor    = { x: 0, y: 0, isDown: false, left: false, right: false }
     var clicked   = this.clicked   = { x: null, y: null }
@@ -24,26 +24,30 @@ function IO(canvas, settings, debugMode){
         if(e.which == 1) cursor.left = true;
         if(e.which == 3) cursor.right = true;
         cursor.isDown = true;
-        mousedown.x = e.offsetX / settings.zoom;
-        mousedown.y = e.offsetY / settings.zoom;
+        var pos = camera.offsetCamera({x: e.offsetX, y: e.offsetY });
+        mousedown.x = pos.x / settings.zoom;
+        mousedown.y = pos.y / settings.zoom;
     });
 
     canvas.addEventListener("mouseup", function(e){
         if(e.which == 1) cursor.left = false;
         if(e.which == 3) cursor.right = false;
         cursor.isDown = cursor.left || cursor.right;
-        mouseup.x = e.offsetX / settings.zoom;
-        mouseup.y = e.offsetY / settings.zoom;
+        var pos = camera.offsetCamera({x: e.offsetX, y: e.offsetY });
+        mouseup.x = pos.x / settings.zoom;
+        mouseup.y = pos.y / settings.zoom;
     });
 
     canvas.addEventListener("mousemove", function(e){
-        cursor.x = e.offsetX / settings.zoom;
-        cursor.y = e.offsetY / settings.zoom;
+        var pos = camera.offsetCamera({x: e.offsetX, y: e.offsetY });
+        cursor.x = pos.x / settings.zoom;
+        cursor.y = pos.y / settings.zoom;
     });
 
     canvas.addEventListener("touchstart", function (e) {
         cursor.isDown = true;
         var pos = getTouchPos(e.changedTouches[0]);
+        pos = camera.offsetCamera(pos);
         cursor.x = mousedown.x = pos.x;
         cursor.y = mousedown.y = pos.x;
     });
@@ -51,12 +55,14 @@ function IO(canvas, settings, debugMode){
     canvas.addEventListener("touchend", function (e) {
         cursor.isDown = false;
         var pos = getTouchPos(e.changedTouches[0]);
+        pos = camera.offsetCamera(pos);
         cursor.x = mouseup.x = pos.x;
         cursor.y = mouseup.y = pos.x;
     });
 
     canvas.addEventListener("touchmove", function (e) {
         var pos = getTouchPos(e.changedTouches[0]);
+        pos = camera.offsetCamera(pos);
         cursor.x = pos.x;
         cursor.y = pos.x;
     });
@@ -69,8 +75,9 @@ function IO(canvas, settings, debugMode){
     }
 
     canvas.addEventListener("click", function(e){
-        clicked.x = e.offsetX / settings.zoom;
-        clicked.y = e.offsetY / settings.zoom;
+        var pos = camera.offsetCamera({x: e.offsetX, y: e.offsetY });
+        clicked.x = pos.x / settings.zoom;
+        clicked.y = pos.y / settings.zoom;
         if(debugMode){
             console.log( "Clicked! cursor:"+JSON.stringify(cursor) );
         }

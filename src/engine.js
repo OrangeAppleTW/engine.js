@@ -34,9 +34,9 @@ function engine(stageId, debugMode){
     var sprites = new Sprites();
     var inspector = new Inspector();
     var camera = new Camera(settings);
-    var io = new IO(canvas, settings, debugMode);
+    var io = new IO(canvas, camera, settings, debugMode);
     var eventList = new EventList(io, debugMode);
-    var renderer = new Renderer(ctx, settings, loader.images, debugMode);
+    var renderer = new Renderer(ctx, settings, loader.images, camera, debugMode);
     var sound = new Sound(loader, debugMode);
     var pen = new Pen(ctx);
     var clock = new Clock(
@@ -66,6 +66,7 @@ function engine(stageId, debugMode){
     Sprite.prototype._settings = settings;
     Sprite.prototype._renderer = renderer;
     Sprite.prototype._hitTester = hitTester;
+    Sprite.prototype._camera = camera;
 
     var background={
         path: "#ffffff"
@@ -81,6 +82,8 @@ function engine(stageId, debugMode){
             canvas.style.width = canvas.width * settings.zoom + 'px';
             canvas.style.height = canvas.height * settings.zoom + 'px';
         }
+        camera.x = settings.width/2;
+        camera.y = settings.height/2;
         settings.update = args.update || settings.update;
         return this;
     }
