@@ -17,7 +17,7 @@ function Renderer(ctx, settings, images, debugMode){
     };
 
     this.drawSprites = function(sprites){
-        sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
+        bubbleSort(sprites._sprites); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
         sprites.each(function(instance) {
             self.drawInstance(instance, ctx);
         });
@@ -98,6 +98,21 @@ function Renderer(ctx, settings, images, debugMode){
         }
         return img;
     }
+}
+
+function bubbleSort(arr) {
+    var n = arr.length;
+    var swapped = true;
+    for (let i = 0; i < n && swapped; i++) {
+        swapped = false;
+        for (let j = 0; j < n - 1 - i; j++) {
+            if (arr[j].layer > arr[j + 1].layer) {
+                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+                swapped = true;
+            }
+        }
+    }
+    return arr;
 }
 
 module.exports = Renderer;
