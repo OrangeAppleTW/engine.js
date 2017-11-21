@@ -146,6 +146,15 @@ html(lang='en')
                 a(href='#pen-drawPolygon') 多邊形
               li
                 a(href='#pen-drawText') 文字
+          li
+            a(href='#camera') 相機
+            ul
+              li
+                a(href='#camera-size') 大小
+              li
+                a(href='#camera-moveTo') 移動到
+              li
+                a(href='#camera-move') 移動
           //- li
           //-   a(href='#1') 開發
           //-   ul
@@ -188,6 +197,10 @@ html(lang='en')
           h2
             span#pen 繪筆
           include ./sections/pen
+        section
+          h2
+            span#camera 相機
+          include ./sections/camera
     .popup.js-popup#editor
       .popup-content
         .stage

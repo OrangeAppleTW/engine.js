@@ -1,0 +1,39 @@
+p
+	span.syntax Game.camera
+	| 遊戲視窗
+	| 顯示遊戲場景的區域，透過調整視窗的位置、大小查看不同地方的遊戲場景
+section
+	h3
+		span#camera-size 大小
+	p
+		span.syntax Game.camera.size
+	pre.javascript
+		code
+			| Game.forever(function() {
+			|     Game.camera.size -= 1;
+			| });
+	span.example-code.js-example-code(code-path='../test/camera/size.js') 範例程式
+	h3
+		span#camera-moveTo 移動到
+	p
+		span.syntax Game.camera.moveTo(x, y);
+		| x: 移動到 x 座標
+		| y: 移動到 y 座標
+	pre.javascript
+		code
+			| Game.forever(function() {
+			|     Game.moveTo(car);
+			| });
+	span.example-code.js-example-code(code-path='../test/camera/moveTo.js') 範例程式
+	h3
+		span#camera-move 移動
+	p
+		span.syntax Game.camera.move(x, y);
+		| x: 移動 x 步
+		| y: 移動 y 步
+	pre.javascript
+		code
+			| Game.forever(function() {
+			|     Game.moveTo(1, 1);
+			| });
+	span.example-code.js-example-code(code-path='../test/camera/move.js') 範例程式

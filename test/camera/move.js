@@ -18,6 +18,8 @@ bird.when('touch', food, function(f) {
 
 Game.forever(function() {
     Game.camera.moveTo(bird);
-    bird.toward(Game.cursor);
-    bird.stepForward(2);
+    if (Game.key.up) bird.y -= 1;
+    if (Game.key.down) bird.y += 1;
+    if (Game.key.left) bird.x -= 1;
+    if (Game.key.right) bird.x += 1;
 });
