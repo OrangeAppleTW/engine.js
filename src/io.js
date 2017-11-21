@@ -45,20 +45,20 @@ function IO(canvas, settings, debugMode){
         cursor.isDown = true;
         var pos = getTouchPos(e.changedTouches[0]);
         cursor.x = mousedown.x = pos.x;
-        cursor.y = mousedown.y = pos.x;
+        cursor.y = mousedown.y = pos.y;
     });
 
     canvas.addEventListener("touchend", function (e) {
         cursor.isDown = false;
         var pos = getTouchPos(e.changedTouches[0]);
         cursor.x = mouseup.x = pos.x;
-        cursor.y = mouseup.y = pos.x;
+        cursor.y = mouseup.y = pos.y;
     });
 
     canvas.addEventListener("touchmove", function (e) {
         var pos = getTouchPos(e.changedTouches[0]);
         cursor.x = pos.x;
-        cursor.y = pos.x;
+        cursor.y = pos.y;
     });
 
     function getTouchPos (touch) {
