@@ -79,7 +79,15 @@ function Renderer(ctx, settings, images, camera, debugMode){
                 img.src=src;
                 imageCache[src]=img;
             }
-            ctx.drawImage(img, (x||0), (y||0), (width||img.width), (height||img.height));
+            var pat = ctx.createPattern(img, "repeat");
+            ctx.fillStyle = pat;
+            var offsetX = x - this.camera.x + settings.width/2;
+            var offsetY = y - this.camera.y + settings.height/2;
+            ctx.translate(offsetX, offsetY);
+            ctx.rect((-offsetX||0), (-offsetY||0), (width||img.width), (height||img.height));
+            ctx.fill();
+            ctx.translate(-offsetX, -offsetY);
+
         } else if(src) {
             ctx.fillStyle=src;
             ctx.fillRect(0,0,settings.width, settings.height);
