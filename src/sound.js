@@ -1,56 +1,67 @@
-function Sound (loader, debugMode){
+var SoundNode = require('./sound-node');
+
+function Sound (loader, debugMode) { 
+    this.context = new (window.AudioContext || window.webkitAudioContext)();    
+    this.soundNodes = [];
+    
     this.loader = loader;
     this.sounds = loader.sounds;
-    this.playing = [];
     this.muted = false;
-    this.volume = 1;
 }
 
 Sound.prototype = {
+    play: function(url, isLoop) {
+        isLoop = (typeof isLoop !== 'undefined') ?  isLoop : false;        
+        var soundNode = new SoundNode(this.context);
 
-    play: function(url, loop) {
-        var audio;
         if(this.sounds[url]) {
-            audio = this.sounds[url].cloneNode();
-            this.playing.push(audio);
-            audio.play();
+            var bufferData = this.sounds[url];
+            
+            soundNode.setBufferData(bufferData);
+            soundNode.setLoop(isLoop);
+
+            this.soundNodes.push(soundNode);
+            soundNode.play();
         } else {
-            // 用 preload 載入音檔 src 作為 cache
-            this.loader.preload([url]);
-            audio = this.sounds[url];
-            this.playing.push(audio);
-            audio.play();
+            var _this = this;
+            this.loader.preload([url], function() {
+                var bufferData = _this.sounds[url];
+                
+                soundNode.setBufferData(bufferData);
+                soundNode.setLoop(isLoop);
+                
+                _this.soundNodes.push(soundNode);
+                soundNode.play();
+            });
         }
-        audio.loop = loop;
-        audio.muted = this.muted;
-        audio.volume = this.volume;
-        return audio;
-    },
 
+        return soundNode;
+    },
+    setVolume: function(volume) {
+        if (volume < 0) {
+            return console.error("無效的音量值");
+        }
+        for(var i = 0; i < this.soundNodes.length; i++) {
+            var soundNode = this.soundNodes[i];
+            soundNode.setVolume(volume);
+        }
+    },
+    mute: function(isMute) {
+        for(var i = 0; i < this.soundNodes.length; i++) {
+            var soundNode = this.soundNodes[i];
+            soundNode.mute(isMute);
+        }
+    },
+    pause: function() {
+        this.context.suspend();
+    },
+    resume: function() {
+        this.context.resume();
+    },
     stop: function() {
-        for(var i=0; i< this.playing.length; i++) {
-            this.playing[i].pause();
-        }
-        this.playing = [];
-    },
-
-    mute: function(bool) {
-        this.muted = bool;
-        for(var i=0; i< this.playing.length; i++) {
-            this.playing[i].muted = bool;
-        }
-    },
-
-    setVolume: function(v) {
-        this.volume = v;
-        for(var i=0; i< this.playing.length; i++) {
-            this.playing[i].volume = v;
-        }
-    },
-
-    each: function(fn) {
-        for(var i=0; i< this.playing.length; i++) {
-            fn(this.playing[i]);
+        for(var i = 0; i < this.soundNodes.length; i++) {
+            var soundNode = this.soundNodes[i];
+            soundNode.stop();
         }
     }
 }

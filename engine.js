@@ -460,7 +460,7 @@ function engine(stageId, debugMode){
 }
 
 window.Engine = engine;
-},{"./clock":2,"./event-list":3,"./inspector":5,"./io":6,"./loader":7,"./pen":8,"./renderer":9,"./sound":10,"./sprite":11,"./sprites":12}],5:[function(require,module,exports){
+},{"./clock":2,"./event-list":3,"./inspector":5,"./io":6,"./loader":7,"./pen":8,"./renderer":9,"./sound":11,"./sprite":12,"./sprites":13}],5:[function(require,module,exports){
 function Inspector(){
     this.fps = 0;
     this._lastFrameUpdatedTime = (new Date()).getTime();
@@ -591,6 +591,7 @@ IO.prototype.clearEvents = function(){
 module.exports = IO;
 },{"keycode":1}],7:[function(require,module,exports){
 function Loader () {
+    this.context = new (window.AudioContext || window.webkitAudioContext)();
     this.loaded = 0;
     this.paths = [];
     this.sounds = {};
@@ -602,7 +603,6 @@ function Loader () {
 Loader.prototype = {
 
     preload: function (paths, completeFunc, progressFunc) {
-
         if(paths.length === 0) return completeFunc();
 
         this.paths = paths;
@@ -631,76 +631,36 @@ Loader.prototype = {
     },
 
     _loadSound: function (path) {
-        var instance = this;
-        var audio = new Audio();
-            this._loadFromAjax(path, function(data){
-            instance._convertBinToBase64(data.response, function(base64) {
-               audio.src = base64;
-            });
-        });
-        audio.addEventListener('canplaythrough', function() {
-            instance._loaded()
-        });
-        
-        this.sounds[path] = audio;
-    },
+        var _this = this;
+        this._xhrLoad(path, function(xhr){
+            var data = xhr.response;
 
+            _this.context.decodeAudioData(data, function(buffer) {
+                _this.sounds[path] = buffer;    
+                _this._loaded();
+            }); 
+        });
+    },
     _loaded: function () {
         this.loaded += 1;
         if(this.progressFunc) {
             this.progressFunc(this.loaded, this.paths.length);
         }
-        if(this.loaded === this.paths.length && this.completeFunc) {
+        if(this.loaded >= this.paths.length && this.completeFunc) {
             this.completeFunc();
         }
     },
-    _loadFromAjax: function (url, callback) {
-        var xhr;
-        
-        if(typeof XMLHttpRequest !== 'undefined') xhr = new XMLHttpRequest();
-        else {
-            var versions = ["MSXML2.XmlHttp.5.0", 
-                            "MSXML2.XmlHttp.4.0",
-                            "MSXML2.XmlHttp.3.0", 
-                            "MSXML2.XmlHttp.2.0",
-                            "Microsoft.XmlHttp"]
-
-            for(var i = 0, len = versions.length; i < len; i++) {
-                try {
-                    xhr = new ActiveXObject(versions[i]);
-                    break;
-                }
-                catch(e){}
-            } // end for
-        }
-        
-        xhr.onreadystatechange = ensureReadiness;
-        
-        function ensureReadiness() {
-            if(xhr.readyState < 4) {
-                return;
-            }
-            
-            if(xhr.status !== 200) {
-                return;
-            }
-
-            // all is well  
-            if(xhr.readyState === 4) {
-                callback(xhr);
-            }           
-        }
-        
-        xhr.open('GET', url, true);
-        xhr.responseType = 'blob';
-        xhr.send('');
-    },
-    _convertBinToBase64: function getData(audioFile, callback) {
-        var reader = new FileReader();
-        reader.onload = function(event) {
-            callback(event.target.result);
+    _xhrLoad: function (url, onload) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.responseType = 'arraybuffer';
+        xhr.onload = function () {
+            onload(xhr);
         };
-        reader.readAsDataURL(audioFile);
+        xhr.onerror = function () {
+            console.error(xhr);
+        };
+        xhr.send();
     }
 
 }
@@ -940,7 +900,7 @@ function Renderer(ctx, settings, images, debugMode){
     };
 
     this.drawSprites = function(sprites){
-        sprites._sprites.sort(function(a, b){return a.layer-b.layer;}); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
+        bubbleSort(sprites._sprites); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
         sprites.each(function(instance) {
             self.drawInstance(instance, ctx);
         });
@@ -1023,67 +983,143 @@ function Renderer(ctx, settings, images, debugMode){
     }
 }
 
+function bubbleSort(arr) {
+    var n = arr.length;
+    var swapped = true;
+    for (let i = 0; i < n && swapped; i++) {
+        swapped = false;
+        for (let j = 0; j < n - 1 - i; j++) {
+            if (arr[j].layer > arr[j + 1].layer) {
+                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+                swapped = true;
+            }
+        }
+    }
+    return arr;
+}
+
 module.exports = Renderer;
-},{"./util":13}],10:[function(require,module,exports){
-function Sound (loader, debugMode){
+},{"./util":14}],10:[function(require,module,exports){
+function SoundNode(context) {
+    this.volume = 1;
+    this.source = context.createBufferSource();
+
+    // Connect: Source <-> Gain <-> Context
+    this.gainNode = context.createGain();
+    this.source.connect(this.gainNode);
+    this.gainNode.connect(context.destination);
+}
+
+SoundNode.prototype = {
+    setVolume: function(volume) {
+        if (volume < 0) {
+            return console.error("無效的音量值");
+        }
+        this.volume = volume;
+        this.gainNode.gain.value = volume;
+    },
+    setBufferData: function(bufferData) {
+        this.source.buffer = bufferData;        
+    },
+    setLoop: function (isLoop) {
+        this.source.loop = isLoop;
+    },
+    mute: function(isMute) {
+        if(isMute) {
+            this.gainNode.gain.value = 0;
+        } else {
+            this.gainNode.gain.value = this.volume;
+        }
+    },
+    pause: function() {
+        this.source.playbackRate.value = Number.MIN_VALUE;        
+    },
+    resume: function () {
+        this.source.playbackRate.value = 1;
+    },
+    play: function() {
+        this.source.start(0);
+    },
+    stop: function() {
+        this.source.stop();
+    }
+}
+
+
+
+
+module.exports = SoundNode;
+},{}],11:[function(require,module,exports){
+var SoundNode = require('./sound-node');
+
+function Sound (loader, debugMode) { 
+    this.context = new (window.AudioContext || window.webkitAudioContext)();    
+    this.soundNodes = [];
+    
     this.loader = loader;
     this.sounds = loader.sounds;
-    this.playing = [];
     this.muted = false;
-    this.volume = 1;
 }
 
 Sound.prototype = {
+    play: function(url, isLoop) {
+        isLoop = (typeof isLoop !== 'undefined') ?  isLoop : false;        
+        var soundNode = new SoundNode(this.context);
 
-    play: function(url, loop) {
-        var audio;
         if(this.sounds[url]) {
-            audio = this.sounds[url].cloneNode();
-            this.playing.push(audio);
-            audio.play();
+            var bufferData = this.sounds[url];
+            
+            soundNode.setBufferData(bufferData);
+            soundNode.setLoop(isLoop);
+
+            this.soundNodes.push(soundNode);
+            soundNode.play();
         } else {
-            // 用 preload 載入音檔 src 作為 cache
-            this.loader.preload([url]);
-            audio = this.sounds[url];
-            this.playing.push(audio);
-            audio.play();
+            var _this = this;
+            this.loader.preload([url], function() {
+                var bufferData = _this.sounds[url];
+                
+                soundNode.setBufferData(bufferData);
+                soundNode.setLoop(isLoop);
+                
+                _this.soundNodes.push(soundNode);
+                soundNode.play();
+            });
         }
-        audio.loop = loop;
-        audio.muted = this.muted;
-        audio.volume = this.volume;
-        return audio;
-    },
 
+        return soundNode;
+    },
+    setVolume: function(volume) {
+        if (volume < 0) {
+            return console.error("無效的音量值");
+        }
+        for(var i = 0; i < this.soundNodes.length; i++) {
+            var soundNode = this.soundNodes[i];
+            soundNode.setVolume(volume);
+        }
+    },
+    mute: function(isMute) {
+        for(var i = 0; i < this.soundNodes.length; i++) {
+            var soundNode = this.soundNodes[i];
+            soundNode.mute(isMute);
+        }
+    },
+    pause: function() {
+        this.context.suspend();
+    },
+    resume: function() {
+        this.context.resume();
+    },
     stop: function() {
-        for(var i=0; i< this.playing.length; i++) {
-            this.playing[i].pause();
-        }
-        this.playing = [];
-    },
-
-    mute: function(bool) {
-        this.muted = bool;
-        for(var i=0; i< this.playing.length; i++) {
-            this.playing[i].muted = bool;
-        }
-    },
-
-    setVolume: function(v) {
-        this.volume = v;
-        for(var i=0; i< this.playing.length; i++) {
-            this.playing[i].volume = v;
-        }
-    },
-
-    each: function(fn) {
-        for(var i=0; i< this.playing.length; i++) {
-            fn(this.playing[i]);
+        for(var i = 0; i < this.soundNodes.length; i++) {
+            var soundNode = this.soundNodes[i];
+            soundNode.stop();
         }
     }
 }
 
 module.exports = Sound;
-},{}],11:[function(require,module,exports){
+},{"./sound-node":10}],12:[function(require,module,exports){
 var util = require("./util");
 
 function Sprite(args) {
@@ -1301,6 +1337,9 @@ Sprite.prototype._isTouched = function () {
     if (this.distanceTo.apply(this, arguments) > (thisRange + targetRange)) {
         return false;
     }
+    if (thisRange*2 < 1 || targetRange*2 < 1) {
+        return false;
+    }
 
     // 如果經過「圓形範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
     this._hitTester.clearRect(0,0,this._settings.width,this._settings.height);
@@ -1348,7 +1387,7 @@ Sprite.prototype._isTouched = function () {
 }
 
 module.exports = Sprite;
-},{"./util":13}],12:[function(require,module,exports){
+},{"./util":14}],13:[function(require,module,exports){
 function Sprites(){
     this._sprites = [];
 }
@@ -1380,7 +1419,7 @@ Sprites.prototype.clear = function(){
 };
 
 module.exports = Sprites;
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var util = {};
 
 util.isNumeric = function(n){
