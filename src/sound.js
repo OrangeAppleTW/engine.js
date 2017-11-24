@@ -43,7 +43,7 @@ Sound.prototype = {
         }
         for(var i = 0; i < this.soundNodes.length; i++) {
             var soundNode = this.soundNodes[i];
-            soundNode.setVolume(num);
+            soundNode.setVolume(volume);
         }
     },
     mute: function(isMute) {
