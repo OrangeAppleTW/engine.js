@@ -6,12 +6,12 @@ function Sound (loader, debugMode) {
     
     this.loader = loader;
     this.sounds = loader.sounds;
-    this.isStop = false;
     this.muted = false;
 }
 
 Sound.prototype = {
-    play: function(url) {
+    play: function(url, isLoop) {
+        isLoop = (typeof isLoop !== 'undefined') ?  isLoop : false;        
         var soundNode = new SoundNode(this.context);
 
         if(this.sounds[url]) {
@@ -37,6 +37,15 @@ Sound.prototype = {
 
         return soundNode;
     },
+    setVolume: function(volume) {
+        if (volume < 0) {
+            return console.error("無效的音量值");
+        }
+        for(var i = 0; i < this.soundNodes.length; i++) {
+            var soundNode = this.soundNodes[i];
+            soundNode.setVolume(num);
+        }
+    },
     mute: function(isMute) {
         for(var i = 0; i < this.soundNodes.length; i++) {
             var soundNode = this.soundNodes[i];
@@ -48,6 +57,12 @@ Sound.prototype = {
     },
     resume: function() {
         this.context.resume();
+    },
+    stop: function() {
+        for(var i = 0; i < this.soundNodes.length; i++) {
+            var soundNode = this.soundNodes[i];
+            soundNode.stop();
+        }
     }
 }
 

@@ -1008,22 +1008,21 @@ function SoundNode(context) {
     this.gainNode = context.createGain();
     this.source.connect(this.gainNode);
     this.gainNode.connect(context.destination);
-
 }
 
 SoundNode.prototype = {
     setVolume: function(volume) {
-        if (volume < 0 || volume > 1) {
+        if (volume < 0) {
             return console.error("無效的音量值");
         }
-        this.volumne = volumne;
+        this.volume = volume;
         this.gainNode.gain.value = volume;
     },
     setBufferData: function(bufferData) {
         this.source.buffer = bufferData;        
     },
     setLoop: function (isLoop) {
-        this.this.source.loop;
+        this.source.loop = isLoop;
     },
     mute: function(isMute) {
         if(isMute) {
@@ -1040,6 +1039,9 @@ SoundNode.prototype = {
     },
     play: function() {
         this.source.start(0);
+    },
+    stop: function() {
+        this.source.stop();
     }
 }
 
@@ -1056,12 +1058,12 @@ function Sound (loader, debugMode) {
     
     this.loader = loader;
     this.sounds = loader.sounds;
-    this.isStop = false;
     this.muted = false;
 }
 
 Sound.prototype = {
-    play: function(url) {
+    play: function(url, isLoop) {
+        isLoop = (typeof isLoop !== 'undefined') ?  isLoop : false;        
         var soundNode = new SoundNode(this.context);
 
         if(this.sounds[url]) {
@@ -1087,6 +1089,15 @@ Sound.prototype = {
 
         return soundNode;
     },
+    setVolume: function(volume) {
+        if (volume < 0) {
+            return console.error("無效的音量值");
+        }
+        for(var i = 0; i < this.soundNodes.length; i++) {
+            var soundNode = this.soundNodes[i];
+            soundNode.setVolume(num);
+        }
+    },
     mute: function(isMute) {
         for(var i = 0; i < this.soundNodes.length; i++) {
             var soundNode = this.soundNodes[i];
@@ -1098,6 +1109,12 @@ Sound.prototype = {
     },
     resume: function() {
         this.context.resume();
+    },
+    stop: function() {
+        for(var i = 0; i < this.soundNodes.length; i++) {
+            var soundNode = this.soundNodes[i];
+            soundNode.stop();
+        }
     }
 }
 

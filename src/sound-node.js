@@ -6,22 +6,21 @@ function SoundNode(context) {
     this.gainNode = context.createGain();
     this.source.connect(this.gainNode);
     this.gainNode.connect(context.destination);
-
 }
 
 SoundNode.prototype = {
     setVolume: function(volume) {
-        if (volume < 0 || volume > 1) {
+        if (volume < 0) {
             return console.error("無效的音量值");
         }
-        this.volumne = volumne;
+        this.volume = volume;
         this.gainNode.gain.value = volume;
     },
     setBufferData: function(bufferData) {
         this.source.buffer = bufferData;        
     },
     setLoop: function (isLoop) {
-        this.this.source.loop;
+        this.source.loop = isLoop;
     },
     mute: function(isMute) {
         if(isMute) {
@@ -38,6 +37,9 @@ SoundNode.prototype = {
     },
     play: function() {
         this.source.start(0);
+    },
+    stop: function() {
+        this.source.stop();
     }
 }
 
