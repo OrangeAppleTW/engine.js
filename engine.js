@@ -1001,13 +1001,17 @@ function bubbleSort(arr) {
 module.exports = Renderer;
 },{"./util":14}],10:[function(require,module,exports){
 function SoundNode(context) {
+    this.source = null;
+    this.gainNode = context.createGain();    
+    this.context = context;
+    
+    this.isLoop = false;
+    this.bufferData = null;
     this.volume = 1;
-    this.source = context.createBufferSource();
 
-    // Connect: Source <-> Gain <-> Context
-    this.gainNode = context.createGain();
-    this.source.connect(this.gainNode);
+    // gainNode connect to context
     this.gainNode.connect(context.destination);
+    
 }
 
 SoundNode.prototype = {
@@ -1019,10 +1023,10 @@ SoundNode.prototype = {
         this.gainNode.gain.value = volume;
     },
     setBufferData: function(bufferData) {
-        this.source.buffer = bufferData;        
+        this.bufferData = bufferData;
     },
     setLoop: function (isLoop) {
-        this.source.loop = isLoop;
+        this.isLoop = isLoop;
     },
     mute: function(isMute) {
         if(isMute) {
@@ -1038,6 +1042,10 @@ SoundNode.prototype = {
         this.source.playbackRate.value = 1;
     },
     play: function() {
+        this.source = this.context.createBufferSource();
+        this.source.buffer = this.bufferData;
+        this.source.loop = this.isLoop;
+        this.source.connect(this.gainNode);
         this.source.start(0);
     },
     stop: function() {
@@ -1073,17 +1081,21 @@ Sound.prototype = {
             soundNode.setLoop(isLoop);
 
             this.soundNodes.push(soundNode);
-            soundNode.play();
+            soundNode.play();            
         } else {
             var _this = this;
-            this.loader.preload([url], function() {
-                var bufferData = _this.sounds[url];
-                
-                soundNode.setBufferData(bufferData);
-                soundNode.setLoop(isLoop);
-                
-                _this.soundNodes.push(soundNode);
-                soundNode.play();
+            this.loader._xhrLoad(url, function(xhr) {
+                var data = xhr.response;
+                _this.context.decodeAudioData(data, function(bufferData) {
+                    // set cache
+                    _this.sounds[url] = bufferData;    
+
+                    // play sound
+                    soundNode.setBufferData(bufferData);
+                    soundNode.setLoop(isLoop);
+                    _this.soundNodes.push(soundNode);
+                    soundNode.play();
+                }); 
             });
         }
 

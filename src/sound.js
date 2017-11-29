@@ -21,17 +21,21 @@ Sound.prototype = {
             soundNode.setLoop(isLoop);
 
             this.soundNodes.push(soundNode);
-            soundNode.play();
+            soundNode.play();            
         } else {
             var _this = this;
-            this.loader.preload([url], function() {
-                var bufferData = _this.sounds[url];
-                
-                soundNode.setBufferData(bufferData);
-                soundNode.setLoop(isLoop);
-                
-                _this.soundNodes.push(soundNode);
-                soundNode.play();
+            this.loader._xhrLoad(url, function(xhr) {
+                var data = xhr.response;
+                _this.context.decodeAudioData(data, function(bufferData) {
+                    // set cache
+                    _this.sounds[url] = bufferData;    
+
+                    // play sound
+                    soundNode.setBufferData(bufferData);
+                    soundNode.setLoop(isLoop);
+                    _this.soundNodes.push(soundNode);
+                    soundNode.play();
+                }); 
             });
         }
 
