@@ -1,11 +1,15 @@
 function SoundNode(context) {
+    this.source = null;
+    this.gainNode = context.createGain();    
+    this.context = context;
+    
+    this.isLoop = false;
+    this.bufferData = null;
     this.volume = 1;
-    this.source = context.createBufferSource();
 
-    // Connect: Source <-> Gain <-> Context
-    this.gainNode = context.createGain();
-    this.source.connect(this.gainNode);
+    // gainNode connect to context
     this.gainNode.connect(context.destination);
+    
 }
 
 SoundNode.prototype = {
@@ -17,10 +21,10 @@ SoundNode.prototype = {
         this.gainNode.gain.value = volume;
     },
     setBufferData: function(bufferData) {
-        this.source.buffer = bufferData;        
+        this.bufferData = bufferData;
     },
     setLoop: function (isLoop) {
-        this.source.loop = isLoop;
+        this.isLoop = isLoop;
     },
     mute: function(isMute) {
         if(isMute) {
@@ -36,6 +40,10 @@ SoundNode.prototype = {
         this.source.playbackRate.value = 1;
     },
     play: function() {
+        this.source = this.context.createBufferSource();
+        this.source.buffer = this.bufferData;
+        this.source.loop = this.isLoop;
+        this.source.connect(this.gainNode);
         this.source.start(0);
     },
     stop: function() {
