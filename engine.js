@@ -626,6 +626,7 @@ Loader.prototype = {
         var instance = this;
         var image = new Image();
         image.src = path;
+        image.crossOrigin = 'anonymous';
         image.onload = function() {instance._loaded()};
         this.images[path] = image;
     },
