@@ -27,7 +27,7 @@ function Renderer(ctx, settings, images, debugMode){
         // console.log(instance);
         if(!instance.hidden){
             // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
-            var img = getImgFromCache(instance.getCurrentCostume());
+            var img = this.getImgFromCache(instance.getCurrentCostume());
             instance.width = img.width * instance.scale;
             instance.height = img.height * instance.scale;
 
@@ -68,20 +68,12 @@ function Renderer(ctx, settings, images, debugMode){
         }
     };
 
-    this.getImgFromCache = getImgFromCache;
-
     // @Params:
     // - src: backdrop image location
     // - options: {x:number, y:number, width:number, height:number}
     this.drawBackdrop = function(src, x, y, width, height){
         if(src.includes('.')) {
-            var img = imageCache[src];
-            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
-            if( !img ){
-                img=new Image();
-                img.src=src;
-                imageCache[src]=img;
-            }
+            var img = this.getImgFromCache(src);
             ctx.drawImage(img, (x||0), (y||0), (width||img.width), (height||img.height));
         } else if(src) {
             ctx.fillStyle=src;
@@ -89,12 +81,16 @@ function Renderer(ctx, settings, images, debugMode){
         }
     };
 
-    function getImgFromCache(path){
+    // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
+    this.getImgFromCache = function(path){
         var img = imageCache[path];
         if( !img ){
-            img=new Image();
-            img.src=path;
-            imageCache[path]=img;
+            img = new Image();
+            img.onerror = function() {
+                console.error("無法載入 \"" + path + "\", 請檢查素材是否存在或名稱是否輸入正確。");
+            };
+            img.src = path;
+            imageCache[path] = img;
         }
         return img;
     }
