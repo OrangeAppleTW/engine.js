@@ -33,6 +33,9 @@ Loader.prototype = {
     _loadImage: function (path) {
         var instance = this;
         var image = new Image();
+        image.onerror = function() {
+            console.error("無法載入 \"" + path + "\", 請檢查素材是否存在或名稱是否輸入正確。");
+        };
         image.src = path;
         image.crossOrigin = 'anonymous';
         image.onload = function() {instance._loaded()};
@@ -43,11 +46,12 @@ Loader.prototype = {
         var _this = this;
         this._xhrLoad(path, function(xhr){
             var data = xhr.response;
-
             _this.context.decodeAudioData(data, function(buffer) {
                 _this.sounds[path] = buffer;    
                 _this._loaded();
             }); 
+        }, function() {
+            console.error("無法載入 \"" + path + "\", 請檢查素材是否存在或名稱是否輸入正確。");
         });
     },
     _loaded: function () {
@@ -59,15 +63,23 @@ Loader.prototype = {
             this.completeFunc();
         }
     },
-    _xhrLoad: function (url, onload) {
+    _xhrLoad: function (url, onload, onerror) {
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
         xhr.responseType = 'arraybuffer';
         xhr.onload = function () {
-            onload(xhr);
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    onload(xhr);
+                } else {
+                    onerror(xhr);
+                }
+            }
+
+            
         };
         xhr.onerror = function () {
-            console.error(xhr);
+            onerror(xhr);
         };
         xhr.send();
     }
