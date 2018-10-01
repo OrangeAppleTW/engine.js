@@ -10,6 +10,9 @@ function IO(canvas, settings, debugMode){
     var keydown   = this.keydown   = { any: false }
     var holding   = this.holding   = { any: false, count: 0 }
 
+    // 建立所有的按鍵並設為 false，避免 undefined 所造成的 exception
+    for(var _key in keycode.codes){ holding[_key] = false; }
+
     debugMode = debugMode || false;
 
     // Make any element focusable for keydown event.
