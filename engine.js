@@ -163,35 +163,45 @@ for (var alias in aliases) {
 //  (1) -> (2) -> (3) -> (1)
 
 
-function Clock( onTick, render ){
+function Clock( onTick, render, settings ){
     this._state = "readyToStart"; //"readyToStart", "stopping", "running";
     this._onTick = onTick;
     this._render = render;
-}
 
-Clock.prototype.start = function(){
-    if(this._state==="readyToStart"){
-        var onTick;
-        this._state = "running";
-        onTick = (function(){
-            if(this._state==="running"){
-                this._onTick();
-                if(this._state!="stopping") this._render();
-                requestAnimationFrame(onTick);
-            } else {
-                this._state = "readyToStart";
-            }
-        }).bind(this);
-        setTimeout( onTick, 0 ); // 必須 Async，否則會產生微妙的時間差
-    } else if (this._state==="stopping") {
-        setTimeout( start, 10 );
-    }
-}
+    this.start = function(){
+        if(this._state==="readyToStart"){
+            var onTick;
+            var lastTickTime = (new Date()).getTime(); // For limiting the FPS
 
-Clock.prototype.stop = function(){
-    if(this._state==="running" || this._state==="readyToStart"){
-        this._state = "stopping";
-        this._render();
+            this._state = "running";
+
+            onTick = (function(){
+                if(this._state==="running"){
+                    var now = new Date().getTime(),
+                        delta = now - lastTickTime,
+                        interval = 1000/settings.fpsMax;
+                    if (delta > interval) {
+                        this._onTick();
+                        this._render();
+                        // if(this._state!="stopping") this._render();
+                        lastTickTime = now - (delta % interval);
+                    }
+                    requestAnimationFrame(onTick);
+                } else {
+                    this._state = "readyToStart";
+                }
+            }).bind(this);
+            setTimeout( onTick, 0 ); // 必須 Async，否則會產生微妙的時間差
+        } else if (this._state==="stopping") {
+            setTimeout( start, 10 );
+        }
+    };
+
+    this.stop = function(){
+        if(this._state==="running" || this._state==="readyToStart"){
+            this._state = "stopping";
+            this._render();
+        }
     }
 }
 
@@ -319,6 +329,9 @@ var Pen = require("./pen");
 
 function engine(stageId, debugMode){
 
+    //== Default params setting:
+    debugMode  = debugMode||false;
+
     var canvas= document.getElementById(stageId);
     var ctx = canvas.getContext("2d");
 
@@ -332,7 +345,8 @@ function engine(stageId, debugMode){
         width: canvas.width,
         height: canvas.height,
         zoom: 1,
-        updateFunctions: []
+        updateFunctions: [],
+        fpsMax: 60
     };
 
     var autoRendering = true;
@@ -364,9 +378,12 @@ function engine(stageId, debugMode){
                 renderer.drawSprites(sprites);
                 pen.drawTexts();
             }
-        }
+        },
+        // setting (for fpsMax)
+        settings
     );
 
+    // @TODO: 這麼做真的比較好嗎？還是能在 new Sprite 的時候加入就好 (Kevin 2018.10.22)
     Sprite.prototype._sprites = sprites;
     Sprite.prototype._eventList = eventList;
     Sprite.prototype._settings = settings;
@@ -377,8 +394,6 @@ function engine(stageId, debugMode){
         path: "#ffffff"
     };    
 
-    debugMode = debugMode || false;
-
     function set(args){
         if(args.width) hitCanvas.width = canvas.width = settings.width = args.width;
         if(args.height) hitCanvas.height = canvas.height = settings.height = args.height;
@@ -388,6 +403,7 @@ function engine(stageId, debugMode){
             canvas.style.height = canvas.height * settings.zoom + 'px';
         }
         settings.update = args.update || settings.update;
+        settings.fpsMax = args.fpsMax || settings.fpsMax;
         return this;
     }
 

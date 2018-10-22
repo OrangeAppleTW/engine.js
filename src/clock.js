@@ -14,35 +14,45 @@
 //  (1) -> (2) -> (3) -> (1)
 
 
-function Clock( onTick, render ){
+function Clock( onTick, render, settings ){
     this._state = "readyToStart"; //"readyToStart", "stopping", "running";
     this._onTick = onTick;
     this._render = render;
-}
 
-Clock.prototype.start = function(){
-    if(this._state==="readyToStart"){
-        var onTick;
-        this._state = "running";
-        onTick = (function(){
-            if(this._state==="running"){
-                this._onTick();
-                if(this._state!="stopping") this._render();
-                requestAnimationFrame(onTick);
-            } else {
-                this._state = "readyToStart";
-            }
-        }).bind(this);
-        setTimeout( onTick, 0 ); // 必須 Async，否則會產生微妙的時間差
-    } else if (this._state==="stopping") {
-        setTimeout( start, 10 );
-    }
-}
+    this.start = function(){
+        if(this._state==="readyToStart"){
+            var onTick;
+            var lastTickTime = (new Date()).getTime(); // For limiting the FPS
 
-Clock.prototype.stop = function(){
-    if(this._state==="running" || this._state==="readyToStart"){
-        this._state = "stopping";
-        this._render();
+            this._state = "running";
+
+            onTick = (function(){
+                if(this._state==="running"){
+                    var now = new Date().getTime(),
+                        delta = now - lastTickTime,
+                        interval = 1000/settings.fpsMax;
+                    if (delta > interval) {
+                        this._onTick();
+                        this._render();
+                        // if(this._state!="stopping") this._render();
+                        lastTickTime = now - (delta % interval);
+                    }
+                    requestAnimationFrame(onTick);
+                } else {
+                    this._state = "readyToStart";
+                }
+            }).bind(this);
+            setTimeout( onTick, 0 ); // 必須 Async，否則會產生微妙的時間差
+        } else if (this._state==="stopping") {
+            setTimeout( start, 10 );
+        }
+    };
+
+    this.stop = function(){
+        if(this._state==="running" || this._state==="readyToStart"){
+            this._state = "stopping";
+            this._render();
+        }
     }
 }
 

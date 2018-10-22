@@ -11,6 +11,9 @@ var Pen = require("./pen");
 
 function engine(stageId, debugMode){
 
+    //== Default params setting:
+    debugMode  = debugMode||false;
+
     var canvas= document.getElementById(stageId);
     var ctx = canvas.getContext("2d");
 
@@ -24,7 +27,8 @@ function engine(stageId, debugMode){
         width: canvas.width,
         height: canvas.height,
         zoom: 1,
-        updateFunctions: []
+        updateFunctions: [],
+        fpsMax: 60
     };
 
     var autoRendering = true;
@@ -56,9 +60,12 @@ function engine(stageId, debugMode){
                 renderer.drawSprites(sprites);
                 pen.drawTexts();
             }
-        }
+        },
+        // setting (for fpsMax)
+        settings
     );
 
+    // @TODO: 這麼做真的比較好嗎？還是能在 new Sprite 的時候加入就好 (Kevin 2018.10.22)
     Sprite.prototype._sprites = sprites;
     Sprite.prototype._eventList = eventList;
     Sprite.prototype._settings = settings;
@@ -69,8 +76,6 @@ function engine(stageId, debugMode){
         path: "#ffffff"
     };    
 
-    debugMode = debugMode || false;
-
     function set(args){
         if(args.width) hitCanvas.width = canvas.width = settings.width = args.width;
         if(args.height) hitCanvas.height = canvas.height = settings.height = args.height;
@@ -80,6 +85,7 @@ function engine(stageId, debugMode){
             canvas.style.height = canvas.height * settings.zoom + 'px';
         }
         settings.update = args.update || settings.update;
+        settings.fpsMax = args.fpsMax || settings.fpsMax;
         return this;
     }
 
