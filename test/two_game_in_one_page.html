@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            /* width: 520px; */
+            /* height: 390px; */
+            padding: 20px;
+            margin: 0px;
+        }
+        canvas {
+            width: 520px;
+            height: 390px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="stage1"></canvas>
+    <canvas id="stage2"></canvas>
+    <script src="../engine.js"></script>
+    <script>
+        window.print = undefined;
+
+        // Game 1
+        (function(){
+            var Game = Engine('stage1');
+            Game.set({
+                width: 520,
+                height: 390,
+                fpsMax: 30
+            });
+            Game.start();
+            Game.setBackdrop("blue");
+            var bird = Game.createSprite("./assets/bird.png");
+            bird.y = 20;
+            bird.forever(function(){
+                this.stepForward(3);
+                this.direction++;
+            });
+            Game.forever(function(){
+                Game.print( Game.inspector.fps );
+                Game.print( "Game 1", 440, 20 );
+            });
+            Game1 = Game;
+        })();
+
+        // Game 2
+        (function(){
+            var Game = Engine('stage2');
+            Game.set({
+                width: 520,
+                height: 390,
+                fpsMax: 60
+            });
+            Game.start();
+            Game.setBackdrop("./assets/background.png", 0, 0, 520, 390);
+            var bird = Game.createSprite("./assets/bird.png");
+            bird.y = 360;
+            bird.forever(function(){
+                this.stepForward(3);
+                this.direction--;
+            });
+            Game.forever(function(){
+                Game.print( Game.inspector.fps );
+                Game.print( "Game 2", 440, 20 );
+            });
+            Game2 = Game;
+        })();
+        
+        window.addEventListener("message", function(msg) {
+            if(msg.data.fn == 'stop') Game.stop();
+            if(msg.data.fn == 'exec') eval(msg.data.code);
+        });
+
+        document.getElementsByTagName("body")[0].addEventListener('mousewheel', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        var script = document.createElement('script');
+        script.src = (new URL(document.location.href)).searchParams.get('script');;
+        document.head.appendChild(script); 
+    </script>
+</body>
+</html>
