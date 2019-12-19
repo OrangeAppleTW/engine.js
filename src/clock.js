@@ -32,9 +32,15 @@ function Clock( onTick, render, settings ){
                         delta = now - lastTickTime,
                         interval = 1000/settings.fpsMax;
                     if (delta > interval) {
+                        // Even the computer executes `stop`, the following instructions will still run. 
+                        // After that, we'll render the status after complete the tick, instead of the moment when we stop.
+                        // The reason why is that when the game is stopped, we still need to print the game scores or switch the costume of sprite to the game over,
+                        // but stop command may be executed in the forever loop or the event callback in onTick function,
+                        // So if we have to make sure that these things have to be done before the `stop`,
+                        // it will make designing games more complicated and difficult.
                         this._onTick();
                         this._render();
-                        // if(this._state!="stopping") this._render();
+
                         lastTickTime = now - (delta % interval);
                     }
                     requestAnimationFrame(onTick);
@@ -51,7 +57,6 @@ function Clock( onTick, render, settings ){
     this.stop = function(){
         if(this._state==="running" || this._state==="readyToStart"){
             this._state = "stopping";
-            this._render();
         }
     }
 }
