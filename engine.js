@@ -181,9 +181,15 @@ function Clock( onTick, render, settings ){
                         delta = now - lastTickTime,
                         interval = 1000/settings.fpsMax;
                     if (delta > interval) {
+                        // Even the computer executes `stop`, the following instructions will still run. 
+                        // After that, we'll render the status after complete the tick, instead of the moment when we stop.
+                        // The reason why is that when the game is stopped, we still need to print the game scores or switch the costume of sprite to the game over,
+                        // but stop command may be executed in the forever loop or the event callback in onTick function,
+                        // So if we have to make sure that these things have to be done before the `stop`,
+                        // it will make designing games more complicated and difficult.
                         this._onTick();
                         this._render();
-                        // if(this._state!="stopping") this._render();
+
                         lastTickTime = now - (delta % interval);
                     }
                     requestAnimationFrame(onTick);
@@ -200,7 +206,6 @@ function Clock( onTick, render, settings ){
     this.stop = function(){
         if(this._state==="running" || this._state==="readyToStart"){
             this._state = "stopping";
-            this._render();
         }
     }
 }
@@ -688,7 +693,7 @@ Loader.prototype = {
 module.exports = Loader;
 
 },{}],8:[function(require,module,exports){
-function Pen (ctx, settings) {
+function Pen (ctx) {
     this.ctx = ctx;
     this.size = 1;
     this.color = 'black';
@@ -712,10 +717,7 @@ Pen.prototype = {
             ctx.strokeStyle = s.color;
             ctx.fillStyle = s.fillColor;
 
-            if (s.type == 'text') {
-                this._drawText(s.t, s.x, s.y);
-            }
-            else if (s.type == 'line') {
+            if (s.type == 'line') {
                 this._drawLine(s.x1,s.y1,s.x2,s.y2);
             }
             else if (s.type == 'circle') {
@@ -735,8 +737,6 @@ Pen.prototype = {
     },
 
     drawTexts: function () {
-        var s;
-        var ctx = this.ctx;
         for(var i=0; i<this.texts.length; i++) {
             t = this.texts[i];
             this._drawText(t.text, t.x, t.y, t.color, t.size, t.font);
