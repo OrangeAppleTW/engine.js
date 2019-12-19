@@ -1,4 +1,4 @@
-function Pen (ctx, settings) {
+function Pen (ctx) {
     this.ctx = ctx;
     this.size = 1;
     this.color = 'black';
@@ -22,10 +22,7 @@ Pen.prototype = {
             ctx.strokeStyle = s.color;
             ctx.fillStyle = s.fillColor;
 
-            if (s.type == 'text') {
-                this._drawText(s.t, s.x, s.y);
-            }
-            else if (s.type == 'line') {
+            if (s.type == 'line') {
                 this._drawLine(s.x1,s.y1,s.x2,s.y2);
             }
             else if (s.type == 'circle') {
@@ -45,8 +42,6 @@ Pen.prototype = {
     },
 
     drawTexts: function () {
-        var s;
-        var ctx = this.ctx;
         for(var i=0; i<this.texts.length; i++) {
             t = this.texts[i];
             this._drawText(t.text, t.x, t.y, t.color, t.size, t.font);
