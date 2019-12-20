@@ -195,159 +195,18 @@ Sprite.prototype.nextCostume = function () {
 }
 
 Sprite.prototype._isTouched = function () {
-
-    // 自己或是對象狀態是隱藏或銷毀，則回傳 false
-    if (this.hidden || this._deleted) return false;
     if (arguments[0] instanceof Sprite) {
-        var target = arguments[0];
-        if (target.hidden || target._deleted || target === this) return false;
+        return this._touchSystem.touched(this, arguments[0]);
     }
-
-    // 當自己和目標都沒有旋轉時，用比較簡單的方法
-    if(
-        (Math.abs(this.direction%180)==90) &&
-        (
-            !(arguments[0] instanceof Sprite) ||
-            (arguments[0] instanceof Sprite) && Math.abs(arguments[0].direction%180==90)
-        )
-    ) {
-        // 由於效能考量，先用成本最小的「座標範圍演算法」判斷是否有機會「像素重疊」
-        var crossX = crossY = false;
-    
-        if( arguments[0] instanceof Sprite ){
-    
-            // 如果目標角色是自己，不進行檢驗，直接回傳 false (因為自己一定會碰到自己)
-            if (this == arguments[0]) { return false; }
-    
-            // 如果目標角色為隱藏，不進行檢驗，直接回傳 false
-            if (arguments[0].hidden) { return false; }
-    
-            var target = arguments[0];
-            if(target._deleted){
-                return false;
-            }
-            crossX = (this.x+this.width/2)>(target.x-target.width/2) && (target.x+target.width/2)>(this.x-this.width/2);
-            crossY = (this.y+this.height/2)>(target.y-target.height/2) && (target.y+target.height/2)>(this.y-this.height/2);
-        } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
-            var targetX = arguments[0].x,
-                targetY = arguments[0].y;
-            crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
-            crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
-        } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
-            var targetX = arguments[0],
-                targetY = arguments[1];
-            crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
-            crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
-        } else {
-            throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
-        }
-    
-        // 如果經過「座標範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
-        if (crossX && crossY) {
-            var renderer = this._renderer;
-            var settings = this._settings;
-            // hitCanvas.width = settings.width;
-            // hitCanvas.height = settings.height;
-    
-            if(!this._renderer) return console.log(this);
-    
-            hitTester = this._hitTester;
-    
-            hitTester.globalCompositeOperation = 'source-over';
-            hitTester.drawImage(    renderer.getImgFromCache(this.getCurrentCostume()),
-                                    this.x-this.width/2, this.y-this.height/2,
-                                    this.width, this.height );
-    
-            hitTester.globalCompositeOperation = 'source-in';
-            if( arguments[0] instanceof Sprite ){
-                var target = arguments[0];
-                hitTester.drawImage(    renderer.getImgFromCache(target.getCurrentCostume()),
-                                        target.x-target.width/2, target.y-target.height/2,
-                                        target.width, target.height );
-            } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
-                hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
-            } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
-                hitTester.fillRect(arguments[0],arguments[1],1,1);
-            } else {
-                return false
-            }
-    
-            // 只要對 sprite 的大小範圍取樣即可，不需對整張 canvas 取樣
-            // @TODO: 對小的對象取樣即可，以增進效能
-            var aData = hitTester.getImageData(this.x-this.width/2, this.y-this.height/2, this.width, this.height).data;
-            var pxCount = aData.length;
-            for (var i = 0; i < pxCount; i += 4) {
-                if (aData[i+3] > 0) {
-                    return true;
-                }
-            }
-        }
-
-    // 當自己或目標有旋轉時，用比較嚴謹的方法 (用距離判斷)
-    } else {
-        
-        var thisRange, targetRange;
-
-        // 由於效能考量，先用成本最小的「圓形範圍演算法」判斷是否有機會「像素重疊」
-        thisRange = Math.sqrt(Math.pow(this.width / 2, 2) + Math.pow(this.height / 2, 2));
-        if (arguments[0] instanceof Sprite) {
-            targetRange = Math.sqrt(Math.pow(target.width / 2, 2) + Math.pow(target.height / 2, 2));
-        } else {
-            targetRange = 1;
-        }
-        if (this.distanceTo.apply(this, arguments) > (thisRange + targetRange)) {
-            return false;
-        }
-        if (thisRange*2 < 1 || targetRange*2 < 1) {
-            return false;
-        }
-    
-        // 如果經過「圓形範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
-        this._hitTester.clearRect(0,0,this._settings.width,this._settings.height);
-    
-        this._hitTester.globalCompositeOperation = 'source-over';
-        if (arguments[0] instanceof Sprite){
-            var tmp = arguments[0].opacity;
-            arguments[0].opacity = 1;
-            this._renderer.drawInstance(arguments[0], this._hitTester);
-            arguments[0].opacity = tmp;
-        } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
-            this._hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
-        } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
-            this._hitTester.fillRect(arguments[0],arguments[1],1,1);
-        } else {
-            throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
-        }
-    
-        this._hitTester.globalCompositeOperation = 'source-in';
-        var tmp = this.opacity;
-        this.opacity = 1;
-        this._renderer.drawInstance(this, this._hitTester);
-        this.opacity = tmp;
-    
-        var aData;
-        if (arguments[0] instanceof Sprite){
-            if (thisRange < targetRange) {
-                aData = this._hitTester.getImageData(this.x - thisRange, this.y - thisRange, thisRange * 2, thisRange * 2).data;
-            } else {
-                aData = this._hitTester.getImageData(target.x - targetRange, target.y - targetRange, targetRange * 2, targetRange * 2).data;
-            }
-        } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
-            aData = this._hitTester.getImageData(arguments[0].x, arguments[0].y, 1, 1).data;
-        } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
-            aData = this._hitTester.getImageData(arguments[0], arguments[1], 1, 1).data;
-        }
-    
-        var pxCount = aData.length;
-        for (var i = 0; i < pxCount; i += 4) {
-            if (aData[i+3] > 0) {
-                return true;
-            }
-        }
-
+    else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
+        return this._touchSystem.touchedDot(this, arguments[0].x ,arguments[0].y);
     }
-
-    return false;
+    else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
+        return this._touchSystem.touchedDot(this, arguments[0] ,arguments[1]);
+    }
+    else {
+        throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
+    }
 }
 
 module.exports = Sprite;

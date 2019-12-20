@@ -8,6 +8,7 @@ var Sound = require("./sound");
 var Loader = require("./loader");
 var IO = require("./io");
 var Pen = require("./pen");
+var TouchSystem = require("./touch-system");
 
 function engine(stageId, debugMode){
 
@@ -41,6 +42,7 @@ function engine(stageId, debugMode){
     var renderer = new Renderer(ctx, settings, loader.images, debugMode);
     var sound = new Sound(loader, debugMode);
     var pen = new Pen(ctx);
+    var touchSystem = new TouchSystem(hitTester, renderer, settings);
     var clock = new Clock(
         // onTick function
         function(){
@@ -70,7 +72,7 @@ function engine(stageId, debugMode){
     Sprite.prototype._eventList = eventList;
     Sprite.prototype._settings = settings;
     Sprite.prototype._renderer = renderer;
-    Sprite.prototype._hitTester = hitTester;
+    Sprite.prototype._touchSystem = touchSystem;
 
     var background={
         path: "#ffffff"
