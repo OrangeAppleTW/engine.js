@@ -11,8 +11,14 @@ function TouchSystem(canvas, loader, settings) {
 TouchSystem.prototype = {
 
     isTouchDot: function (sprite, x, y) {
-        var dotSprite = { x: x, y: y, width: 2, height: 2, direction: 0, area: 4 };
-        return this.isTouch(sprite, dotSprite);
+        return this.isTouch(sprite, {
+            x: x,
+            y: y,
+            width: this.settings.precision*2,
+            height: this.settings.precision*2,
+            direction: 0,
+            area: 1,
+        });
     },
 
     isTouch: function (spriteA, spriteB) {
@@ -25,8 +31,18 @@ TouchSystem.prototype = {
         var boxB = this.getBoxOf(spriteB);
 
         if (this.AABBJudger(boxA, boxB) === false) return false;
+        
+        var undoA = this.reduceAccuracy(spriteA);
+        var undoB = this.reduceAccuracy(spriteB);
 
-        return this.pixelJudger(spriteA, spriteB, boxA.area < boxB.area ? boxA : boxB);
+        var box = boxA.area < boxB.area ? boxA : boxB;
+        this.reduceAccuracy(box);
+        result = this.pixelJudger(spriteA, spriteB, box);
+
+        undoA();
+        undoB();
+
+        return result;
     },
 
     getBoxOf: function (sprite) {
@@ -84,6 +100,27 @@ TouchSystem.prototype = {
             if (aData[i + 3] > 0) return true;
         }
         return false;
+    },
+
+    reduceAccuracy: function (s) {
+        var rate = this.settings.precision;
+        var x = s.x;
+        var y = s.y;
+        var width = s.width;
+        var height = s.height;
+        var scale = s.scale;
+        s.x /= rate;
+        s.y /= rate;
+        s.width /= rate;
+        s.height /= rate;
+        s.scale /= rate;
+        return function () {
+            s.x = x;
+            s.y = y;
+            s.width = width;
+            s.height = height;
+            s.scale = scale;
+        }
     },
 }
 
