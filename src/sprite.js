@@ -196,15 +196,12 @@ Sprite.prototype.nextCostume = function () {
 
 Sprite.prototype._isTouched = function () {
     if (arguments[0] instanceof Sprite) {
-        return this._touchSystem.touched(this, arguments[0]);
-    }
-    else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
-        return this._touchSystem.touchedDot(this, arguments[0].x ,arguments[0].y);
-    }
-    else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
-        return this._touchSystem.touchedDot(this, arguments[0] ,arguments[1]);
-    }
-    else {
+        return this._touchSystem.isTouch(this, arguments[0]);
+    } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
+        return this._touchSystem.isTouchDot(this, arguments[0].x ,arguments[0].y);
+    } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
+        return this._touchSystem.isTouchDot(this, arguments[0] ,arguments[1]);
+    } else {
         throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
     }
 }
