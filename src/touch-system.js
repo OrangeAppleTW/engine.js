@@ -1,9 +1,10 @@
 var util = require("./util");
 var Sprite = require('./sprite');
+var Renderer = require('./renderer');
 
-function TouchSystem(hitTester, renderer, settings) {
-    this.hitTester = hitTester;
-    this.renderer = renderer;
+function TouchSystem(canvas, loader, settings) {
+    this.ctx = canvas.getContext('2d');
+    this.renderer = new Renderer(canvas, loader, settings);
     this.settings = settings;
 }
 
@@ -66,19 +67,19 @@ TouchSystem.prototype = {
 
     pixelJudger: function (spriteA, spriteB, box) {
 
-        this.hitTester.clearRect(0, 0, this.settings.width, this.settings.height);
+        this.ctx.clearRect(0, 0, this.settings.width, this.settings.height);
 
-        this.hitTester.globalCompositeOperation = 'source-over';
-        this.renderer.drawInstance(spriteA, this.hitTester);
+        this.ctx.globalCompositeOperation = 'source-over';
+        this.renderer.drawInstance(spriteA, this.ctx);
 
-        this.hitTester.globalCompositeOperation = 'source-in';
+        this.ctx.globalCompositeOperation = 'source-in';
         if (spriteB instanceof Sprite) {
-            this.renderer.drawInstance(spriteB, this.hitTester);
+            this.renderer.drawInstance(spriteB, this.ctx);
         } else {
-            this.hitTester.fillRect(spriteB.x, spriteB.y, 1, 1);
+            this.ctx.fillRect(spriteB.x, spriteB.y, 1, 1);
         }
 
-        var aData = this.hitTester.getImageData(box.x - box.width/2, box.y - box.height/2, box.width, box.height).data;
+        var aData = this.ctx.getImageData(box.x - box.width/2, box.y - box.height/2, box.width, box.height).data;
         for (var i = 0; i < aData.length; i += 4) {
             if (aData[i + 3] > 0) return true;
         }

@@ -1,118 +1,83 @@
 var util = require("./util");
 
-function Renderer(ctx, settings, images, debugMode){
-
-    // 不可以這麼做，因為當我們要取 canvas 大小時，他可能已經變了
-    // var stageWidth = settings.width,
-    //     stageHeight = settings.height;
-
-    var imageCache = images;
-
-    var self = this;
-
-    this.autoRender = false;
-
-    this.clear = function() {
-        ctx.clearRect(0,0,settings.width,settings.height);
-    };
-
-    this.drawSprites = function(sprites){
-        bubbleSort(sprites._sprites); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
-        sprites.each(function(instance) {
-            self.drawInstance(instance, ctx);
-        });
-    };
-
-    this.drawInstance = function(instance, ctx){
-        // console.log(instance);
-        if(!instance.hidden){
-            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
-            var img = getImgFromCache(instance.getCurrentCostume());
-            instance.width = img.width * instance.scale;
-            instance.height = img.height * instance.scale;
-
-            var rad = util.degreeToRad(instance.direction - 90);
-            ctx.globalAlpha = instance.opacity;
-            if (instance.rotationStyle === 'flipped') {
-                if(instance.direction > 180) {
-                    ctx.translate(instance.x*2, 0);
-                    ctx.scale(-1, 1);
-                    ctx.drawImage(  img,
-                                    (instance.x-instance.width/2),
-                                    (instance.y-instance.height/2),
-                                    instance.width,
-                                    instance.height
-                    )
-                    ctx.scale(-1, 1);
-                    ctx.translate(-instance.x*2, 0);
-                    ctx.globalAlpha = 1;
-                    return;
-                } else {
-                    var rad = 0;
-                }
-            }
-            if(instance.rotationStyle === 'fixed') {
-                var rad = 0;
-            }
-            ctx.translate(instance.x, instance.y);
-            ctx.rotate(rad);
-            ctx.drawImage( img,
-                        (-instance.width / 2),
-                        (-instance.height / 2),
-                        instance.width,
-                        instance.height
-            );
-            ctx.rotate(-rad);
-            ctx.translate(-instance.x, -instance.y);
-            ctx.globalAlpha = 1;
-        }
-    };
-
-    this.getImgFromCache = getImgFromCache;
-
-    // @Params:
-    // - src: backdrop image location
-    // - options: {x:number, y:number, width:number, height:number}
-    this.drawBackdrop = function(src, x, y, width, height){
-        if(src.includes('.')) {
-            var img = imageCache[src];
-            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
-            if( !img ){
-                img=new Image();
-                img.src=src;
-                imageCache[src]=img;
-            }
-            ctx.drawImage(img, (x||0), (y||0), (width||img.width), (height||img.height));
-        } else if(src) {
-            ctx.fillStyle=src;
-            ctx.fillRect(0,0,settings.width, settings.height);
-        }
-    };
-
-    function getImgFromCache(path){
-        var img = imageCache[path];
-        if( !img ){
-            img=new Image();
-            img.src=path;
-            imageCache[path]=img;
-        }
-        return img;
-    }
+function Renderer (canvasEl, loader, settings) {
+    this.canvas = canvasEl;
+    this.ctx = canvasEl.getContext('2d');
+    this.loader = loader;
+    this.settings = settings;
 }
 
-function bubbleSort(arr) {
-    var n = arr.length;
-    var swapped = true;
-    for (let i = 0; i < n && swapped; i++) {
-        swapped = false;
-        for (let j = 0; j < n - 1 - i; j++) {
-            if (arr[j].layer > arr[j + 1].layer) {
-                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
-                swapped = true;
+Renderer.prototype = {
+    
+    clear: function() {
+        this.ctx.clearRect(0, 0, this.settings.width, this.settings.height);
+    },
+
+    drawSprites: function(sprites){
+        sprites._sprites.sort(function (a, b) {
+            return a.layer - b.layer;
+        });
+        var self = this;
+        sprites.each(function (s) {
+            self.drawInstance(s);
+        });
+    },
+
+    drawInstance: function(sprite, ctx){
+
+        if (sprite.hidden) return;
+
+        var ctx = ctx || this.ctx;
+        var img = this.loader.getImgFromCache(sprite.getCurrentCostume());
+        sprite.width = img.width * sprite.scale;
+        sprite.height = img.height * sprite.scale;
+
+
+        var rad = util.degreeToRad(sprite.direction - 90);
+        ctx.globalAlpha = sprite.opacity;
+        if (sprite.rotationStyle === 'flipped') {
+            if(sprite.direction > 180) {
+                ctx.translate(sprite.x*2, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(  img,
+                                (sprite.x-sprite.width/2),
+                                (sprite.y-sprite.height/2),
+                                sprite.width,
+                                sprite.height
+                )
+                ctx.scale(-1, 1);
+                ctx.translate(-sprite.x*2, 0);
+                ctx.globalAlpha = 1;
+                return;
+            } else {
+                var rad = 0;
             }
         }
-    }
-    return arr;
+        if(sprite.rotationStyle === 'fixed') {
+            var rad = 0;
+        }
+        ctx.translate(sprite.x, sprite.y);
+        ctx.rotate(rad);
+        ctx.drawImage( img,
+                    (-sprite.width / 2),
+                    (-sprite.height / 2),
+                    sprite.width,
+                    sprite.height
+        );
+        ctx.rotate(-rad);
+        ctx.translate(-sprite.x, -sprite.y);
+        ctx.globalAlpha = 1;
+    },
+
+    drawBackdrop: function (src, x, y, width, height){
+        if(src.includes('.')) {
+            var img = this.loader.getImgFromCache(src);
+            this.ctx.drawImage(img, (x||0), (y||0), (width||img.width), (height||img.height));
+        } else if(src) {
+            this.ctx.fillStyle = src;
+            this.ctx.fillRect(0 ,0, this.settings.width, this.settings.height);
+        }
+    },
 }
 
 module.exports = Renderer;

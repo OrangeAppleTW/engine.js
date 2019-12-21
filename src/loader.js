@@ -30,6 +30,16 @@ Loader.prototype = {
         }
     },
 
+    getImgFromCache: function (path) {
+        var img = this.images[path];
+        if (!img) {
+            img = new Image();
+            img.src = path;
+            this.images[path] = img;
+        }
+        return img;
+    },
+
     _loadImage: function (path) {
         var instance = this;
         var image = new Image();

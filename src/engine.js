@@ -10,16 +10,13 @@ var IO = require("./io");
 var Pen = require("./pen");
 var TouchSystem = require("./touch-system");
 
-function engine(stageId, debugMode){
+function engine(canvasId, debugMode){
 
     //== Default params setting:
     debugMode  = debugMode||false;
 
-    var canvas= document.getElementById(stageId);
-    var ctx = canvas.getContext("2d");
-
+    var canvas = document.getElementById(canvasId);
     var hitCanvas = document.createElement('canvas');
-    var hitTester = hitCanvas.getContext('2d');
 
     hitCanvas.width = canvas.width;
     hitCanvas.height = canvas.height;
@@ -39,10 +36,10 @@ function engine(stageId, debugMode){
     var inspector = new Inspector();
     var io = new IO(canvas, settings, debugMode);
     var eventList = new EventList(io, debugMode);
-    var renderer = new Renderer(ctx, settings, loader.images, debugMode);
+    var renderer = new Renderer(canvas, loader, settings);
     var sound = new Sound(loader, debugMode);
-    var pen = new Pen(ctx);
-    var touchSystem = new TouchSystem(hitTester, renderer, settings);
+    var pen = new Pen(canvas);
+    var touchSystem = new TouchSystem(hitCanvas, loader, settings);
     var clock = new Clock(
         // onTick function
         function(){

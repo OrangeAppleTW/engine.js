@@ -1,5 +1,5 @@
-function Pen (ctx) {
-    this.ctx = ctx;
+function Pen (canvas) {
+    this.ctx = canvas.getContext('2d');
     this.size = 1;
     this.color = 'black';
     this.fillColor = null;
