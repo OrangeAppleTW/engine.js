@@ -123,12 +123,17 @@ function engine(canvasId, debugMode){
         loader.preload(assets, completeFunc, progressFunc);
     }
 
+    function drawText (text, x, y, color ,size, font) {
+        pen.drawText(text, x, y, color ,size, font);
+    }
+
     var proxy = {
         createSprite: function(args){
             return new Sprite(args);
         },
         Sprite: Sprite,
-        print: function(text, x, y, color ,size, font){ pen.print(text, x, y, color ,size, font) },
+        print: drawText,
+        drawText: drawText,
         setBackground: setBackground,
         setBackdrop: setBackground,
         cursor: io.cursor,

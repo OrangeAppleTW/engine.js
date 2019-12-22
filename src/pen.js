@@ -49,7 +49,7 @@ Pen.prototype = {
         this.texts=[];
     },
 
-    print: function (text, x, y, color ,size, font) {
+    drawText: function (text, x, y, color ,size, font) {
         x = x == undefined ? 10 : x;
         y = y == undefined ? 10 : y;
         color = color || 'black';
