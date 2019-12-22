@@ -58,15 +58,9 @@ Sprite.prototype._updateFrames = function () {
 }
 
 Sprite.prototype.moveTo = function(){
-    if(util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
-        this.x = arguments[0].x;
-        this.y = arguments[0].y;
-    } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
-        this.x = arguments[0];
-        this.y = arguments[1];
-    } else {
-        throw "請傳入角色(Sprite, Cursor)或是 X, Y 座標值"
-    }
+    var pos = util.position(arguments);
+    this.x = pos.x;
+    this.y = pos.y;
 };
 
 Sprite.prototype.move = function(x, y){
@@ -108,20 +102,8 @@ Sprite.prototype.bounceEdge = function () {
 }
 
 Sprite.prototype.toward = function(){
-    var targetX, targetY, offsetX, offsetY, rad;
-    if(util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)){
-        targetX = arguments[0].x,
-        targetY = arguments[0].y;
-    } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
-        targetX = arguments[0],
-        targetY = arguments[1];
-    } else {
-        throw "請傳入角色(Sprite)或是 X, Y 坐標值";
-    }
-    offsetX = targetX - this.x;
-    offsetY = targetY - this.y;
-    rad = Math.atan2(offsetX, -offsetY); // 這裡的 offsetY 和數學坐標是反過來的
-    this.direction = util.radToDegree(rad);
+    var target = util.position(arguments);
+    this.direction = util.vectorToDegree(target.x - this.x,  target.y - this.y);
 }
 
 Sprite.prototype.touched = function () {
@@ -139,13 +121,8 @@ Sprite.prototype.touched = function () {
 };
 
 Sprite.prototype.distanceTo = function(){
-    if( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ){
-        return util.distanceBetween( this, arguments[0] );
-    } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ){
-        return util.distanceBetween( this.x, this.y, arguments[0], arguments[1] );
-    } else {
-        throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
-    }
+    var pos = util.position(arguments);
+    return util.distanceBetween(this.x, this.y, pos.x, pos.y);
 };
 
 Sprite.prototype.always = Sprite.prototype.forever = function(func){
@@ -197,13 +174,9 @@ Sprite.prototype.nextCostume = function () {
 Sprite.prototype._isTouched = function () {
     if (arguments[0] instanceof Sprite) {
         return this._touchSystem.isTouch(this, arguments[0]);
-    } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
-        return this._touchSystem.isTouchDot(this, arguments[0].x ,arguments[0].y);
-    } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
-        return this._touchSystem.isTouchDot(this, arguments[0] ,arguments[1]);
-    } else {
-        throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
     }
+    var pos = util.position(arguments);
+    return this._touchSystem.isTouchDot(this, pos.x, pos.y);
 }
 
 module.exports = Sprite;
