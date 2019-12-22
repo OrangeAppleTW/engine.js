@@ -159,7 +159,7 @@ Sprite.prototype.when = Sprite.prototype.on = function() {
 
     if(event=="listen") {
         return eventList.register(event, arguments[1], this, arguments[2]);
-    } else if(["mousedown", "mouseup", "click"].includes(event)){
+    } else if(["mousedown", "mouseup", "click", "hover"].includes(event)){
         return eventList.register(event, this, arguments[1]);
     } else if (event=="touch"){
         return eventList.register(event, this, arguments[1], arguments[2]);

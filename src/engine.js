@@ -106,7 +106,7 @@ function engine(canvasId, debugMode){
     // for proxy.on / when: 
     function when (event, target, handler){
         // Global when() only accepts followed events:
-        if(["keydown", "keyup", "mousedown", "mouseup", "holding", "click"].includes(event)){
+        if(["keydown", "keyup", "mousedown", "mouseup", "holding", "click", "hover"].includes(event)){
             if(typeof target === "function"){ // 如果不指定對象，直接傳入 handler
                 eventList.register(event, null, target);
             } else {

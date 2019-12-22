@@ -20,6 +20,7 @@ EventList.prototype.traverse = function (){
         else if (pool[i].event=="keyup")        keyJudger(     pool[i].key,    pool[i].handler, io.keyup,   debugMode);
         else if (pool[i].event=="holding")      keyJudger(     pool[i].key,    pool[i].handler, io.holding, debugMode);
         else if (pool[i].event=="touch")        touchJudger(   pool[i].sprite, pool[i].handler, pool[i].targets, debugMode );
+        else if (pool[i].event=="hover")        hoverJudger(   pool[i].sprite, pool[i].handler, io.cursor, debugMode);
     }
     io.clearEvents();
 }
@@ -45,7 +46,7 @@ EventList.prototype.register = function(){
         }
     } else if (["keydown", "keyup", "holding"].includes(event)){
         eventObj.key = arguments[1] || "any"; // 如果對象為 null 則為任意按鍵 "any"
-    } else if (["mousedown", "mouseup", "click"].includes(event)) {
+    } else if (["mousedown", "mouseup", "click", "hover"].includes(event)) {
         eventObj.sprite = arguments[1];
     } else if (event === "listen") {
         eventObj.message = arguments[1];
@@ -67,7 +68,14 @@ EventList.prototype.emit = function (eventName) {
 // 用來判斷 click, mousedown, mouseup 的 function
 function mouseJudger(sprite, handler, mouse, debugMode){
     if(mouse.x && mouse.y){ // 如果有點擊記錄才檢查
-        if(sprite){ // 如果是 Sprite, 則對其做判定
+        if (sprite && sprite instanceof Array) {
+            sprite.forEach(function (s) {
+                if (s.touched(mouse.x, mouse.y)) {
+                    handler.call(s);
+                }
+            });
+        }
+        else if(sprite){ // 如果是 Sprite, 則對其做判定
             if( sprite.touched(mouse.x,mouse.y) ){
                 handler.call(sprite);
                 if(debugMode){
@@ -101,6 +109,21 @@ function touchJudger(sprite, handler, targets, debugMode) {
             if(debugMode) {
                 console.log({event: "Touch", "sprite": sprite, "target": target});
             }
+        }
+    }
+}
+
+function hoverJudger(sprite, handler, cursor){
+    if (sprite instanceof Array) {
+        sprite.forEach(function (s) {
+            if (s.touched(cursor.x, cursor.y)) {
+                handler.call(s);
+            }
+        });
+    }
+    else if(sprite) {
+        if( sprite.touched(cursor.x,cursor.y) ){
+            handler.call(sprite);
         }
     }
 }
