@@ -79,18 +79,22 @@ Sprite.prototype = {
     },
 
     on: function () {
-        var event = arguments[0];
+        var eventName = arguments[0];
         var eventList = this._eventList;
 
-        if(event=='listen') {
-            return eventList.register(event, arguments[1], this, arguments[2]);
-        } else if(['mousedown', 'mouseup', 'click', 'hover'].includes(event)){
-            return eventList.register(event, this, arguments[1]);
-        } else if (event=='touch'){
-            return eventList.register(event, this, arguments[1], arguments[2]);
-        } else {
-            console.log('Sprite.on() does only support "listen", "click" and "touch" events');
-            return false;
+        if (!eventList.validEventName(eventName)) return;
+
+        if (eventName === 'touch') {
+            return eventList.register(eventName, this, arguments[1], arguments[2]);
+        }
+        if (['mousedown', 'mouseup', 'click', 'hover'].includes(eventName)) {
+            return eventList.register(eventName, this, arguments[1]);
+        }
+        if (['keydown', 'keydup', 'holding'].includes(eventName)) {
+            return eventList.register(eventName, arguments[1], arguments[2]);
+        }
+        if (eventName === 'listen') {
+            return eventList.register(eventName, arguments[1], this, arguments[2]);
         }
     },
 

@@ -1,131 +1,119 @@
-function EventList(io, debugMode){
-    this.pool=[];
-    this.io=io;
-    this.debugMode = debugMode || false;
+const VALID_EVENT_NAMES = ['click', 'mousedown', 'mouseup', 'keydown', 'keyup', 'holding', 'touch', 'hover'];
+
+function EventList(io){
+    this.pool = [];
+    this.io = io;
 }
 
-EventList.prototype.traverse = function (){
-    var pool = this.pool,
-        io = this.io,
-        debugMode = this.debugMode;
-    for(var i=0; i<pool.length; i++){
-        if (pool[i].sprite && pool[i]._deleted) {
-            pool.splice(i--, 1);
-            continue;
+EventList.prototype = {
+
+    traverse: function (){
+
+        var io = this.io;
+        var self = this;
+        this.pool.forEach(function (e) {
+            if      (e.event === 'touch')     self.touchJudger( e.sprite, e.handler, e.targets);
+            else if (e.event === 'click')     self.mouseJudger( e.sprite, e.handler, io.clicked);
+            else if (e.event === 'hover')     self.hoverJudger( e.sprite, e.handler, io.cursor);
+            else if (e.event === 'mousedown') self.mouseJudger( e.sprite, e.handler, io.mousedown);
+            else if (e.event === 'mouseup')   self.mouseJudger( e.sprite, e.handler, io.mouseup);
+            else if (e.event === 'holding')   self.keyJudger(   e.key,    e.handler, io.holding);
+            else if (e.event === 'keyup')     self.keyJudger(   e.key,    e.handler, io.keyup);
+            else if (e.event === 'keydown')   self.keyJudger(   e.key,    e.handler, io.keydown);
+        });
+
+        this.pool = this.pool.filter(function (e) {
+            return !(e.sprite && e.sprite._deleted);
+        });
+
+        io.clearEvents();
+    },
+
+    register: function () {
+
+        if (!this.validEventName(arguments[0])) return;
+
+        var event = arguments[0];
+        var eventObj = {
+            event: event,
+            handler: arguments[arguments.length - 1]
+        }        
+
+        if (event === 'touch'){
+            eventObj.sprite = arguments[1];
+            eventObj.targets = [].concat(arguments[2]);
         }
-        if      (pool[i].event=="click")        mouseJudger(   pool[i].sprite, pool[i].handler, io.clicked, debugMode);
-        else if (pool[i].event=="mousedown")    mouseJudger(   pool[i].sprite, pool[i].handler, io.mousedown, debugMode);
-        else if (pool[i].event=="mouseup")      mouseJudger(   pool[i].sprite, pool[i].handler, io.mouseup, debugMode);
-        else if (pool[i].event=="keydown")      keyJudger(     pool[i].key,    pool[i].handler, io.keydown, debugMode);
-        else if (pool[i].event=="keyup")        keyJudger(     pool[i].key,    pool[i].handler, io.keyup,   debugMode);
-        else if (pool[i].event=="holding")      keyJudger(     pool[i].key,    pool[i].handler, io.holding, debugMode);
-        else if (pool[i].event=="touch")        touchJudger(   pool[i].sprite, pool[i].handler, pool[i].targets, debugMode );
-        else if (pool[i].event=="hover")        hoverJudger(   pool[i].sprite, pool[i].handler, io.cursor, debugMode);
-    }
-    io.clearEvents();
-}
-
-EventList.prototype.clear = function(){
-    this.pool=[];
-}
-
-EventList.prototype.register = function(){
-
-    var event = arguments[0];
-    var eventObj = {
-        event: event,
-        handler: arguments[arguments.length - 1]
-    }
-
-    if (event === "touch"){
-        eventObj.sprite = arguments[1];
-        if(arguments[2].constructor === Array) {
-            eventObj.targets = arguments[2];
-        } else {
-            eventObj.targets = [arguments[2]];
+        else if (event === 'hover') {
+            eventObj.sprite = [].concat(arguments[1]);
         }
-    } else if (["keydown", "keyup", "holding"].includes(event)){
-        eventObj.key = arguments[1] || "any"; // 如果對象為 null 則為任意按鍵 "any"
-    } else if (["mousedown", "mouseup", "click", "hover"].includes(event)) {
-        eventObj.sprite = arguments[1];
-    } else if (event === "listen") {
-        eventObj.message = arguments[1];
-        eventObj.sprite = arguments[2];
-    }
-
-    this.pool.push(eventObj);
-}
-
-EventList.prototype.emit = function (eventName) {
-    for(var i=0; i<this.pool.length; i++) {
-        var e = this.pool[i];
-        if(e.event == 'listen' && e.message == eventName) {
-            e.handler.call(e.sprite);
+        else if (['keydown', 'keyup', 'holding'].includes(event)){
+            eventObj.key = arguments[1] instanceof Function ? 'any' : arguments[1];
         }
-    }
-}
+        else if (['mousedown', 'mouseup', 'click'].includes(event)) {
+            if (arguments[1] instanceof Function) {
+                eventObj.sprite = null;
+            }
+            else if (arguments[1] instanceof Array) {
+                eventObj.sprite = arguments[1];
+            } else {
+                eventObj.sprite = [arguments[1]];
+            }
+        }
+        else if (event === 'listen') {
+            eventObj.message = arguments[1];
+            eventObj.sprite = arguments[2];
+        }
 
-// 用來判斷 click, mousedown, mouseup 的 function
-function mouseJudger(sprite, handler, mouse, debugMode){
-    if(mouse.x && mouse.y){ // 如果有點擊記錄才檢查
-        if (sprite && sprite instanceof Array) {
+        this.pool.push(eventObj);
+    },
+
+    emit: function (eventName) {
+        for(var i=0; i<this.pool.length; i++) {
+            var e = this.pool[i];
+            if(e.event == 'listen' && e.message == eventName) {
+                e.handler.call(e.sprite);
+            }
+        }
+    },
+
+    mouseJudger: function (sprite, handler, mouse) {
+        if (!mouse.x || !mouse.y) return; // 如果有點擊記錄才檢查
+        if (sprite) {
             sprite.forEach(function (s) {
                 if (s.touched(mouse.x, mouse.y)) {
                     handler.call(s);
                 }
             });
-        }
-        else if(sprite){ // 如果是 Sprite, 則對其做判定
-            if( sprite.touched(mouse.x,mouse.y) ){
-                handler.call(sprite);
-                if(debugMode){
-                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(mouse)+")");
-                }
-            }
-        } else { // 如果為 null, 則對整個遊戲舞台做判定
+        } else {
             handler();
-            if(debugMode){
-                console.log("Just fired a click handler on stage! ("+JSON.stringify(mouse)+")");
-            }
         }
-    }
-}
+    },
 
-// 用來判斷 keydown, keyup, holding 的 function
-function keyJudger(target, handler, keys, debugMode){
-    if(keys[target]){
-        handler();
-        if(debugMode){
-            console.log("Just fired a keydown handler on: "+key);
-        }
-    }
-}
+    keyJudger: function(target, handler, keys) {
+        if (keys[target]) handler();
+    },
 
-// @TODO: Now we could only detect Sprite instance, not include cursor.
-function touchJudger(sprite, handler, targets, debugMode) {
-    for(var i=0, target; target = targets[i]; i++) {
-        if(sprite.touched(target)) {
-            handler.call(sprite, target);
-            if(debugMode) {
-                console.log({event: "Touch", "sprite": sprite, "target": target});
-            }
-        }
-    }
-}
-
-function hoverJudger(sprite, handler, cursor){
-    if (sprite instanceof Array) {
-        sprite.forEach(function (s) {
-            if (s.touched(cursor.x, cursor.y)) {
-                handler.call(s);
-            }
+    touchJudger: function (sprite, handler, targets) {
+        targets.forEach(function (t) {
+            if (sprite.touched(t)) handler.call(sprite, t);
         });
-    }
-    else if(sprite) {
-        if( sprite.touched(cursor.x,cursor.y) ){
-            handler.call(sprite);
+    },
+
+    hoverJudger: function (sprite, handler, cursor){
+        sprite.forEach(function (s) {
+            if (s.touched(cursor.x, cursor.y)) handler.call(s);
+        });
+    },
+
+    validEventName: function (eventName) {
+        if (VALID_EVENT_NAMES.includes(eventName) === false) {
+            console.error('`' + eventName + '` 事件是不支援的，請檢查是否符合以下支援的事件\n ' +
+            this.VALID_EVENT_NAMES.join(', '));
         }
-    }
+        return true;
+    },
+
+    VALID_EVENT_NAMES: VALID_EVENT_NAMES,
 }
 
 module.exports = EventList;

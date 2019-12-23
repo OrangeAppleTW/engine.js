@@ -100,18 +100,6 @@ function engine(canvasId, debugMode){
         background.h = h;
     }
 
-    // for proxy.on / when: 
-    function when (event, target, handler){
-        // Global when() only accepts followed events:
-        if(["keydown", "keyup", "mousedown", "mouseup", "holding", "click", "hover"].includes(event)){
-            if(typeof target === "function"){ // 如果不指定對象，直接傳入 handler
-                eventList.register(event, null, target);
-            } else {
-                eventList.register(event, target, handler);
-            }
-        }
-    }
-
     function forever (func) {
         settings.updateFunctions.push(func);
     }
@@ -144,8 +132,8 @@ function engine(canvasId, debugMode){
         cursor: io.cursor,
         key: io.holding,
         inspector: inspector,
-        when: when,
-        on: when,
+        when: eventList.register.bind(eventList),
+        on: eventList.register.bind(eventList),
         set: set,
         stop: stop,
         stopRendering: stopRendering,
