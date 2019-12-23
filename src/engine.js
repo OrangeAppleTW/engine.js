@@ -65,14 +65,6 @@ function engine(canvasId, debugMode){
         settings
     );
 
-    // @TODO: 這麼做真的比較好嗎？還是能在 new Sprite 的時候加入就好 (Kevin 2018.10.22)
-    Sprite.prototype._sprites = sprites;
-    Sprite.prototype._eventList = eventList;
-    Sprite.prototype._settings = settings;
-    Sprite.prototype._renderer = renderer;
-    Sprite.prototype._loader = loader;
-    Sprite.prototype._touchSystem = touchSystem;
-
     var background={
         path: "#ffffff"
     };    
@@ -93,6 +85,10 @@ function engine(canvasId, debugMode){
         settings.update = args.update || settings.update;
         settings.fpsMax = args.fpsMax || settings.fpsMax;
         return this;
+    }
+
+    function createSprite (args) {
+        return new Sprite(args, eventList, renderer, loader, touchSystem, settings, sprites);
     }
 
     // for proxy.setBackdrop, setBackground
@@ -128,10 +124,18 @@ function engine(canvasId, debugMode){
         pen.drawText(text, x, y, color ,size, font);
     }
 
+    function stop () {
+        clock.stop(); 
+        sound.stop();
+    }
+
+    function stopRendering () {
+        autoRendering = false;
+        pen.drawingMode = 'instant';
+    }
+
     var proxy = {
-        createSprite: function(args){
-            return new Sprite(args);
-        },
+        createSprite: createSprite,
         Sprite: Sprite,
         print: drawText,
         drawText: drawText,
@@ -143,16 +147,13 @@ function engine(canvasId, debugMode){
         when: when,
         on: when,
         set: set,
-        stop: function(){ 
-            clock.stop(); 
-            sound.stop();
-        },
-        stopRendering: function(){ autoRendering=false; pen.drawingMode="instant"; },
-        start: function(){ clock.start(); },
+        stop: stop,
+        stopRendering: stopRendering,
+        start: clock.start.bind(clock),
         forever: forever,
         update: forever,
         always: forever,
-        clear: function(){ renderer.clear(); },
+        clear: renderer.clear.bind(renderer),
         preload: preload,
         sound: sound,
         broadcast: eventList.emit.bind(eventList),

@@ -1,13 +1,13 @@
 var util = require('./util');
 
-function Sprite(args) {
+function Sprite(args, eventList, renderer, loader, touchSystem, settings, sprites) {
 
     if (args.constructor === String || args.constructor === Array) {
         args = { costumes: [].concat(args) }
     }
 
-    this.x = util.isNumeric(args.x) ? args.x : this._settings.width/2;
-    this.y = util.isNumeric(args.y) ? args.y : this._settings.height/2;
+    this.x = util.isNumeric(args.x) ? args.x : settings.width/2;
+    this.y = util.isNumeric(args.y) ? args.y : settings.height/2;
     this.direction = util.isNumeric(args.direction) ? args.direction : 90;
     this.scale = util.isNumeric(args.scale) ? args.scale : 1;
     this.layer = util.isNumeric(args.layer) ? args.layer : 0;
@@ -23,13 +23,13 @@ function Sprite(args) {
     this._deleted = false;
     this._animation = { frames: [], rate: 5, timer: 0 }
 
-    //== In prototype:
-    // * this._eventList;
-    // * this._settings;
-    // * this._renderer;
-    // * this._sprites;
-    // * this._loader;
-    this._sprites._sprites.push(this);
+    this._eventList = eventList;
+    this._renderer = renderer;
+    this._loader = loader;
+    this._touchSystem = touchSystem;
+    this._settings = settings;
+
+    sprites._sprites.push(this);
 }
 
 Sprite.prototype = {
