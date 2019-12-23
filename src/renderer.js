@@ -23,15 +23,14 @@ Renderer.prototype = {
         });
     },
 
-    drawInstance: function(sprite, ctx){
+    drawInstance: function(sprite){
 
         if (sprite.hidden) return;
 
-        var ctx = ctx || this.ctx;
-
+        var ctx = this.ctx;
         var img = sprite.getCostumeImage();
-
         var rad = util.degreeToRad(sprite.direction - 90);
+
         ctx.globalAlpha = sprite.opacity;
         if (sprite.rotationStyle === 'flipped') {
             if(sprite.direction > 180) {

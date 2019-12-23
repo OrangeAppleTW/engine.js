@@ -83,14 +83,16 @@ TouchSystem.prototype = {
 
     pixelJudger: function (spriteA, spriteB, box) {
 
+        if (box.width < 1 || box.height < 1) return false;
+
         this.ctx.clearRect(0, 0, this.settings.width, this.settings.height);
 
         this.ctx.globalCompositeOperation = 'source-over';
-        this.renderer.drawInstance(spriteA, this.ctx);
+        this.renderer.drawInstance(spriteA);
 
         this.ctx.globalCompositeOperation = 'source-in';
         if (spriteB instanceof Sprite) {
-            this.renderer.drawInstance(spriteB, this.ctx);
+            this.renderer.drawInstance(spriteB);
         } else {
             this.ctx.fillRect(spriteB.x, spriteB.y, 1, 1);
         }
