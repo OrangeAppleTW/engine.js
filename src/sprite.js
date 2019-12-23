@@ -1,4 +1,4 @@
-var util = require("./util");
+var util = require('./util');
 
 function Sprite(args) {
 
@@ -8,20 +8,19 @@ function Sprite(args) {
 
     this.x = util.isNumeric(args.x) ? args.x : this._settings.width/2;
     this.y = util.isNumeric(args.y) ? args.y : this._settings.height/2;
-    this.width = 1;
-    this.height = 1;
     this.direction = util.isNumeric(args.direction) ? args.direction : 90;
-    this.rotationStyle = args.rotationStyle || "full"; // "full", "flipped" and "fixed"
-    this.scale = args.scale || 1;
-    this.costumes = [].concat(args.costumes); // Deal with single string
-    this.hidden = args.hidden || false;
+    this.scale = util.isNumeric(args.scale) ? args.scale : 1;
     this.layer = util.isNumeric(args.layer) ? args.layer : 0;
     this.opacity = util.isNumeric(args.opacity) ? args.opacity : 1;
-    this.costumeId = 0;
+    this.costumeId = util.isNumeric(args.costumeId) ? args.costumeId : 0;
+    this.costumes = [].concat(args.costumes); // Deal with single string
+    this.hidden = !!args.hidden; // change to boolean
+    this.rotationStyle = ['full','flipped','fixed'].includes(args.rotationStyle) ? args.rotationStyle : 'full'; 
+    this.width = 1;
+    this.height = 1;
 
     this._onTickFuncs = [];
     this._deleted = false;
-
     this._animation = { frames: [], rate: 5, timer: 0 }
 
     //== In prototype:
@@ -33,158 +32,162 @@ function Sprite(args) {
     this._sprites._sprites.push(this);
 }
 
-Sprite.prototype.update = function () {
-    this._updateDirection();
-    this._updateSize();
-    this._updateFrames();
-    for (var i=0; i < this._onTickFuncs.length; i++) {
-        this._onTickFuncs[i].call(this);
-    }
-}
+Sprite.prototype = {
 
-Sprite.prototype._updateDirection = function () {
-    this.direction = this.direction % 360;
-    if(this.direction < 0) this.direction += 360;
-}
+    stepForward: function (distance) {
+        var rad = util.degreeToRad(this.direction);
+        this.x += Math.sin(rad)*distance;
+        this.y -= Math.cos(rad)*distance;
+    },
 
-Sprite.prototype._updateSize = function () {
-    var img = this.getCostumeImage();
-    this.width = img.width * this.scale;
-    this.height = img.height * this.scale;
-}
+    moveTo: function () {
+        var pos = util.position(arguments);
+        this.x = pos.x;
+        this.y = pos.y;
+    },
 
-Sprite.prototype._updateFrames = function () {
-    var animate = this._animation;
-    if(animate.frames.length > 0) {
-        var now = new Date().getTime();
-        if(now >= animate.timer + 1000 / animate.rate) {
-            animate.timer = now;
-            this.costumeId = animate.frames.shift();
-            if(animate.frames.length <= 0 && animate.callback) animate.callback();
+    move: function (x, y) {
+        this.x += x;
+        this.y += y;
+    },
+
+    toward: function () {
+        var target = util.position(arguments);
+        this.direction = util.vectorToDegree(target.x - this.x,  target.y - this.y);
+    },
+
+    touched: function () {
+        if (arguments[0].constructor === Array) {
+            for(var i=0; i<arguments[0].length; i++){
+                if (this._isTouched(arguments[0][i])){
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return this._isTouched.apply(this, arguments);
         }
-    }
-}
+    },
 
-Sprite.prototype.moveTo = function(){
-    var pos = util.position(arguments);
-    this.x = pos.x;
-    this.y = pos.y;
-};
+    distanceTo: function () {
+        var pos = util.position(arguments);
+        return util.distanceBetween(this.x, this.y, pos.x, pos.y);
+    },
 
-Sprite.prototype.move = function(x, y){
-    this.x += x;
-    this.y += y;
-};
+    forever: function (func) {
+        this._onTickFuncs.push(func);
+    },
 
-Sprite.prototype.stepForward = function(distance){
-    var rad = util.degreeToRad(this.direction)
-    this.x += Math.sin(rad)*distance;
-    this.y -= Math.cos(rad)*distance;
-};
+    on: function () {
+        var event = arguments[0];
+        var eventList = this._eventList;
 
-Sprite.prototype.bounceEdge = function () {
-    if (this.x < 0) {
-        this.x = 0;
-        if (this.direction > 180 && this.direction > 0) {
-            this.direction = -this.direction;
+        if(event=='listen') {
+            return eventList.register(event, arguments[1], this, arguments[2]);
+        } else if(['mousedown', 'mouseup', 'click', 'hover'].includes(event)){
+            return eventList.register(event, this, arguments[1]);
+        } else if (event=='touch'){
+            return eventList.register(event, this, arguments[1], arguments[2]);
+        } else {
+            console.log('Sprite.on() does only support "listen", "click" and "touch" events');
+            return false;
         }
-    }
-    else if (this.x > this._settings.width) {
-        this.x = this._settings.width;
-        if (this.direction < 180) {
-            this.direction = -this.direction;
-        }
-    }
-    if (this.y < 0) {
-        this.y = 0;
-        if (this.direction < 90 || this.direction > 270) {
-            this.direction = -this.direction + 180;
-        }
-    }
-    else if (this.y > this._settings.height) {
-        this.y = this._settings.height;
-        if (this.direction > 90 || this.direction < 270) {
-            this.direction = -this.direction + 180;
-        }
-    }
-}
+    },
 
-Sprite.prototype.toward = function(){
-    var target = util.position(arguments);
-    this.direction = util.vectorToDegree(target.x - this.x,  target.y - this.y);
-}
+    destroy: function(){
+        this._deleted = true;
+    },
 
-Sprite.prototype.touched = function () {
-    if (arguments[0].constructor === Array) {
-        for(var i=0; i<arguments[0].length; i++){
-            if (this._isTouched(arguments[0][i])){
-                return true;
+    nextCostume: function () {
+        this.costumeId += 1;
+        if(this.costumeId >= this.costumes.length) {
+            this.costumeId = 0;
+        }
+    },
+
+    bounceEdge: function () {
+        if (this.x < 0) {
+            this.x = 0;
+            if (this.direction > 180 && this.direction > 0) {
+                this.direction = -this.direction;
             }
         }
-        return false;
-    } else {
-        return this._isTouched.apply(this, arguments);
-    }
-    
-};
+        else if (this.x > this._settings.width) {
+            this.x = this._settings.width;
+            if (this.direction < 180) {
+                this.direction = -this.direction;
+            }
+        }
+        if (this.y < 0) {
+            this.y = 0;
+            if (this.direction < 90 || this.direction > 270) {
+                this.direction = -this.direction + 180;
+            }
+        }
+        else if (this.y > this._settings.height) {
+            this.y = this._settings.height;
+            if (this.direction > 90 || this.direction < 270) {
+                this.direction = -this.direction + 180;
+            }
+        }
+    },
 
-Sprite.prototype.distanceTo = function(){
-    var pos = util.position(arguments);
-    return util.distanceBetween(this.x, this.y, pos.x, pos.y);
-};
+    animate: function (frames, frameRate, callback) {
+        this._animation = {
+            frames: frames,
+            rate: frameRate || 5,
+            callback: callback,
+            timer: 0
+        }
+    },
 
-Sprite.prototype.always = Sprite.prototype.forever = function(func){
-    this._onTickFuncs.push(func);
-};
+    getCostumeImage: function () {
+        var id = this.costumes[this.costumeId];
+        return this._loader.getImgFromCache(id);
+    },
 
-Sprite.prototype.when = Sprite.prototype.on = function() {
+    update: function () {
+        this._updateDirection();
+        this._updateSize();
+        this._updateFrames();
+        for (var i=0; i < this._onTickFuncs.length; i++) {
+            this._onTickFuncs[i].call(this);
+        }
+    },
 
-    var event = arguments[0];
-    var eventList = this._eventList;
+    _updateDirection: function () {
+        this.direction = this.direction % 360;
+        if(this.direction < 0) this.direction += 360;
+    },
 
-    if(event=="listen") {
-        return eventList.register(event, arguments[1], this, arguments[2]);
-    } else if(["mousedown", "mouseup", "click", "hover"].includes(event)){
-        return eventList.register(event, this, arguments[1]);
-    } else if (event=="touch"){
-        return eventList.register(event, this, arguments[1], arguments[2]);
-    } else {
-        console.log('Sprite.on() does only support "listen", "click" and "touch" events');
-        return false;
-    }
-};
+    _updateSize: function () {
+        var img = this.getCostumeImage();
+        this.width = img.width * this.scale;
+        this.height = img.height * this.scale;
+    },
 
-Sprite.prototype.destroy = function(){
-    this._deleted = true;
-};
+    _updateFrames: function () {
+        var animate = this._animation;
+        if(animate.frames.length > 0) {
+            var now = new Date().getTime();
+            if(now >= animate.timer + 1000 / animate.rate) {
+                animate.timer = now;
+                this.costumeId = animate.frames.shift();
+                if(animate.frames.length <= 0 && animate.callback) animate.callback();
+            }
+        }
+    },
 
-Sprite.prototype.getCostumeImage = function () {
-    var id = this.costumes[this.costumeId];
-    return this._loader.getImgFromCache(id);
+    _isTouched: function () {
+        if (arguments[0] instanceof Sprite) {
+            return this._touchSystem.isTouch(this, arguments[0]);
+        }
+        var pos = util.position(arguments);
+        return this._touchSystem.isTouchDot(this, pos.x, pos.y);
+    },
 }
 
-Sprite.prototype.animate = function (frames, frameRate, callback) {
-    this._animation = {
-        frames: frames,
-        rate: frameRate || 5,
-        callback: callback,
-        timer: 0
-    }
-}
-
-Sprite.prototype.nextCostume = function () {
-    this.costumeId += 1;
-    if(this.costumeId >= this.costumes.length) {
-        this.costumeId = 0;
-    }
-}
-
-Sprite.prototype._isTouched = function () {
-    if (arguments[0] instanceof Sprite) {
-        return this._touchSystem.isTouch(this, arguments[0]);
-    }
-    var pos = util.position(arguments);
-    return this._touchSystem.isTouchDot(this, pos.x, pos.y);
-}
+Sprite.prototype.when = Sprite.prototype.on;
+Sprite.prototype.always = Sprite.prototype.forever;
 
 module.exports = Sprite;
