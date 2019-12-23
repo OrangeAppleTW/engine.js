@@ -70,6 +70,7 @@ function engine(canvasId, debugMode){
     Sprite.prototype._eventList = eventList;
     Sprite.prototype._settings = settings;
     Sprite.prototype._renderer = renderer;
+    Sprite.prototype._loader = loader;
     Sprite.prototype._touchSystem = touchSystem;
 
     var background={

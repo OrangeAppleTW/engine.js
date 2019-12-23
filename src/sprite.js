@@ -29,11 +29,13 @@ function Sprite(args) {
     // * this._settings;
     // * this._renderer;
     // * this._sprites;
+    // * this._loader;
     this._sprites._sprites.push(this);
 }
 
 Sprite.prototype.update = function () {
     this._updateDirection();
+    this._updateSize();
     this._updateFrames();
     for (var i=0; i < this._onTickFuncs.length; i++) {
         this._onTickFuncs[i].call(this);
@@ -43,6 +45,12 @@ Sprite.prototype.update = function () {
 Sprite.prototype._updateDirection = function () {
     this.direction = this.direction % 360;
     if(this.direction < 0) this.direction += 360;
+}
+
+Sprite.prototype._updateSize = function () {
+    var img = this.getCostumeImage();
+    this.width = img.width * this.scale;
+    this.height = img.height * this.scale;
 }
 
 Sprite.prototype._updateFrames = function () {
@@ -81,7 +89,7 @@ Sprite.prototype.bounceEdge = function () {
             this.direction = -this.direction;
         }
     }
-    if (this.x > this._settings.width) {
+    else if (this.x > this._settings.width) {
         this.x = this._settings.width;
         if (this.direction < 180) {
             this.direction = -this.direction;
@@ -93,7 +101,7 @@ Sprite.prototype.bounceEdge = function () {
             this.direction = -this.direction + 180;
         }
     }
-    if (this.y > this._settings.height) {
+    else if (this.y > this._settings.height) {
         this.y = this._settings.height;
         if (this.direction > 90 || this.direction < 270) {
             this.direction = -this.direction + 180;
@@ -150,10 +158,10 @@ Sprite.prototype.destroy = function(){
     this._deleted = true;
 };
 
-Sprite.prototype.getCurrentCostume = function(){
-    var id = this.costumeId;
-    return this.costumes[id];
-};
+Sprite.prototype.getCostumeImage = function () {
+    var id = this.costumes[this.costumeId];
+    return this._loader.getImgFromCache(id);
+}
 
 Sprite.prototype.animate = function (frames, frameRate, callback) {
     this._animation = {

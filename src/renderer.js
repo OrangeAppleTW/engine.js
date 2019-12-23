@@ -28,10 +28,8 @@ Renderer.prototype = {
         if (sprite.hidden) return;
 
         var ctx = ctx || this.ctx;
-        var img = this.loader.getImgFromCache(sprite.getCurrentCostume());
-        sprite.width = img.width * sprite.scale;
-        sprite.height = img.height * sprite.scale;
 
+        var img = sprite.getCostumeImage();
 
         var rad = util.degreeToRad(sprite.direction - 90);
         ctx.globalAlpha = sprite.opacity;
