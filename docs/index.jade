@@ -17,143 +17,79 @@ html(lang='en')
     script(src='../lib/codemirror/codemirror.js')
     script(src='../lib/codemirror/mode/javascript/javascript.js')
   body
+    .navbar.js-navbar
+      
+      a.navbar-title(href='#engine') Engine
+      a.navbar-item(href='#intro') 介紹
+      a.navbar-item(href='#require') 環境準備
+
+      a.navbar-title(href='#intro') start
+      a.navbar-item(href='#start-game') 創造遊戲
+      a.navbar-item(href='#start-preload') 素材載入
+      a.navbar-item(href='#start-setBackdrop') 設定背景圖
+      a.navbar-item(href='#start-createSprite') 創造角色
+      a.navbar-item(href='#start-forever') 遊戲迴圈
+      a.navbar-item(href='#start-event') 遊戲事件
+      a.navbar-item(href='#start-sound') 遊戲音效
+      a.navbar-item(href='#start-print') 顯示文字
+      a.navbar-item(href='#start-final') 完成
+
+      a.navbar-title(href='#sprite-prop') 角色屬性
+      a.navbar-item(href='#sprite-prop-xy') 座標
+      a.navbar-item(href='#sprite-prop-direction') 方向
+      a.navbar-item(href='#sprite-prop-scale') 大小
+      a.navbar-item(href='#sprite-prop-rotationStyle') 旋轉方式
+      a.navbar-item(href='#sprite-prop-opacity') 透明度
+      a.navbar-item(href='#sprite-prop-costumeId') 造型編號
+      a.navbar-item(href='#sprite-prop-layer') 圖層順序
+      a.navbar-item(href='#sprite-prop-hidden') 隱藏
+
+      a.navbar-title(href='#sprite-methods') 角色方法
+      a.navbar-item(href='#sprite-methods-moveTo') 移動到
+      a.navbar-item(href='#sprite-methods-move') 位移
+      a.navbar-item(href='#sprite-methods-stepForward') 朝向前方移動
+      a.navbar-item(href='#sprite-methods-bounceEdge') 碰到邊緣就反彈
+      a.navbar-item(href='#sprite-methods-toward') 朝向
+      a.navbar-item(href='#sprite-methods-event') 綁定事件
+      a.navbar-item(href='#sprite-methods-touched') 碰撞檢測
+      a.navbar-item(href='#sprite-methods-forever') 角色遊戲迴圈
+      a.navbar-item(href='#sprite-methods-animate') 播放動畫
+      a.navbar-item(href='#sprite-methods-destroy') 銷毀
+      a.navbar-item(href='#sprite-methods-broadcast') 廣播
+      a.navbar-item(href='#sprite-methods-distanceTo') 角色之間的距離
+      
+      a.navbar-title(href='#event') 事件
+      a.navbar-item(href='#event-touch') 碰撞
+      a.navbar-item(href='#event-click') 點擊
+      a.navbar-item(href='#event-mousedown') 滑鼠按下
+      a.navbar-item(href='#event-mouseup') 滑鼠放開
+      a.navbar-item(href='#event-keydown') 鍵盤按下
+      a.navbar-item(href='#event-keyup') 鍵盤放開
+      a.navbar-item(href='#event-holding') 鍵盤按住
+      
+      a.navbar-title(href='#keyboard-cursor') 鍵盤&滑鼠
+      a.navbar-item(href='#cursor') 滑鼠狀態
+      a.navbar-item(href='#keyboard') 鍵盤狀態
+      
+      a.navbar-title(href='#sound') 聲音
+      a.navbar-item(href='#sound-play') 播放
+      a.navbar-item(href='#sound-setVolume') 音量大小
+      a.navbar-item(href='#sound-mute') 靜音
+      a.navbar-item(href='#sound-stop') 停止
+      
+      a.navbar-title(href='#pen') 繪筆
+      a.navbar-item(href='#pen-attr') 繪筆屬性
+      a.navbar-item(href='#pen-drawLine') 線條
+      a.navbar-item(href='#pen-drawRect') 矩形
+      a.navbar-item(href='#pen-drawCircle') 圓形
+      a.navbar-item(href='#pen-drawTriangle') 三角形
+      a.navbar-item(href='#pen-drawPolygon') 多邊形
+      a.navbar-item(href='#pen-drawText') 文字
+
+      a.navbar-title(href='./test.html') Examples
+
     .container
-      .treemenu
-        ul
-          li
-            a(href='#intro') Engine
-            ul
-              li
-                a(href='#intro') 介紹
-              li
-                a(href='#require') 環境準備
-          li
-            a(href='#start') 開始
-            ul
-              li
-                a(href='#start-game') 創造遊戲
-              li
-                a(href='#start-preload') 素材載入
-              li
-                a(href='#start-setBackdrop') 設定背景圖
-              li
-                a(href='#start-createSprite') 創造角色
-              li
-                a(href='#start-forever') 遊戲迴圈
-              li
-                a(href='#start-event') 遊戲事件
-              li
-                a(href='#start-sound') 遊戲音效
-              li
-                a(href='#start-print') 顯示文字
-              li
-                a(href='#start-final') 完成
-          li
-            a(href='#sprite-prop') 角色的特徵
-            ul
-              li
-                a(href='#sprite-prop-xy') 座標
-              li
-                a(href='#sprite-prop-direction') 方向
-              li
-                a(href='#sprite-prop-scale') 大小
-              li
-                a(href='#sprite-prop-rotationStyle') 旋轉方式
-              li
-                a(href='#sprite-prop-opacity') 透明度
-              li
-                a(href='#sprite-prop-costumeId') 造型編號
-              li
-                a(href='#sprite-prop-layer') 圖層順序
-              li
-                a(href='#sprite-prop-hidden') 隱藏
-          li
-            a(href='#sprite-methods') 角色的方法
-            ul
-              li
-                a(href='#sprite-methods-moveTo') 移動到
-              li
-                a(href='#sprite-methods-move') 位移
-              li
-                a(href='#sprite-methods-stepForward') 朝向前方移動
-              li
-                a(href='#sprite-methods-edgeBounce') 碰到邊緣就反彈
-              li
-                a(href='#sprite-methods-toward') 朝向
-              li
-                a(href='#sprite-methods-event') 綁定事件
-              li
-                a(href='#sprite-methods-touched') 碰撞檢測
-              li
-                a(href='#sprite-methods-forever') 角色遊戲迴圈
-              li
-                a(href='#sprite-methods-animate') 播放動畫
-              li
-                a(href='#sprite-methods-destroy') 銷毀
-              li
-                a(href='#sprite-methods-broadcast') 廣播
-              li
-                a(href='#sprite-methods-distanceTo') 角色之間的距離
-          li
-            a(href='#event') 事件
-            ul
-              li
-                a(href='#event-touch') 碰撞
-              li
-                a(href='#event-click') 點擊
-              li
-                a(href='#event-mousedown') 滑鼠按下
-              li
-                a(href='#event-mouseup') 滑鼠放開
-              li
-                a(href='#event-keydown') 鍵盤按下
-              li
-                a(href='#event-keyup') 鍵盤放開
-              li
-                a(href='#event-holding') 鍵盤按住
-          li
-            a(href='#keyboard-cursor') 鍵盤&滑鼠
-            ul
-              li
-                a(href='cursor') 滑鼠狀態
-              li
-                a(href='#keyboard') 鍵盤狀態
-          li
-            a(href='#sound') 聲音
-            ul
-              li
-                a(href='#sound-play') 播放
-              li
-                a(href='#sound-setVolume') 音量大小
-              li
-                a(href='#sound-mute') 靜音
-              li
-                a(href='#sound-stop') 停止
-          li
-            a(href='#pen') 繪筆
-            ul
-              li
-                a(href='#pen-attr') 繪筆屬性
-              li
-                a(href='#pen-drawLine') 線條
-              li
-                a(href='#pen-drawRect') 矩形
-              li
-                a(href='#pen-drawCircle') 圓形
-              li
-                a(href='#pen-drawTriangle') 三角形
-              li
-                a(href='#pen-drawPolygon') 多邊形
-              li
-                a(href='#pen-drawText') 文字
-          //- li
-          //-   a(href='#1') 開發
-          //-   ul
-          //-     li
-          //-       a(href='#1') 環境安裝
-          //-     li
-          //-       a(href='#1') 叩叮學院
-      .content
+      div(style="max-width: 800px")
         h1
           span#engine
           | EngineJS
@@ -167,11 +103,11 @@ html(lang='en')
         section
           h2
             span#sprite-prop 角色屬性
-          include ./sections/sprite_prop
+          include ./sections/sprite_props
         section
           h2
             span#sprite-methods 角色方法
-          include ./sections/sprite_meth
+          include ./sections/sprite_methods
         section
           h2
             span#event 事件
@@ -188,10 +124,10 @@ html(lang='en')
           h2
             span#pen 繪筆
           include ./sections/pen
-    .popup.js-popup#editor
-      .popup-content
-        .stage
-          textarea#editor-textarea(name='')
-          iframe#sandbox(src='../test/sandbox.html', frameborder='0', scrolling="no")
-        .btns
-          button.btn.start.js-start Run
+
+  .popup.js-popup
+    .popup-content
+      .runner
+        button.btn.run.js-run Run
+        textarea#editor-textarea(name='')
+        iframe#sandbox(src='../test/sandbox.html', frameborder='0', scrolling="no")

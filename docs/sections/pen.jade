@@ -94,7 +94,23 @@ section
   h3
     span#pen-drawText 文字
   p
-    span.syntax pen.drawText(text, x, y, font);
+    span.syntax Game.print(text, x, y, color, size, fontStyle);
+  p
+    | text: 文字的內容
+    br
+    | x: X 座標
+    br
+    | y: Y 座標
+    br
+    br
+    | color: 顏色
+    | fontStyle: 字型，預設為 "Arial"
+  pre.javascript
+    code
+      | Game.print('Hello World!', 300, 400, 'red', 100);
+  span.example-code.js-example-code(href='', code-path='../test/pen/drawText.js') 範例程式
+  p
+    span.syntax Game.pen.drawText(text, x, y, color, size, fontStyle);
   p
     | text: 文字的內容
     br

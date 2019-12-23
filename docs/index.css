@@ -1,7 +1,9 @@
 body {
   background-color: #eee;
   margin: 0;
-  padding: 0; }
+  padding: 0;
+  font-family: monospace;
+  font-size: 1.1rem; }
 
 h1 {
   /*font-size: 2em;*/
@@ -23,52 +25,15 @@ h3 {
 
 p {
   /*font-size: 1em;*/
-  font-size: 0.9em;
+  font-size: 1em;
   margin-top: 1em;
   margin-bottom: 1em; }
-
-a {
-  color: #159f9f; }
 
 section {
   margin-bottom: 60px; }
 
 section:last-child {
   margin-bottom: calc(100vh - 5 00px); }
-
-.warning {
-  background-color: #ffcece;
-  color: #ff5656;
-  border: 2px solid #ff5656;
-  padding: 15px; }
-
-.container {
-  width: 800px;
-  margin: auto;
-  padding: 45px 0px; }
-
-.content {
-  width: 100%;
-  height: 300vh;
-  padding-left: 230px;
-  box-sizing: border-box;
-  color: #333; }
-
-.hljs {
-  padding: 15px 10px;
-  border: 2px solid #ccc; }
-
-.syntax {
-  font-weight: bold;
-  display: block;
-  margin-bottom: 10px;
-  font-size: 1.1em; }
-
-.example-code {
-  color: #159f9f;
-  font-size: 0.9em;
-  text-decoration: underline;
-  cursor: pointer; }
 
 .popup {
   position: fixed;
@@ -80,62 +45,25 @@ section:last-child {
   transition: all 0.4s; }
   .popup-content {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    height: 100vh;
+    right: 0;
+    padding: 15px;
     background-color: #fff;
     transition: all 0.4s;
-    transform: translate(-50%, 100vh);
-    box-shadow: 0 10px 16px 0 rgba(0, 0, 0, 0.2); }
+    transform: translate(100vw, 0px);
+    box-shadow: 0 10px 16px 0 rgba(0, 0, 0, 0.2);
+    overflow: scroll; }
   .popup.active {
     z-index: 1;
     background-color: rgba(0, 0, 0, 0.5); }
     .popup.active .popup-content {
-      transform: translate(-50%, -50%); }
-
-.stage {
-  width: 1060px;
-  height: 410px;
-  padding: 10px;
-  box-sizing: border-box; }
-  .stage .CodeMirror, .stage iframe {
-    display: inline-block;
-    width: 520px;
-    height: 390px; }
-
-.treemenu {
-  position: fixed;
-  width: 230px;
-  height: 100vh;
-  box-sizing: border-box; }
-  .treemenu a {
-    border-left: 3px solid rgba(0, 0, 0, 0);
-    padding: 2px 7px;
-    color: #777;
-    text-decoration: none; }
-  .treemenu li {
-    padding-top: 7px; }
-    .treemenu li > a {
-      font-size: 0.9em; }
-    .treemenu li li > a {
-      font-size: 0.8em; }
-  .treemenu ul {
-    list-style-type: none;
-    padding-left: 15px; }
-    .treemenu ul ul {
-      display: none; }
-  .treemenu li.focus ul {
-    display: list-item; }
-  .treemenu li.focus > a {
-    color: #159f9f;
-    border-left: 3px solid #159f9f; }
-
-.btns {
-  position: absolute;
-  bottom: -60px;
-  left: 50%;
-  transform: translateX(-50%); }
+      transform: translate(0, 0); }
+  .popup #sandbox {
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.5);
+    margin-bottom: 30px; }
 
 .btn {
+  cursor: pointer;
   display: inline-block;
   border: 0;
   margin: 3px;
@@ -144,7 +72,60 @@ section:last-child {
   box-shadow: 0 10px 16px 0 rgba(0, 0, 0, 0.2);
   border-radius: 3px;
   padding: 5px 15px; }
-  .btn.start {
+  .btn.run {
     background-color: #d13b21; }
-  .btn.start:hover {
+  .btn.run:hover {
     background-color: #e8553c; }
+
+span.example-code {
+  cursor: pointer;
+  display: inline-block;
+  border: 0;
+  margin: 3px;
+  font-size: 1.4em;
+  color: white;
+  background-color: #d13b21;
+  box-shadow: 0 10px 16px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  padding: 5px 15px; }
+  span.example-code:hover {
+    background-color: #e8553c; }
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh;
+  padding: 15px;
+  padding-bottom: 90px;
+  z-index: 100;
+  box-sizing: border-box;
+  background-color: #222;
+  overflow-y: scroll; }
+  .navbar .navbar-title, .navbar .navbar-item {
+    cursor: pointer;
+    display: block;
+    text-decoration: none; }
+    .navbar .navbar-title:hover, .navbar .navbar-item:hover {
+      color: gold; }
+    .navbar .navbar-title.focus, .navbar .navbar-item.focus {
+      color: gold; }
+  .navbar .navbar-title {
+    margin-top: 20px;
+    color: #999;
+    font-size: 1.4rem; }
+  .navbar .navbar-item {
+    padding: 3px 0px;
+    color: #666; }
+
+.container {
+  padding: 15px;
+  margin-left: 250px; }
+
+.runner {
+  width: 600px; }
+  .runner #sandbox {
+    margin-top: 15px;
+    width: 600px;
+    height: 450px; }

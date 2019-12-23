@@ -6,16 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <style>
-        body {
-            width: 520px;
-            height: 390px;
-            padding: 0px;
-            margin: 0px;
-        }
-        canvas {
-            width: 520px;
-            height: 390px;
-        }
+        body { padding: 0px; margin: 0px; }
     </style>
 </head>
 <body>
@@ -24,11 +15,16 @@
     <script>
         window.print = undefined;
         
-        Game = Engine('stage');
+        const Game = Engine('stage');
+        
+        // spread all methods to global
+        for (let _ in Game) window[_] = Game[_];
+
         Game.set({
-            width: 520,
-            height: 390,
-            precision: 3,
+            width: 1200,
+            height: 900,
+            precision: 4,
+            zoom: 0.5,
         });
         Game.start();
         
@@ -36,15 +32,6 @@
             if(msg.data.fn == 'stop') Game.stop();
             if(msg.data.fn == 'exec') eval(msg.data.code);
         });
-
-        document.getElementsByTagName("body")[0].addEventListener('mousewheel', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        });
-
-        var script = document.createElement('script');
-        script.src = (new URL(document.location.href)).searchParams.get('script');;
-        document.head.appendChild(script); 
     </script>
 </body>
 </html>

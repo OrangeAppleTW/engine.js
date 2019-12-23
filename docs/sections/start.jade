@@ -13,7 +13,8 @@ section
       | Game.set({
       |     width: 400, // Default: 640px
       |     height: 400, // Default: 480px
-      |     debugMode: true // Default: false
+      |     debugMode: true, // Default: false
+      |     precision: 4 // 像素碰撞的分辨率，單位是 pixel
       | });
   p.warning Koding School 平台編輯程式，不需要初始化遊戲
 section
@@ -25,13 +26,14 @@ section
   pre.javascript
     code
       | Game.preload([
-      |     "./assets/bird.png",
-      |     "./assets/up-tube.png",
-      |     "./assets/down-tube.png",
-      |     "./assets/start-button.png",
-      |     "./assets/gameOver.png",
-      |     "./assets/jump.ogg",
-      |     "./assets/bgm.ogg"
+      |     './assets/background.png',
+      |     './assets/bird.png',
+      |     './assets/ground.png',
+      |     './assets/pipes.png',
+      |     './assets/start-button.png',
+      |     './assets/gameover.png',
+      |     './assets/jump.ogg',
+      |     './assets/bgm.ogg'
       | ],function() {
       |     Game.start();
       | });
@@ -54,7 +56,7 @@ section
   p
   pre.javascript
     code
-      | Game.setBackdrop("./assets/background.png", 0, 0, 470, 400);
+      | Game.setBackdrop('./assets/background.jpg');
   span.example-code.js-example-code(href='', code-path='../test/start/setBackdrop.js') 範例程式
 section
   h3
@@ -62,20 +64,19 @@ section
   p 創造出小鳥，預設位置為場景中央
   pre.javascript
     code
-      | var bird = Game.createSprite("./assets/bird.png");
-  p 創造出上下水管，並設定座標位置
+      | var bird = Game.createSprite('./assets/bird.png');
+  p 創造出三組水管，並設定座標位置
   pre.javascript
     code
-      | var tubeUp = Game.createSprite({
-      |     costumes: "./assets/up-tube.png",
-      |     x: 450,
-      |     y: -30
-      | });
-      | var tubeDown = Game.createSprite({
-      |     costumes: "./assets/down-tube.png",
-      |     x: 450,
-      |     y: 430
-      | });
+      | var p1 = createSprite('./assets/pipes.png');
+      | var p2 = createSprite('./assets/pipes.png');
+      | var p3 = createSprite('./assets/pipes.png');
+      | p1.x = 1200;
+      | p2.x = 1700;
+      | p3.x = 2200;
+      | p1.y = Math.random()*600 + 150;
+      | p2.y = Math.random()*600 + 150;
+      | p3.y = Math.random()*600 + 150;
   span.example-code.js-example-code(code-path='../test/start/createSprite.js') 範例程式
 section
   h3
@@ -86,22 +87,21 @@ section
   p 在遊戲迴圈裡不斷移動水管，如果水管移動超出邊界就重置水管的位置
   pre.javascript
     code
-      | Game.forever(function() {
-      |     tubeUp.x -= 2;
-      |     tubeDown.x -= 2;
-      |     if(tubeUp.x < 0) {
-      |         resetTube();
-      |     } 
-      });
+      | forever(function () {
+      |  updatePipes();
+      | });
   p 重置水管的函式，將水管移到右邊遊戲場景外，並隨機水管的位置
   pre.javascript
     code
-      | function resetTube () {
-      |     var pos = Math.random()*300 + 50;
-      |     tubeUp.x = 450;
-      |     tubeDown.x = 450;
-      |     tubeUp.y = pos - 230;
-      |     tubeDown.y = pos + 230;
+      | var pipes = [p1, p2, p3];
+      | function updatePipes () {
+      |     for (var i=0; i<3; i++) {
+      |         pipes[i].x -= 5;
+      |         if (pipes[i].x < -100) {
+      |             pipes[i].x += 1500;
+      |             pipes[i].y = 100 + Math.random()*700;
+      |         }
+      |     }
       | }
   span.example-code.js-example-code(code-path='../test/start/forever.js') 範例程式
 section
@@ -111,38 +111,46 @@ section
     pre.javascript
       code
         | var vy = 0;
-        | Game.forever(function() {
-        |     bird.y + vy;
-        |     vy += 0.2;
+        | forever(function () {
+        |    updatePipes();
+        |    updateBird();
         | });
+
+        | function updateBird () {
+        |     bird.y += vy;
+        |     vy += 0.5;
+        | }
   p 當滑鼠點擊時，鳥要往上飛行
   pre.javascript
     code
-      | Game.when('click', function() { 
-      |     vy = -5;
-      | });
+      | when('click', jump);
+      | function jump () { 
+      |     vy = -8;
+      |     sound.play('./assets/jump.ogg');
+      | }
   p 小鳥碰撞水管時停止遊戲
   pre.javascript
     code
-      | bird.when('touch', [tubeUp, tubeDown], function() {
-      |     Game.stop();
+      | forever(function () {
+      |     if (bird.touched([p1, p2, p3])) {
+      |         stop();
+      |     }
       | });
   span.example-code.js-example-code(code-path='../test/start/event.js') 範例程式
 section
   h3
     span#start-sound 遊戲音效
-  p 當滑鼠點擊銀幕時，播放跳耀的音效
-  pre.javascript
-    code
-      |  Game.when('click', function() { 
-      |      vy = -5; 
-      |      Game.sound.play('./assets/jump.ogg');
-      | });
   p 進入遊戲後就不斷重複播放背景音樂
   pre.javascript
     code
-      |  var bgm = Game.sound.play('./assets/bgm.ogg');
-      |  bgm.loop = true;
+      |  var bgm = sound.play('./assets/bgm.ogg', true);
+  p 當滑鼠點擊銀幕時，播放跳耀的音效
+  pre.javascript
+    code
+      |  function jump () { 
+      |     vy = -8;
+      |     sound.play('./assets/jump.ogg');
+      |  }
   span.example-code.js-example-code(code-path='../test/start/sound.js') 範例程式
 section
   h3
@@ -150,59 +158,74 @@ section
   p 設計計分板並顯示在畫面左上方
   pre.javascript
     code
-      | var scores = 0;
-      | Game.forever(function() {
-      |    if(tubeUp.x < 0) {
-      |        scores += 1;
-      |    }
-      |    Game.print(scores, 10, 10, 'white', 45);
+      | forever(function () {
+      |     print(scores, 10, 10, 'white', 60);
       | });
+  p 當重置一組水管時分數加一
+  pre.javascript
+    code
+      | function updatePipes () {
+      |     for (var i=0; i<3; i++) {
+      |        pipes[i].x -= 5;
+      |        if (pipes[i].x < -100) {
+      |            pipes[i].x += 1500;
+      |            pipes[i].y = 100 + Math.random()*700;
+      |            scores++;
+      |        }
+      |    }
+      | }
   span.example-code.js-example-code(code-path='../test/start/print.js') 範例程式
 section
   h3
     span#start-final 完成
-  p 創造開始按鈕與遊戲結束Logo，並隱藏結束Logo
+  p 創造地板、開始按鈕、遊戲結束Logo，並隱藏結束Logo
   pre.javascript
     code
-      | var startBtn = Game.createSprite("./assets/start-button.png");
-      | var gameOverLogo = Game.createSprite({
-      |     costumes: "./assets/gameOver.png",
-      |     hidden: true,
-      |     y: 100
-      | });
+      | var startBtn = createSprite('./assets/start-button.png');
+      | var gameOverLogo = createSprite('./assets/gameover.png');
+      | var ground = createSprite('./assets/ground.png');
+      | startBtn.y = 500;
+      | gameOverLogo.y = 350;
+      | ground.y = 880;
+      | gameOverLogo.hidden = true;
+
   p 當點擊開始按鈕時，執行初始化函式 start，遊戲初始化函式會初始角色的座標與歸零分數，並將飛行狀態改為 true
   pre.javascript
     code
       | startBtn.when('click', start);
       | 
-      | var flying = false;
-      | function start () {
-      |     startBtn.hidden = true;
-      |     gameOverLogo.hidden = true;
-      |     flying = true;
-      |     bird.y = 200;
+      | var runing = false;
+      | function restart () {
       |     scores = 0;
-      | }
-  p 當玩家撞到水管或是超出上下的邊界，執行遊戲結束的函式 gameOver，將會顯示結束 logo 和重新開始的按鈕，並修改飛行狀態為 false
+      |     vy = 0;
+      |     running = true;
+      |     bird.y = 450;
+      |     startBtn.hidden = true;
+      |     pipes.forEach(function (p, i) {
+      |         p.x = 1200 + 500*i;
+      |         p.y = 100 + Math.random()*700;
+      |     });
+      |  }
+  p 當玩家撞到水管或是地板或是超出上方邊界，執行遊戲結束的函式 gameOver，將會顯示結束 logo 和重新開始的按鈕，並修改飛行狀態為 false
   pre.javascript
     code
       | bird.when('touch', [tubeUp, tubeDown], gameOver);
       | Game.forever(function() {
-      |     if(bird.y > 400 || bird.y < 0) {
+      |     if(bird.y > 900 || bird.touched(ground) || bird.touched(pipes)) {
       |         gameOver();
       |     }
       | });
       | 
       | function gameOver () {
-      |     gameOverLogo.hidden = false;
-      |     startBtn.hidden = false;
-      |     flying = false;
-      | }
+      |      running = false;
+      |      startBtn.hidden = false;
+      |      gameOverLogo.hidden = false;
+      |  }
   p 改寫遊戲迴圈的判斷式
   pre.javascript
     code
       | Game.forever(function() {
-      |     if(!flying) {
+      |     if(!running) {
       |         return;
       |     }
       | }

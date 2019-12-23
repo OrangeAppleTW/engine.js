@@ -1,0 +1,89 @@
+section
+  h3
+    span#sprite-prop-xy 座標
+  p
+    span.syntax Sprite.x, Sprite.y
+    | 角色的 x, y 座標
+  pre.javascript
+    code
+      | bird.x = 50;
+      | bird.y = 50;
+  span.example-code.js-example-code(code-path='../test/sprite_props/xy.js') 範例程式
+section
+  h3
+    span#sprite-prop-direction 方向
+  p 
+    span.syntax Sprite.direction
+    | 角色面向的方向，值介於 0 ~ 359 度
+  pre.javascript
+    code
+      | bird.direction = 180;
+  span.example-code.js-example-code(code-path='../test/sprite_props/direction.js') 範例程式
+section
+  h3
+    span#sprite-prop-scale 縮放
+  p 
+    span.syntax Sprite.sacle
+    | 角色大小縮放比例，預設為 1
+  pre.javascript
+    code
+      | bird.scale = 0.5;
+  span.example-code.js-example-code(code-path='../test/sprite_props/scale.js') 範例程式
+section
+  h3
+    span#sprite-prop-rotationStyle 旋轉方式
+  p
+    span.syntax Sprite.rotationStyle
+    | 角色旋轉的方式，三種方式
+    br
+    | full (預設)
+    br
+    | flipped (左右翻轉)
+    br
+    | fixed (固定不旋轉)
+  pre.javascript
+    code
+      | Sprite.rotationStyle = 'fixed'
+  span.example-code.js-example-code(code-path='../test/sprite_props/rotationStyle.js') 範例程式
+section
+  h3
+    span#sprite-prop-opacity 透明度
+  p 
+  Sprite.opacity
+  p
+    span.syntax Sprite.opacity
+    | 值介於 0 ~ 1
+  pre.javascript
+    code
+      | Sprite.opacity
+  span.example-code.js-example-code(code-path='../test/sprite_props/opacity.js') 範例程式
+section
+  h3
+    span#sprite-prop-costumeId 造型編號
+  p 
+    span.syntax Sprite.costumeId
+    | 角色當前造型，造型列表的索引
+  pre.javascript
+    code
+      | Sprite.costumeId = 1;
+  span.example-code.js-example-code(code-path='../test/sprite_props/costumeId.js') 範例程式
+section
+  h3
+    span#sprite-prop-layer 圖層
+  p 
+    span.syntax Sprite.layer
+    | 角色當前所在的圖層
+  pre.javascript
+    code 
+      | Sprite.layer = 2;
+  span.example-code.js-example-code(code-path='../test/sprite_props/layer.js') 範例程式
+section
+  h3
+    span#sprite-prop-hidden 隱藏
+  p 
+    span.syntax Sprite.hidden
+    | true 設為隱藏，false 設為不隱藏
+  pre.javascript
+    code
+      | Sprite.hidden = true;
+  span.example-code.js-example-code(code-path='../test/sprite_props/hidden.js') 範例程式

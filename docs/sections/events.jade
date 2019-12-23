@@ -1,144 +1,154 @@
 p
-	span.syntax Game.when | Game.on
+	span.syntax Game.on | Game.on
 	| 綁定遊戲的事件的方法 
-	pan.syntax Sprite.when | Sprite.on
+	pan.syntax Sprite.on | Sprite.on
 	| 綁定角色事件的方法
 section
 	h3
-		span#event-touch 碰撞
+		span#event-touch 碰撞 touch
 	p
-		span.syntax Sprite.when("touch", target, callback);
+		span.syntax Sprite.on('touch', target, callback);
 		| 單一對象的碰撞
 	pre.javascript
 		code
-			| bird.when("touch", bird, callback);
-	span.example-code.js-example-code(code-path='../test/events/touch.js') 範例程式
+			| bird.on('touch', bird, callback);
+	span.example-code.js-example-code(code-path='../test/events/on_touch.js') 範例程式
 	p
-		span.syntax Sprite.when("touch", [target], callback);
+		span.syntax Sprite.on('touch', [target], callback);
 		| 多個對象的碰撞，可以傳入陣列
 	pre.javascript
 		code
-			| bird.when("touch",[bird_1, bird_2], callback);
-	span.example-code.js-example-code(code-path='../test/events/touch_multi.js') 範例程式
+			| bird.on('touch',[bird_1, bird_2], callback);
+	span.example-code.js-example-code(code-path='../test/events/on_touch_multi.js') 範例程式
 section
 	h3
-		span#event-click 點擊事件
+		span#event-click 點擊 click
 	p 
-		span.syntax Game.when("click", sprite, callback);
-		| 當滑鼠點擊 sprite 執行函式
+		span.syntax Game.on('click', callback);
+		| 點擊遊戲場景
 	pre.javascript
 		code
-			| Game.when("click", bird, function () {
+			| Game.on('click', function () {
 			|     bird.scale += 0.5;
 			| });
-	span.example-code.js-example-code(code-path='../test/events/click.js') 範例程式
+	span.example-code.js-example-code(code-path='../test/events/on_click.js') 範例程式
 	p 
-		span.syntax Sprite.when("click", callback);
+		span.syntax Sprite.on('click', callback);
 		| 當滑鼠點擊 sprite 執行函式
 	pre.javascript
 		code
-			| bird.when("click", function () {
+			| bird.on('click', bird, function () {
 			|     this.scale += 0.5;
 			| });
-	span.example-code.js-example-code(code-path='../test/sprite/when_click.js') 範例程式
+	span.example-code.js-example-code(code-path='../test/events/on_click_on_sprite.js') 範例程式
+	p 
+		span.syntax Sprite.on('click', [bird_1, bird_2, bird_3], callback);
+		| 當滑鼠點擊 sprite 執行函式
+	pre.javascript
+		code
+			| bird.on('click', birds, function () {
+			|     this.scale += 0.5;
+			| });
+	span.example-code.js-example-code(code-path='../test/events/on_click_multi.js') 範例程式
 section
 	h3
 		span#event-mousedown 滑鼠按下
 	p
-		span.syntax Game.when("mousedown", callback);
+		span.syntax Game.on('mousedown', callback);
 	pre.javascript
 		code
-			| Game.when("mousedown", function() {
+			| Game.on('mousedown', function() {
 			|     bird.scale += 1;
 			| });
-	span.example-code.js-example-code(code-path='../test/events/mousedown.js') 範例程式
+	span.example-code.js-example-code(code-path='../test/events/on_mousedown.js') 範例程式
 	p
-		span.syntax Sprite.when("mousedown", callback);
+		span.syntax Sprite.on('mousedown', callback);
 	pre.javascript
 		code
-			| bird.when("mousedown", function() {
-			|     this.scale += 1;
+			| Game.on('mousedown', bird, function() {
+			|     bird.scale += 1;
 			| });
-	span.example-code.js-example-code(code-path='../test/sprite/when_mousedown.js') 範例程式
+	span.example-code.js-example-code(code-path='../test/events/on_mousedown_on_sprite.js') 範例程式
 section
 	h3
 		span#event-mouseup 滑鼠放開
 	p
-		span.syntax Game.when("mouseup", callback);
+		span.syntax Game.on('mouseup', callback);
 	pre.javascript
 		code
-			| Game.when("mouseup", function() {
+			| Game.on('mouseup', function() {
 			|     bird.scale += 1;
 			| });
-	span.example-code.js-example-code(code-path='../test/events/mouseup.js') 範例程式
+	span.example-code.js-example-code(code-path='../test/events/on_mouseup.js') 範例程式
 	p
-		span.syntax Sprite.when("mouseup", callback);
+		span.syntax Sprite.on('mouseup', bird, callback);
 	pre.javascript
 		code
-			| bird.when("mouseup", function() {
+			| bird.on('mouseup', function() {
 			|     bird.scale += 1;
 			| });
-	span.example-code.js-example-code(code-path='../test/sprite/when_mouseup.js') 範例程式
+	span.example-code.js-example-code(code-path='../test/events/on_mouseup_on_sprite.js') 範例程式
 section
 	h3
 		span#event-keydown 鍵盤按下
 	p
-		span.syntax Game.when("keydown", keyName, callback);
-	p 當按下特定按鍵，觸發執行函式
+		span.syntax Game.on('keydown', keyName, callback);
+	p 當按下任意按鍵，執行函式
 	pre.javascript
 		code
-			| Game.when('keydown', "space", function() {
+			| Game.on('keydown', function() {
 			|     bird.scale += 0.2;        
 			| });
-	span.example-code.js-example-code(code-path='../test/events/keydown.js') 範例程式
+	span.example-code.js-example-code(code-path='../test/events/on_keydown.js') 範例程式
+	p 當按下特定按鍵，執行函式
 	p
-		span.syntax Game.when("keydown", keyName, callback);
-	p 當按下任意按鍵，觸發執行函式，觸發執行函式，可以傳入 "any" 或是省略參數
+		span.syntax Game.on('keydown', keyName, callback);
 	pre.javascript
 		code
-			| Game.when('keydown', function() {
+			| Game.on('keydown', 'space', function() {
 			|     bird.scale += 0.2;        
 			| });
-	span.example-code.js-example-code(code-path='../test/events/keydown_any.js') 範例程式
+	span.example-code.js-example-code(code-path='../test/events/on_keydown_on_key.js') 範例程式
 section
 	h3
 		span#event-keyup 鍵盤放開
 	p
-		span.syntax when("keyup";, keyName, callback);
-	p 當放開特定按鍵，觸發執行函式
+		span.syntax on('keyup';, keyName, callback);
+	p 當放開任意按鍵，執行函式
 	pre.javascript
 		code
-			| Game.when("keyup", "space" , function() {
+			| Game.on('keyup', function() {
 			|     bird.scale += 0.5;        
 			| });
-	span.example-code.js-example-code(code-path='../test/events/keyup.js') 範例程式
+	span.example-code.js-example-code(code-path='../test/events/on_keydown.js') 範例程式
 	p
-		span.syntax when("keyup";, keyName, callback);
-	p 當放開任意按鍵，觸發執行函式，可以傳入 "any" 或是省略參數
+		span.syntax on('keyup';, keyName, callback);
+	p 當放開特定按鍵，執行函式
 	pre.javascript
 		code
-			| Game.when("keyup", function() {
+			| Game.on('keyup', 'space' , function() {
 			|     bird.scale += 0.5;        
 			| });
-	span.example-code.js-example-code(code-path='../test/events/keyup_any.js') 範例程式
+	span.example-code.js-example-code(code-path='../test/events/on_keydown.js') 範例程式
+	
 section
 	h3
 		span#event-holding 按鍵持續按壓
 	p
-		span.syntax Game.when("holding", keyName, callback);
+		span.syntax Game.on('holding', callback);
+	p 持續按壓任意按鍵，觸發執行函式，可以傳入 'any' 或是省略參數
+	pre.javascript
+		code
+			| Game.on('holding', function() {
+			|     bird.direction += 3;
+			| });
+	span.example-code.js-example-code(code-path='../test/events/on_holding.js') 範例程式
+	p
+		span.syntax Game.on('holding', keyName, callback);
 	p 持續按壓特定按鍵，觸發執行函式
 	pre.javascript
 		code
-			| Game.when("holding", "right", function() {
+			| Game.on('holding', 'right', function() {
 			|     bird.x += 1;
 			| });
-	span.example-code.js-example-code(code-path='../test/events/holding.js') 範例程式
-	p
-		span.syntax Game.when("holding", callback);
-	p 持續按壓任意按鍵，觸發執行函式，可以傳入 "any" 或是省略參數
-	pre.javascript
-		code
-			| Game.when("holding", function() {
-			|     bird.direction += 3;
-			| });
-	span.example-code.js-example-code(code-path='../test/events/holding_any.js') 範例程式
+	span.example-code.js-example-code(code-path='../test/events/on_holding_on_key.js') 範例程式

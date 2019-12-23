@@ -212,111 +212,122 @@ function Clock( onTick, render, settings ){
 
 module.exports = Clock;
 },{}],3:[function(require,module,exports){
-function EventList(io, debugMode){
-    this.pool=[];
-    this.io=io;
-    this.debugMode = debugMode || false;
+const VALID_EVENT_NAMES = ['click', 'mousedown', 'mouseup', 'keydown', 'keyup', 'holding', 'touch', 'hover'];
+
+function EventList(io){
+    this.pool = [];
+    this.io = io;
 }
 
-EventList.prototype.traverse = function (){
-    var pool = this.pool,
-        io = this.io,
-        debugMode = this.debugMode;
-    for(var i=0; i<pool.length; i++){
-        if (pool[i].sprite && pool[i]._deleted) {
-            pool.splice(i--, 1);
-            continue;
+EventList.prototype = {
+
+    traverse: function (){
+
+        var io = this.io;
+        var self = this;
+        this.pool.forEach(function (e) {
+            if      (e.event === 'touch')     self.touchJudger( e.sprite, e.handler, e.targets);
+            else if (e.event === 'click')     self.mouseJudger( e.sprite, e.handler, io.clicked);
+            else if (e.event === 'hover')     self.hoverJudger( e.sprite, e.handler, io.cursor);
+            else if (e.event === 'mousedown') self.mouseJudger( e.sprite, e.handler, io.mousedown);
+            else if (e.event === 'mouseup')   self.mouseJudger( e.sprite, e.handler, io.mouseup);
+            else if (e.event === 'holding')   self.keyJudger(   e.key,    e.handler, io.holding);
+            else if (e.event === 'keyup')     self.keyJudger(   e.key,    e.handler, io.keyup);
+            else if (e.event === 'keydown')   self.keyJudger(   e.key,    e.handler, io.keydown);
+        });
+
+        this.pool = this.pool.filter(function (e) {
+            return !(e.sprite && e.sprite._deleted);
+        });
+
+        io.clearEvents();
+    },
+
+    register: function () {
+
+        if (!this.validEventName(arguments[0])) return;
+
+        var event = arguments[0];
+        var eventObj = {
+            event: event,
+            handler: arguments[arguments.length - 1]
+        }        
+
+        if (event === 'touch'){
+            eventObj.sprite = arguments[1];
+            eventObj.targets = [].concat(arguments[2]);
         }
-        if      (pool[i].event=="click")        mouseJudger(   pool[i].sprite, pool[i].handler, io.clicked, debugMode);
-        else if (pool[i].event=="mousedown")    mouseJudger(   pool[i].sprite, pool[i].handler, io.mousedown, debugMode);
-        else if (pool[i].event=="mouseup")      mouseJudger(   pool[i].sprite, pool[i].handler, io.mouseup, debugMode);
-        else if (pool[i].event=="keydown")      keyJudger(     pool[i].key,    pool[i].handler, io.keydown, debugMode);
-        else if (pool[i].event=="keyup")        keyJudger(     pool[i].key,    pool[i].handler, io.keyup,   debugMode);
-        else if (pool[i].event=="holding")      keyJudger(     pool[i].key,    pool[i].handler, io.holding, debugMode);
-        else if (pool[i].event=="touch")        touchJudger(   pool[i].sprite, pool[i].handler, pool[i].targets, debugMode );
-    }
-    io.clearEvents();
-}
-
-EventList.prototype.clear = function(){
-    this.pool=[];
-}
-
-EventList.prototype.register = function(){
-
-    var event = arguments[0];
-    var eventObj = {
-        event: event,
-        handler: arguments[arguments.length - 1]
-    }
-
-    if (event === "touch"){
-        eventObj.sprite = arguments[1];
-        if(arguments[2].constructor === Array) {
-            eventObj.targets = arguments[2];
-        } else {
-            eventObj.targets = [arguments[2]];
+        else if (event === 'hover') {
+            eventObj.sprite = [].concat(arguments[1]);
         }
-    } else if (["keydown", "keyup", "holding"].includes(event)){
-        eventObj.key = arguments[1] || "any"; // 如果對象為 null 則為任意按鍵 "any"
-    } else if (["mousedown", "mouseup", "click"].includes(event)) {
-        eventObj.sprite = arguments[1];
-    } else if (event === "listen") {
-        eventObj.message = arguments[1];
-        eventObj.sprite = arguments[2];
-    }
-
-    this.pool.push(eventObj);
-}
-
-EventList.prototype.emit = function (eventName) {
-    for(var i=0; i<this.pool.length; i++) {
-        var e = this.pool[i];
-        if(e.event == 'listen' && e.message == eventName) {
-            e.handler.call(e.sprite);
+        else if (['keydown', 'keyup', 'holding'].includes(event)){
+            eventObj.key = arguments[1] instanceof Function ? 'any' : arguments[1];
         }
-    }
-}
+        else if (['mousedown', 'mouseup', 'click'].includes(event)) {
+            if (arguments[1] instanceof Function) {
+                eventObj.sprite = null;
+            }
+            else if (arguments[1] instanceof Array) {
+                eventObj.sprite = arguments[1];
+            } else {
+                eventObj.sprite = [arguments[1]];
+            }
+        }
+        else if (event === 'listen') {
+            eventObj.message = arguments[1];
+            eventObj.sprite = arguments[2];
+        }
 
-// 用來判斷 click, mousedown, mouseup 的 function
-function mouseJudger(sprite, handler, mouse, debugMode){
-    if(mouse.x && mouse.y){ // 如果有點擊記錄才檢查
-        if(sprite){ // 如果是 Sprite, 則對其做判定
-            if( sprite.touched(mouse.x,mouse.y) ){
-                handler.call(sprite);
-                if(debugMode){
-                    console.log("Just fired a click handler on a sprite! ("+JSON.stringify(mouse)+")");
+        this.pool.push(eventObj);
+    },
+
+    emit: function (eventName) {
+        for(var i=0; i<this.pool.length; i++) {
+            var e = this.pool[i];
+            if(e.event == 'listen' && e.message == eventName) {
+                e.handler.call(e.sprite);
+            }
+        }
+    },
+
+    mouseJudger: function (sprite, handler, mouse) {
+        if (!mouse.x || !mouse.y) return; // 如果有點擊記錄才檢查
+        if (sprite) {
+            sprite.forEach(function (s) {
+                if (s.touched(mouse.x, mouse.y)) {
+                    handler.call(s);
                 }
-            }
-        } else { // 如果為 null, 則對整個遊戲舞台做判定
+            });
+        } else {
             handler();
-            if(debugMode){
-                console.log("Just fired a click handler on stage! ("+JSON.stringify(mouse)+")");
-            }
         }
-    }
-}
+    },
 
-// 用來判斷 keydown, keyup, holding 的 function
-function keyJudger(target, handler, keys, debugMode){
-    if(keys[target]){
-        handler();
-        if(debugMode){
-            console.log("Just fired a keydown handler on: "+key);
-        }
-    }
-}
+    keyJudger: function(target, handler, keys) {
+        if (keys[target]) handler();
+    },
 
-// @TODO: Now we could only detect Sprite instance, not include cursor.
-function touchJudger(sprite, handler, targets, debugMode) {
-    for(var i=0, target; target = targets[i]; i++) {
-        if(sprite.touched(target)) {
-            handler.call(sprite, target);
-            if(debugMode) {
-                console.log({event: "Touch", "sprite": sprite, "target": target});
-            }
+    touchJudger: function (sprite, handler, targets) {
+        targets.forEach(function (t) {
+            if (sprite.touched(t)) handler.call(sprite, t);
+        });
+    },
+
+    hoverJudger: function (sprite, handler, cursor){
+        sprite.forEach(function (s) {
+            if (s.touched(cursor.x, cursor.y)) handler.call(s);
+        });
+    },
+
+    validEventName: function (eventName) {
+        if (VALID_EVENT_NAMES.includes(eventName) === false) {
+            console.error('`' + eventName + '` 事件是不支援的，請檢查是否符合以下支援的事件\n ' +
+            this.VALID_EVENT_NAMES.join(', '));
         }
-    }
+        return true;
+    },
+
+    VALID_EVENT_NAMES: VALID_EVENT_NAMES,
 }
 
 module.exports = EventList;
@@ -331,28 +342,27 @@ var Sound = require("./sound");
 var Loader = require("./loader");
 var IO = require("./io");
 var Pen = require("./pen");
+var TouchSystem = require("./touch-system");
 
-function engine(stageId, debugMode){
+function engine(canvasId, debugMode){
 
     //== Default params setting:
     debugMode  = debugMode||false;
 
-    var canvas= document.getElementById(stageId);
-    var ctx = canvas.getContext("2d");
-
+    var canvas = document.getElementById(canvasId);
     var hitCanvas = document.createElement('canvas');
-    var hitTester = hitCanvas.getContext('2d');
-
-    hitCanvas.width = canvas.width;
-    hitCanvas.height = canvas.height;
 
     var settings = {
         width: canvas.width,
         height: canvas.height,
         zoom: 1,
         updateFunctions: [],
-        fpsMax: 60
+        fpsMax: 60,
+        precision: 1, // 像素碰撞的精確度，單位是 pixel
     };
+
+    hitCanvas.width = canvas.width / settings.precision;
+    hitCanvas.height = canvas.height / settings.precision;
 
     var autoRendering = true;
 
@@ -361,9 +371,10 @@ function engine(stageId, debugMode){
     var inspector = new Inspector();
     var io = new IO(canvas, settings, debugMode);
     var eventList = new EventList(io, debugMode);
-    var renderer = new Renderer(ctx, settings, loader.images, debugMode);
+    var renderer = new Renderer(canvas, loader, settings);
     var sound = new Sound(loader, debugMode);
-    var pen = new Pen(ctx);
+    var pen = new Pen(canvas);
+    var touchSystem = new TouchSystem(hitCanvas, loader, settings);
     var clock = new Clock(
         // onTick function
         function(){
@@ -388,28 +399,30 @@ function engine(stageId, debugMode){
         settings
     );
 
-    // @TODO: 這麼做真的比較好嗎？還是能在 new Sprite 的時候加入就好 (Kevin 2018.10.22)
-    Sprite.prototype._sprites = sprites;
-    Sprite.prototype._eventList = eventList;
-    Sprite.prototype._settings = settings;
-    Sprite.prototype._renderer = renderer;
-    Sprite.prototype._hitTester = hitTester;
-
     var background={
         path: "#ffffff"
     };    
 
     function set(args){
-        if(args.width) hitCanvas.width = canvas.width = settings.width = args.width;
-        if(args.height) hitCanvas.height = canvas.height = settings.height = args.height;
+        if(args.precision) settings.precision = args.precision;
+        if(args.width) canvas.width = settings.width = args.width;
+        if(args.height) canvas.height = settings.height = args.height;
         if(args.zoom) {
             settings.zoom = args.zoom;
             canvas.style.width = canvas.width * settings.zoom + 'px';
             canvas.style.height = canvas.height * settings.zoom + 'px';
         }
+        if (args.precision || args.width || args.height) {
+            hitCanvas.width = canvas.width / settings.precision;
+            hitCanvas.height = canvas.height / settings.precision;    
+        }
         settings.update = args.update || settings.update;
         settings.fpsMax = args.fpsMax || settings.fpsMax;
         return this;
+    }
+
+    function createSprite (args) {
+        return new Sprite(args, eventList, renderer, loader, touchSystem, settings, sprites);
     }
 
     // for proxy.setBackdrop, setBackground
@@ -421,18 +434,6 @@ function engine(stageId, debugMode){
         background.h = h;
     }
 
-    // for proxy.on / when: 
-    function when (event, target, handler){
-        // Global when() only accepts followed events:
-        if(["keydown", "keyup", "mousedown", "mouseup", "holding", "click"].includes(event)){
-            if(typeof target === "function"){ // 如果不指定對象，直接傳入 handler
-                eventList.register(event, null, target);
-            } else {
-                eventList.register(event, target, handler);
-            }
-        }
-    }
-
     function forever (func) {
         settings.updateFunctions.push(func);
     }
@@ -441,30 +442,40 @@ function engine(stageId, debugMode){
         loader.preload(assets, completeFunc, progressFunc);
     }
 
+    function drawText (text, x, y, color ,size, font) {
+        pen.drawText(text, x, y, color ,size, font);
+    }
+
+    function stop () {
+        clock.stop(); 
+        sound.stop();
+    }
+
+    function stopRendering () {
+        autoRendering = false;
+        pen.drawingMode = 'instant';
+    }
+
     var proxy = {
-        createSprite: function(args){
-            return new Sprite(args);
-        },
+        createSprite: createSprite,
         Sprite: Sprite,
-        print: function(text, x, y, color ,size, font){ pen.print(text, x, y, color ,size, font) },
+        print: drawText,
+        drawText: drawText,
         setBackground: setBackground,
         setBackdrop: setBackground,
         cursor: io.cursor,
         key: io.holding,
         inspector: inspector,
-        when: when,
-        on: when,
+        when: eventList.register.bind(eventList),
+        on: eventList.register.bind(eventList),
         set: set,
-        stop: function(){ 
-            clock.stop(); 
-            sound.stop();
-        },
-        stopRendering: function(){ autoRendering=false; pen.drawingMode="instant"; },
-        start: function(){ clock.start(); },
+        stop: stop,
+        stopRendering: stopRendering,
+        start: clock.start.bind(clock),
         forever: forever,
         update: forever,
         always: forever,
-        clear: function(){ renderer.clear(); },
+        clear: renderer.clear.bind(renderer),
         preload: preload,
         sound: sound,
         broadcast: eventList.emit.bind(eventList),
@@ -481,7 +492,7 @@ function engine(stageId, debugMode){
 }
 
 window.Engine = engine;
-},{"./clock":2,"./event-list":3,"./inspector":5,"./io":6,"./loader":7,"./pen":8,"./renderer":9,"./sound":11,"./sprite":12,"./sprites":13}],5:[function(require,module,exports){
+},{"./clock":2,"./event-list":3,"./inspector":5,"./io":6,"./loader":7,"./pen":8,"./renderer":9,"./sound":11,"./sprite":12,"./sprites":13,"./touch-system":14}],5:[function(require,module,exports){
 function Inspector(){
     this.fps = 0;
     this._lastFrameUpdatedTime = (new Date()).getTime();
@@ -614,6 +625,8 @@ IO.prototype.clearEvents = function(){
 
 module.exports = IO;
 },{"keycode":1}],7:[function(require,module,exports){
+const DEFAULT_IMAGE = 'data:image/jpeg;base64,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';
+
 function Loader () {
     this.context = new (window.AudioContext || window.webkitAudioContext)();
     this.loaded = 0;
@@ -646,12 +659,32 @@ Loader.prototype = {
         }
     },
 
+    getImgFromCache: function (path) {
+        var img = this.images[path];
+        
+        if (!img) {
+            img = new Image();
+            img.src = path;
+            img.onerror = function (e) { 
+                console.error(this.src.split('/').pop() + ' 素材載入失敗，請確認是否填寫正確！ \n 圖片路徑：' + this.src);
+                img.src = DEFAULT_IMAGE;
+            }
+            this.images[path] = img;
+
+        }
+        return img;
+    },
+
     _loadImage: function (path) {
         var instance = this;
         var image = new Image();
         image.src = path;
         image.crossOrigin = 'anonymous';
         image.onload = function() {instance._loaded()};
+        image.onerror = function (e) { 
+            console.error(this.src.split('/').pop() + ' 素材載入失敗，請確認是否填寫正確！ \n 圖片路徑：' + this.src);
+            img.src = DEFAULT_IMAGE;
+        }
         this.images[path] = image;
     },
 
@@ -693,8 +726,8 @@ Loader.prototype = {
 module.exports = Loader;
 
 },{}],8:[function(require,module,exports){
-function Pen (ctx) {
-    this.ctx = ctx;
+function Pen (canvas) {
+    this.ctx = canvas.getContext('2d');
     this.size = 1;
     this.color = 'black';
     this.fillColor = null;
@@ -744,7 +777,7 @@ Pen.prototype = {
         this.texts=[];
     },
 
-    print: function (text, x, y, color ,size, font) {
+    drawText: function (text, x, y, color ,size, font) {
         x = x == undefined ? 10 : x;
         y = y == undefined ? 10 : y;
         color = color || 'black';
@@ -903,123 +936,85 @@ module.exports = Pen;
 },{}],9:[function(require,module,exports){
 var util = require("./util");
 
-function Renderer(ctx, settings, images, debugMode){
-
-    // 不可以這麼做，因為當我們要取 canvas 大小時，他可能已經變了
-    // var stageWidth = settings.width,
-    //     stageHeight = settings.height;
-
-    var imageCache = images;
-
-    var self = this;
-
-    this.autoRender = false;
-
-    this.clear = function() {
-        ctx.clearRect(0,0,settings.width,settings.height);
-    };
-
-    this.drawSprites = function(sprites){
-        bubbleSort(sprites._sprites); // 針對 z-index 做排序，讓越大的排在越後面，可以繪製在最上層
-        sprites.each(function(instance) {
-            self.drawInstance(instance, ctx);
-        });
-    };
-
-    this.drawInstance = function(instance, ctx){
-        // console.log(instance);
-        if(!instance.hidden){
-            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
-            var img = getImgFromCache(instance.getCurrentCostume());
-            instance.width = img.width * instance.scale;
-            instance.height = img.height * instance.scale;
-
-            var rad = util.degreeToRad(instance.direction - 90);
-            ctx.globalAlpha = instance.opacity;
-            if (instance.rotationStyle === 'flipped') {
-                if(instance.direction > 180) {
-                    ctx.translate(instance.x*2, 0);
-                    ctx.scale(-1, 1);
-                    ctx.drawImage(  img,
-                                    (instance.x-instance.width/2),
-                                    (instance.y-instance.height/2),
-                                    instance.width,
-                                    instance.height
-                    )
-                    ctx.scale(-1, 1);
-                    ctx.translate(-instance.x*2, 0);
-                    ctx.globalAlpha = 1;
-                    return;
-                } else {
-                    var rad = 0;
-                }
-            }
-            if(instance.rotationStyle === 'fixed') {
-                var rad = 0;
-            }
-            ctx.translate(instance.x, instance.y);
-            ctx.rotate(rad);
-            ctx.drawImage( img,
-                        (-instance.width / 2),
-                        (-instance.height / 2),
-                        instance.width,
-                        instance.height
-            );
-            ctx.rotate(-rad);
-            ctx.translate(-instance.x, -instance.y);
-            ctx.globalAlpha = 1;
-        }
-    };
-
-    this.getImgFromCache = getImgFromCache;
-
-    // @Params:
-    // - src: backdrop image location
-    // - options: {x:number, y:number, width:number, height:number}
-    this.drawBackdrop = function(src, x, y, width, height){
-        if(src.includes('.')) {
-            var img = imageCache[src];
-            // 如果已經預先 Cache 住，則使用 Cache 中的 DOM 物件，可大幅提升效能
-            if( !img ){
-                img=new Image();
-                img.src=src;
-                imageCache[src]=img;
-            }
-            ctx.drawImage(img, (x||0), (y||0), (width||img.width), (height||img.height));
-        } else if(src) {
-            ctx.fillStyle=src;
-            ctx.fillRect(0,0,settings.width, settings.height);
-        }
-    };
-
-    function getImgFromCache(path){
-        var img = imageCache[path];
-        if( !img ){
-            img=new Image();
-            img.src=path;
-            imageCache[path]=img;
-        }
-        return img;
-    }
+function Renderer (canvasEl, loader, settings) {
+    this.canvas = canvasEl;
+    this.ctx = canvasEl.getContext('2d');
+    this.loader = loader;
+    this.settings = settings;
 }
 
-function bubbleSort(arr) {
-    var n = arr.length;
-    var swapped = true;
-    for (let i = 0; i < n && swapped; i++) {
-        swapped = false;
-        for (let j = 0; j < n - 1 - i; j++) {
-            if (arr[j].layer > arr[j + 1].layer) {
-                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
-                swapped = true;
+Renderer.prototype = {
+    
+    clear: function() {
+        this.ctx.clearRect(0, 0, this.settings.width, this.settings.height);
+    },
+
+    drawSprites: function(sprites){
+        sprites._sprites.sort(function (a, b) {
+            return a.layer - b.layer;
+        });
+        var self = this;
+        sprites.each(function (s) {
+            self.drawInstance(s);
+        });
+    },
+
+    drawInstance: function(sprite){
+
+        if (sprite.hidden) return;
+
+        var ctx = this.ctx;
+        var img = sprite.getCostumeImage();
+        var rad = util.degreeToRad(sprite.direction - 90);
+
+        ctx.globalAlpha = sprite.opacity;
+        if (sprite.rotationStyle === 'flipped') {
+            if(sprite.direction > 180) {
+                ctx.translate(sprite.x*2, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(  img,
+                                (sprite.x-sprite.width/2),
+                                (sprite.y-sprite.height/2),
+                                sprite.width,
+                                sprite.height
+                )
+                ctx.scale(-1, 1);
+                ctx.translate(-sprite.x*2, 0);
+                ctx.globalAlpha = 1;
+                return;
+            } else {
+                var rad = 0;
             }
         }
-    }
-    return arr;
+        if(sprite.rotationStyle === 'fixed') {
+            var rad = 0;
+        }
+        ctx.translate(sprite.x, sprite.y);
+        ctx.rotate(rad);
+        ctx.drawImage( img,
+                    (-sprite.width / 2),
+                    (-sprite.height / 2),
+                    sprite.width,
+                    sprite.height
+        );
+        ctx.rotate(-rad);
+        ctx.translate(-sprite.x, -sprite.y);
+        ctx.globalAlpha = 1;
+    },
+
+    drawBackdrop: function (src, x, y, width, height){
+        if(src.includes('.')) {
+            var img = this.loader.getImgFromCache(src);
+            this.ctx.drawImage(img, (x||0), (y||0), (width||img.width), (height||img.height));
+        } else if(src) {
+            this.ctx.fillStyle = src;
+            this.ctx.fillRect(0 ,0, this.settings.width, this.settings.height);
+        }
+    },
 }
 
 module.exports = Renderer;
-},{"./util":14}],10:[function(require,module,exports){
+},{"./util":15}],10:[function(require,module,exports){
 function SoundNode(context) {
     this.source = null;
     this.gainNode = context.createGain();    
@@ -1152,360 +1147,204 @@ Sound.prototype = {
 
 module.exports = Sound;
 },{"./sound-node":10}],12:[function(require,module,exports){
-var util = require("./util");
+var util = require('./util');
 
-function Sprite(args) {
+function Sprite(args, eventList, renderer, loader, touchSystem, settings, sprites) {
 
     if (args.constructor === String || args.constructor === Array) {
         args = { costumes: [].concat(args) }
     }
 
-    this.x = util.isNumeric(args.x) ? args.x : this._settings.width/2;
-    this.y = util.isNumeric(args.y) ? args.y : this._settings.height/2;
-    this.width = 1;
-    this.height = 1;
+    this.x = util.isNumeric(args.x) ? args.x : settings.width/2;
+    this.y = util.isNumeric(args.y) ? args.y : settings.height/2;
     this.direction = util.isNumeric(args.direction) ? args.direction : 90;
-    this.rotationStyle = args.rotationStyle || "full"; // "full", "flipped" and "fixed"
-    this.scale = args.scale || 1;
-    this.costumes = [].concat(args.costumes); // Deal with single string
-    this.hidden = args.hidden || false;
+    this.scale = util.isNumeric(args.scale) ? args.scale : 1;
     this.layer = util.isNumeric(args.layer) ? args.layer : 0;
     this.opacity = util.isNumeric(args.opacity) ? args.opacity : 1;
-    this.costumeId = 0;
+    this.costumeId = util.isNumeric(args.costumeId) ? args.costumeId : 0;
+    this.costumes = [].concat(args.costumes); // Deal with single string
+    this.hidden = !!args.hidden; // change to boolean
+    this.rotationStyle = ['full','flipped','fixed'].includes(args.rotationStyle) ? args.rotationStyle : 'full'; 
+    this.width = 1;
+    this.height = 1;
 
     this._onTickFuncs = [];
     this._deleted = false;
-
     this._animation = { frames: [], rate: 5, timer: 0 }
 
-    //== In prototype:
-    // * this._eventList;
-    // * this._settings;
-    // * this._renderer;
-    // * this._sprites;
-    this._sprites._sprites.push(this);
+    this._eventList = eventList;
+    this._renderer = renderer;
+    this._loader = loader;
+    this._touchSystem = touchSystem;
+    this._settings = settings;
+
+    sprites._sprites.push(this);
 }
 
-Sprite.prototype.update = function () {
-    this._updateDirection();
-    this._updateFrames();
-    for (var i=0; i < this._onTickFuncs.length; i++) {
-        this._onTickFuncs[i].call(this);
-    }
-}
+Sprite.prototype = {
 
-Sprite.prototype._updateDirection = function () {
-    this.direction = this.direction % 360;
-    if(this.direction < 0) this.direction += 360;
-}
+    stepForward: function (distance) {
+        var rad = util.degreeToRad(this.direction);
+        this.x += Math.sin(rad)*distance;
+        this.y -= Math.cos(rad)*distance;
+    },
 
-Sprite.prototype._updateFrames = function () {
-    var animate = this._animation;
-    if(animate.frames.length > 0) {
-        var now = new Date().getTime();
-        if(now >= animate.timer + 1000 / animate.rate) {
-            animate.timer = now;
-            this.costumeId = animate.frames.shift();
-            if(animate.frames.length <= 0 && animate.callback) animate.callback();
-        }
-    }
-}
+    moveTo: function () {
+        var pos = util.position(arguments);
+        this.x = pos.x;
+        this.y = pos.y;
+    },
 
-Sprite.prototype.moveTo = function(){
-    if(util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
-        this.x = arguments[0].x;
-        this.y = arguments[0].y;
-    } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
-        this.x = arguments[0];
-        this.y = arguments[1];
-    } else {
-        throw "請傳入角色(Sprite, Cursor)或是 X, Y 座標值"
-    }
-};
+    move: function (x, y) {
+        this.x += x;
+        this.y += y;
+    },
 
-Sprite.prototype.move = function(x, y){
-    this.x += x;
-    this.y += y;
-};
+    toward: function () {
+        var target = util.position(arguments);
+        this.direction = util.vectorToDegree(target.x - this.x,  target.y - this.y);
+    },
 
-Sprite.prototype.stepForward = function(distance){
-    var rad = util.degreeToRad(this.direction)
-    this.x += Math.sin(rad)*distance;
-    this.y -= Math.cos(rad)*distance;
-};
-
-Sprite.prototype.bounceEdge = function () {
-    if (this.x < 0) {
-        this.x = 0;
-        if (this.direction > 180 && this.direction > 0) {
-            this.direction = -this.direction;
-        }
-    }
-    if (this.x > this._settings.width) {
-        this.x = this._settings.width;
-        if (this.direction < 180) {
-            this.direction = -this.direction;
-        }
-    }
-    if (this.y < 0) {
-        this.y = 0;
-        if (this.direction < 90 || this.direction > 270) {
-            this.direction = -this.direction + 180;
-        }
-    }
-    if (this.y > this._settings.height) {
-        this.y = this._settings.height;
-        if (this.direction > 90 || this.direction < 270) {
-            this.direction = -this.direction + 180;
-        }
-    }
-}
-
-Sprite.prototype.toward = function(){
-    var targetX, targetY, offsetX, offsetY, rad;
-    if(util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)){
-        targetX = arguments[0].x,
-        targetY = arguments[0].y;
-    } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
-        targetX = arguments[0],
-        targetY = arguments[1];
-    } else {
-        throw "請傳入角色(Sprite)或是 X, Y 坐標值";
-    }
-    offsetX = targetX - this.x;
-    offsetY = targetY - this.y;
-    rad = Math.atan2(offsetX, -offsetY); // 這裡的 offsetY 和數學坐標是反過來的
-    this.direction = util.radToDegree(rad);
-}
-
-Sprite.prototype.touched = function () {
-    if (arguments[0].constructor === Array) {
-        for(var i=0; i<arguments[0].length; i++){
-            if (this._isTouched(arguments[0][i])){
-                return true;
-            }
-        }
-        return false;
-    } else {
-        return this._isTouched.apply(this, arguments);
-    }
-    
-};
-
-Sprite.prototype.distanceTo = function(){
-    if( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ){
-        return util.distanceBetween( this, arguments[0] );
-    } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ){
-        return util.distanceBetween( this.x, this.y, arguments[0], arguments[1] );
-    } else {
-        throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
-    }
-};
-
-Sprite.prototype.always = Sprite.prototype.forever = function(func){
-    this._onTickFuncs.push(func);
-};
-
-Sprite.prototype.when = Sprite.prototype.on = function() {
-
-    var event = arguments[0];
-    var eventList = this._eventList;
-
-    if(event=="listen") {
-        return eventList.register(event, arguments[1], this, arguments[2]);
-    } else if(["mousedown", "mouseup", "click"].includes(event)){
-        return eventList.register(event, this, arguments[1]);
-    } else if (event=="touch"){
-        return eventList.register(event, this, arguments[1], arguments[2]);
-    } else {
-        console.log('Sprite.on() does only support "listen", "click" and "touch" events');
-        return false;
-    }
-};
-
-Sprite.prototype.destroy = function(){
-    this._deleted = true;
-};
-
-Sprite.prototype.getCurrentCostume = function(){
-    var id = this.costumeId;
-    return this.costumes[id];
-};
-
-Sprite.prototype.animate = function (frames, frameRate, callback) {
-    this._animation = {
-        frames: frames,
-        rate: frameRate || 5,
-        callback: callback,
-        timer: 0
-    }
-}
-
-Sprite.prototype.nextCostume = function () {
-    this.costumeId += 1;
-    if(this.costumeId >= this.costumes.length) {
-        this.costumeId = 0;
-    }
-}
-
-Sprite.prototype._isTouched = function () {
-
-    // 自己或是對象狀態是隱藏或銷毀，則回傳 false
-    if (this.hidden || this._deleted) return false;
-    if (arguments[0] instanceof Sprite) {
-        var target = arguments[0];
-        if (target.hidden || target._deleted || target === this) return false;
-    }
-
-    // 當自己和目標都沒有旋轉時，用比較簡單的方法
-    if(
-        (Math.abs(this.direction%180)==90) &&
-        (
-            !(arguments[0] instanceof Sprite) ||
-            (arguments[0] instanceof Sprite) && Math.abs(arguments[0].direction%180==90)
-        )
-    ) {
-        // 由於效能考量，先用成本最小的「座標範圍演算法」判斷是否有機會「像素重疊」
-        var crossX = crossY = false;
-    
-        if( arguments[0] instanceof Sprite ){
-    
-            // 如果目標角色是自己，不進行檢驗，直接回傳 false (因為自己一定會碰到自己)
-            if (this == arguments[0]) { return false; }
-    
-            // 如果目標角色為隱藏，不進行檢驗，直接回傳 false
-            if (arguments[0].hidden) { return false; }
-    
-            var target = arguments[0];
-            if(target._deleted){
-                return false;
-            }
-            crossX = (this.x+this.width/2)>(target.x-target.width/2) && (target.x+target.width/2)>(this.x-this.width/2);
-            crossY = (this.y+this.height/2)>(target.y-target.height/2) && (target.y+target.height/2)>(this.y-this.height/2);
-        } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
-            var targetX = arguments[0].x,
-                targetY = arguments[0].y;
-            crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
-            crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
-        } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
-            var targetX = arguments[0],
-                targetY = arguments[1];
-            crossX = (this.x+this.width/2)>targetX && targetX>(this.x-this.width/2);
-            crossY = (this.y+this.height/2)>targetY && targetY>(this.y-this.height/2);
-        } else {
-            throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
-        }
-    
-        // 如果經過「座標範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
-        if (crossX && crossY) {
-            var renderer = this._renderer;
-            var settings = this._settings;
-            // hitCanvas.width = settings.width;
-            // hitCanvas.height = settings.height;
-    
-            if(!this._renderer) return console.log(this);
-    
-            hitTester = this._hitTester;
-    
-            hitTester.globalCompositeOperation = 'source-over';
-            hitTester.drawImage(    renderer.getImgFromCache(this.getCurrentCostume()),
-                                    this.x-this.width/2, this.y-this.height/2,
-                                    this.width, this.height );
-    
-            hitTester.globalCompositeOperation = 'source-in';
-            if( arguments[0] instanceof Sprite ){
-                var target = arguments[0];
-                hitTester.drawImage(    renderer.getImgFromCache(target.getCurrentCostume()),
-                                        target.x-target.width/2, target.y-target.height/2,
-                                        target.width, target.height );
-            } else if ( util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y) ) {
-                hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
-            } else if ( util.isNumeric(arguments[0]) && util.isNumeric(arguments[1]) ) {
-                hitTester.fillRect(arguments[0],arguments[1],1,1);
-            } else {
-                return false
-            }
-    
-            // 只要對 sprite 的大小範圍取樣即可，不需對整張 canvas 取樣
-            // @TODO: 對小的對象取樣即可，以增進效能
-            var aData = hitTester.getImageData(this.x-this.width/2, this.y-this.height/2, this.width, this.height).data;
-            var pxCount = aData.length;
-            for (var i = 0; i < pxCount; i += 4) {
-                if (aData[i+3] > 0) {
+    touched: function () {
+        if (arguments[0].constructor === Array) {
+            for(var i=0; i<arguments[0].length; i++){
+                if (this._isTouched(arguments[0][i])){
                     return true;
                 }
             }
+            return false;
+        } else {
+            return this._isTouched.apply(this, arguments);
         }
+    },
 
-    // 當自己或目標有旋轉時，用比較嚴謹的方法 (用距離判斷)
-    } else {
-        
-        var thisRange, targetRange;
+    distanceTo: function () {
+        var pos = util.position(arguments);
+        return util.distanceBetween(this.x, this.y, pos.x, pos.y);
+    },
 
-        // 由於效能考量，先用成本最小的「圓形範圍演算法」判斷是否有機會「像素重疊」
-        thisRange = Math.sqrt(Math.pow(this.width / 2, 2) + Math.pow(this.height / 2, 2));
+    forever: function (func) {
+        this._onTickFuncs.push(func);
+    },
+
+    on: function () {
+        var eventName = arguments[0];
+        var eventList = this._eventList;
+
+        if (!eventList.validEventName(eventName)) return;
+
+        if (eventName === 'touch') {
+            return eventList.register(eventName, this, arguments[1], arguments[2]);
+        }
+        if (['mousedown', 'mouseup', 'click', 'hover'].includes(eventName)) {
+            return eventList.register(eventName, this, arguments[1]);
+        }
+        if (['keydown', 'keydup', 'holding'].includes(eventName)) {
+            return eventList.register(eventName, arguments[1], arguments[2]);
+        }
+        if (eventName === 'listen') {
+            return eventList.register(eventName, arguments[1], this, arguments[2]);
+        }
+    },
+
+    destroy: function(){
+        this._deleted = true;
+    },
+
+    nextCostume: function () {
+        this.costumeId += 1;
+        if(this.costumeId >= this.costumes.length) {
+            this.costumeId = 0;
+        }
+    },
+
+    bounceEdge: function () {
+        if (this.x < 0) {
+            this.x = 0;
+            if (this.direction > 180 && this.direction > 0) {
+                this.direction = -this.direction;
+            }
+        }
+        else if (this.x > this._settings.width) {
+            this.x = this._settings.width;
+            if (this.direction < 180) {
+                this.direction = -this.direction;
+            }
+        }
+        if (this.y < 0) {
+            this.y = 0;
+            if (this.direction < 90 || this.direction > 270) {
+                this.direction = -this.direction + 180;
+            }
+        }
+        else if (this.y > this._settings.height) {
+            this.y = this._settings.height;
+            if (this.direction > 90 || this.direction < 270) {
+                this.direction = -this.direction + 180;
+            }
+        }
+    },
+
+    animate: function (frames, frameRate, callback) {
+        this._animation = {
+            frames: frames,
+            rate: frameRate || 5,
+            callback: callback,
+            timer: 0
+        }
+    },
+
+    getCostumeImage: function () {
+        var id = this.costumes[this.costumeId];
+        return this._loader.getImgFromCache(id);
+    },
+
+    update: function () {
+        this._updateDirection();
+        this._updateSize();
+        this._updateFrames();
+        for (var i=0; i < this._onTickFuncs.length; i++) {
+            this._onTickFuncs[i].call(this);
+        }
+    },
+
+    _updateDirection: function () {
+        this.direction = this.direction % 360;
+        if(this.direction < 0) this.direction += 360;
+    },
+
+    _updateSize: function () {
+        var img = this.getCostumeImage();
+        this.width = img.width * this.scale;
+        this.height = img.height * this.scale;
+    },
+
+    _updateFrames: function () {
+        var animate = this._animation;
+        if(animate.frames.length > 0) {
+            var now = new Date().getTime();
+            if(now >= animate.timer + 1000 / animate.rate) {
+                animate.timer = now;
+                this.costumeId = animate.frames.shift();
+                if(animate.frames.length <= 0 && animate.callback) animate.callback();
+            }
+        }
+    },
+
+    _isTouched: function () {
         if (arguments[0] instanceof Sprite) {
-            targetRange = Math.sqrt(Math.pow(target.width / 2, 2) + Math.pow(target.height / 2, 2));
-        } else {
-            targetRange = 1;
+            return this._touchSystem.isTouch(this, arguments[0]);
         }
-        if (this.distanceTo.apply(this, arguments) > (thisRange + targetRange)) {
-            return false;
-        }
-        if (thisRange*2 < 1 || targetRange*2 < 1) {
-            return false;
-        }
-    
-        // 如果經過「圓形範圍演算法」判斷，兩者有機會重疊，則進一步使用「像素重疊演算法」進行判斷
-        this._hitTester.clearRect(0,0,this._settings.width,this._settings.height);
-    
-        this._hitTester.globalCompositeOperation = 'source-over';
-        if (arguments[0] instanceof Sprite){
-            var tmp = arguments[0].opacity;
-            arguments[0].opacity = 1;
-            this._renderer.drawInstance(arguments[0], this._hitTester);
-            arguments[0].opacity = tmp;
-        } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
-            this._hitTester.fillRect(arguments[0].x,arguments[0].y,1,1);
-        } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
-            this._hitTester.fillRect(arguments[0],arguments[1],1,1);
-        } else {
-            throw "請傳入角色(Sprite)、{x:x, y:y}，或是 X, Y 坐標值";
-        }
-    
-        this._hitTester.globalCompositeOperation = 'source-in';
-        var tmp = this.opacity;
-        this.opacity = 1;
-        this._renderer.drawInstance(this, this._hitTester);
-        this.opacity = tmp;
-    
-        var aData;
-        if (arguments[0] instanceof Sprite){
-            if (thisRange < targetRange) {
-                aData = this._hitTester.getImageData(this.x - thisRange, this.y - thisRange, thisRange * 2, thisRange * 2).data;
-            } else {
-                aData = this._hitTester.getImageData(target.x - targetRange, target.y - targetRange, targetRange * 2, targetRange * 2).data;
-            }
-        } else if (util.isNumeric(arguments[0].x) && util.isNumeric(arguments[0].y)) {
-            aData = this._hitTester.getImageData(arguments[0].x, arguments[0].y, 1, 1).data;
-        } else if (util.isNumeric(arguments[0]) && util.isNumeric(arguments[1])) {
-            aData = this._hitTester.getImageData(arguments[0], arguments[1], 1, 1).data;
-        }
-    
-        var pxCount = aData.length;
-        for (var i = 0; i < pxCount; i += 4) {
-            if (aData[i+3] > 0) {
-                return true;
-            }
-        }
-
-    }
-
-    return false;
+        var pos = util.position(arguments);
+        return this._touchSystem.isTouchDot(this, pos.x, pos.y);
+    },
 }
 
+Sprite.prototype.when = Sprite.prototype.on;
+Sprite.prototype.always = Sprite.prototype.forever;
+
 module.exports = Sprite;
-},{"./util":14}],13:[function(require,module,exports){
+},{"./util":15}],13:[function(require,module,exports){
 function Sprites(){
     this._sprites = [];
 }
@@ -1538,48 +1377,174 @@ Sprites.prototype.clear = function(){
 
 module.exports = Sprites;
 },{}],14:[function(require,module,exports){
-var util = {};
+var util = require("./util");
+var Sprite = require('./sprite');
+var Renderer = require('./renderer');
 
-util.isNumeric = function(n){
-    return !isNaN(parseFloat(n)) && isFinite(n);
+function TouchSystem(canvas, loader, settings) {
+    this.ctx = canvas.getContext('2d');
+    this.renderer = new Renderer(canvas, loader, settings);
+    this.settings = settings;
 }
-util.radToDegree = function(rad){
-    rad = rad%(Math.PI*2);
-    if(rad<0) rad += Math.PI*2;
-    return rad*180/Math.PI;
+
+TouchSystem.prototype = {
+
+    isTouchDot: function (sprite, x, y) {
+        return this.isTouch(sprite, {
+            x: x,
+            y: y,
+            width: this.settings.precision*2,
+            height: this.settings.precision*2,
+            direction: 0,
+            area: 1,
+        });
+    },
+
+    isTouch: function (spriteA, spriteB) {
+
+        if (spriteA.hidden || spriteA._deleted ||
+            spriteB.hidden || spriteB._deleted ||
+            spriteA === spriteB) return false;
+
+        var boxA = this.getBoxOf(spriteA);
+        var boxB = this.getBoxOf(spriteB);
+
+        if (this.AABBJudger(boxA, boxB) === false) return false;
+        
+        var undoA = this.reduceAccuracy(spriteA);
+        var undoB = this.reduceAccuracy(spriteB);
+
+        var box = boxA.area < boxB.area ? boxA : boxB;
+        this.reduceAccuracy(box);
+        result = this.pixelJudger(spriteA, spriteB, box);
+
+        undoA();
+        undoB();
+
+        return result;
+    },
+
+    getBoxOf: function (sprite) {
+
+        var box = { x: sprite.x, y: sprite.y, area: sprite.width*sprite.height }
+
+        if (sprite.direction === 90 || sprite.direction === 270 || sprite.rotationStyle !== 'full') {
+            box.width = sprite.width;
+            box.height = sprite.height;
+            return box;
+        }
+        if (sprite.direction === 0 || sprite.direction === 180 ) {
+            box.width = sprite.height;
+            box.height = sprite.width;
+            return box;
+        }
+
+        var length = Math.sqrt(sprite.width * sprite.width + sprite.height * sprite.height);
+        var angle = Math.asin(sprite.width / length);
+        var a1 = util.degreeToRad(sprite.direction) - angle;
+        var a2 = util.degreeToRad(sprite.direction) + angle;
+
+        var a1y = Math.abs(Math.sin(a1));
+        var a1x = Math.abs(Math.cos(a1));
+        var a2y = Math.abs(Math.sin(a2));
+        var a2x = Math.abs(Math.cos(a2));
+
+        box.width = Math.max(a1x, a2x)*length;
+        box.height = Math.max(a1y, a2y)*length;
+        box.area = box.width*box.height;
+        return box;
+    },
+
+    AABBJudger: function (boxA, boxB) {
+        return Math.abs(boxA.x - boxB.x) < (boxA.width + boxB.width) / 2 &&
+               Math.abs(boxA.y - boxB.y) < (boxA.height + boxB.height) / 2
+    },
+
+    pixelJudger: function (spriteA, spriteB, box) {
+
+        if (box.width < 1 || box.height < 1) return false;
+
+        this.ctx.clearRect(0, 0, this.settings.width, this.settings.height);
+
+        this.ctx.globalCompositeOperation = 'source-over';
+        this.renderer.drawInstance(spriteA);
+
+        this.ctx.globalCompositeOperation = 'source-in';
+        if (spriteB instanceof Sprite) {
+            this.renderer.drawInstance(spriteB);
+        } else {
+            this.ctx.fillRect(spriteB.x, spriteB.y, 1, 1);
+        }
+
+        var aData = this.ctx.getImageData(box.x - box.width/2, box.y - box.height/2, box.width, box.height).data;
+        for (var i = 0; i < aData.length; i += 4) {
+            if (aData[i + 3] > 0) return true;
+        }
+        return false;
+    },
+
+    reduceAccuracy: function (s) {
+        var rate = this.settings.precision;
+        var x = s.x;
+        var y = s.y;
+        var width = s.width;
+        var height = s.height;
+        var scale = s.scale;
+        s.x /= rate;
+        s.y /= rate;
+        s.width /= rate;
+        s.height /= rate;
+        s.scale /= rate;
+        return function () {
+            s.x = x;
+            s.y = y;
+            s.width = width;
+            s.height = height;
+            s.scale = scale;
+        }
+    },
 }
-util.degreeToRad = function(degree){
-    degree = degree%360;
-    if(degree<0) degree += 360;
-    return degree/180*Math.PI;
-}
-util.distanceBetween = function(){
-    var from = {x:0,y:0},
-        to   = {x:0,y:0};
-    if( util.isNumeric(arguments[0].x) &&
-        util.isNumeric(arguments[0].y) &&
-        util.isNumeric(arguments[1].x) &&
-        util.isNumeric(arguments[1].y)
-    ){
-        from.x = arguments[0].x;
-        from.y = arguments[0].y;
-        to.x = arguments[1].x;
-        to.y = arguments[1].y;
-    } else if (
-        util.isNumeric(arguments[0]) &&
-        util.isNumeric(arguments[1]) &&
-        util.isNumeric(arguments[2]) &&
-        util.isNumeric(arguments[3])
-    ) {
-        from.x = arguments[0];
-        from.y = arguments[1];
-        to.x   = arguments[2];
-        to.y   = arguments[3];
-    } else {
-        throw "請傳入角色(Sprite)或是 X, Y 坐標值";
+
+module.exports = TouchSystem;
+},{"./renderer":9,"./sprite":12,"./util":15}],15:[function(require,module,exports){
+var util = {
+
+    isNumeric: function(n){
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    },
+
+    radToDegree: function(rad){
+        rad = rad%(Math.PI*2);
+        if(rad<0) rad += Math.PI*2;
+        return rad*180/Math.PI;
+    },
+
+    degreeToRad: function(degree){
+        degree = degree%360;
+        if(degree<0) degree += 360;
+        return degree/180*Math.PI;
+    },
+    
+    distanceBetween: function(fromX, fromY, toX, toY){
+        return Math.sqrt(Math.pow(fromX-toX, 2) + Math.pow(fromY-toY, 2));
+    },
+
+    vectorToDegree: function (vectorX, vectorY) {
+        var rad = Math.atan2(vectorX, -vectorY); // 這裡的 vectorY 和數學坐標是反過來的
+        return this.radToDegree(rad)
+    },
+
+    position: function (args) {
+        if(this.isNumeric(args[0].x) && this.isNumeric(args[0].y)) {
+            return args[0];
+        } else if (this.isNumeric(args[0]) && this.isNumeric(args[1])) {
+            return { x: args[0], y: args[1] }
+        } else {
+            throw "請傳入角色(Sprite, Cursor)或是 X, Y 座標值"
+        }
     }
-    return Math.sqrt( Math.pow(to.x-from.x,2) + Math.pow(to.y-from.y,2) )
-}
+};
+
 
 module.exports = util;
 },{}]},{},[4])

@@ -1,72 +1,83 @@
-Game.setBackdrop("./assets/background.png", 0, 0, 520, 390);
+setBackdrop('./assets/background.jpg');
+var bgm = sound.play('./assets/bgm.ogg', true);
 
-var bird = Game.createSprite("./assets/bird.png");
-var tubeUp = Game.createSprite({
-    costumes: "./assets/up-tube.png",
-    x: 400,
-  	y: -30
-});
-var tubeDown = Game.createSprite({
-  	costumes: "./assets/down-tube.png",
-	x: 400,
-  	y: 430
-});
-var startBtn = Game.createSprite("./assets/start-button.png");
-var gameOverLogo = Game.createSprite({
-    costumes: "./assets/gameover.png",
-    hidden: true,
-    y: 100
-});
+var bird = createSprite('./assets/bird.png');
 
-var bgm = Game.sound.play('./assets/bgm.ogg');
-bgm.loop = true;
+var p1 = createSprite('./assets/pipes.png');
+var p2 = createSprite('./assets/pipes.png');
+var p3 = createSprite('./assets/pipes.png');
+var startBtn = createSprite('./assets/start-button.png');
+var gameOverLogo = createSprite('./assets/gameover.png');
+var ground = createSprite('./assets/ground.jpg');
+p1.x = 1200;
+p2.x = 1700;
+p3.x = 2200;
+p1.y = Math.random() * 600 + 150;
+p2.y = Math.random() * 600 + 150;
+p3.y = Math.random() * 600 + 150;
 
 var vy = 0;
 var scores = 0;
-var flying = false;
-Game.forever(function() {
-    if(!flying) {
+var pipes = [p1, p2, p3];
+var running = false;
+
+startBtn.y = 500;
+gameOverLogo.y = 350;
+ground.y = 880;
+gameOverLogo.hidden = true;
+
+when('click', jump);
+startBtn.when('click', start);
+
+forever(function () {
+    print(scores, 10, 10, 'white', 60);
+    if (!running) {
         return;
     }
-    tubeUp.x -= 2;
-    tubeDown.x -= 2;
-    if(tubeUp.x < 0) {
-        resetTube();
-        scores += 1;
-    }
-    bird.y += vy;
-    vy += 0.2;
-    Game.print(scores, 10, 10, 'white', 45);
-    if(bird.y > 400 || bird.y < 0) {
+    updatePipes();
+    updateBird();
+    if (bird.y > 900 || bird.touched(ground) || bird.touched(pipes)) {
         gameOver();
     }
 });
 
-Game.when('click', function() { 
-    vy = -5;
-    Game.sound.play('./assets/jump.ogg');
-});
-bird.when('touch', [tubeUp, tubeDown], gameOver);
-startBtn.when('click', start);
+function updatePipes() {
+    for (var i = 0; i < 3; i++) {
+        pipes[i].x -= 5;
+        if (pipes[i].x < -100) {
+            pipes[i].x += 1500;
+            pipes[i].y = 100 + Math.random() * 700;
+            scores++;
+        }
+    }
+}
 
-function resetTube () {
-    var pos = Math.random()*300 + 50;
-    tubeUp.x = 450;
-    tubeDown.x = 450;
-    tubeUp.y = pos - 230;
-    tubeDown.y = pos + 230;
+function updateBird() {
+    bird.y += vy;
+    vy += 0.5;
 }
-function start () {
-  	startBtn.hidden = true;
-    gameOverLogo.hidden = true;
-    bird.y = 200;
+
+function jump() {
+    vy = -8;
+    sound.play('./assets/jump.ogg');
+}
+
+function start() {
     scores = 0;
-    flying = true;
-    tubeUp.x = 450;
-    tubeDown.x = 450;
+    vy = 0;
+    running = true;
+    bird.y = 450;
+    startBtn.hidden = true;
+    gameOverLogo.hidden = true;
+    pipes.forEach(function (p, i) {
+        p.x = 1200 + 500 * i;
+        p.y = 100 + Math.random() * 700;
+    });
 }
-function gameOver () {
-    gameOverLogo.hidden = false;
+
+function gameOver() {
+    running = false;
     startBtn.hidden = false;
-    flying = false;
+    gameOverLogo.hidden = false;
 }
+

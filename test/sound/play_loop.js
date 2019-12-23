@@ -3,5 +3,5 @@ Game.when("click", function() {
 });
 
 Game.forever(function() {
-    Game.print("點擊畫面", 200, 170, "red", 30);
+    Game.print("點擊畫面", 300, 300, "red", 60);
 });
