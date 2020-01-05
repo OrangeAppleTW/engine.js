@@ -22,7 +22,6 @@ function engine(canvasId, debugMode){
         width: canvas.width,
         height: canvas.height,
         updateFunctions: [],
-        fpsMax: 60,
         precision: 1, // 像素碰撞的精確度，單位是 pixel
     };
 
@@ -59,9 +58,7 @@ function engine(canvasId, debugMode){
                 renderer.drawSprites(sprites);
                 pen.drawTexts();
             }
-        },
-        // setting (for fpsMax)
-        settings
+        }
     );
 
     var background={
@@ -77,7 +74,6 @@ function engine(canvasId, debugMode){
             hitCanvas.height = canvas.height / settings.precision;    
         }
         settings.update = args.update || settings.update;
-        settings.fpsMax = args.fpsMax || settings.fpsMax;
         return this;
     }
 
