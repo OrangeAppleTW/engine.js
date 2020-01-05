@@ -9,6 +9,17 @@ function IO(canvas, settings, debugMode){
     var keyup     = this.keyup     = { any: false }
     var keydown   = this.keydown   = { any: false }
     var holding   = this.holding   = { any: false, count: 0 }
+    
+    // 遊戲場景響應式的縮放是交由外部 css 樣式來控制
+    // zoom 表示遊戲場景的縮放比例，讓滑鼠事件或是觸控事件的觸發位置精準偵測
+    // 因為沒有針對單一元素 resize 的事件，因此改每 100ms 偵測一次 canvas 的大小
+    var zoomX = 1;
+    var zoomY = 1;
+    setInterval(function () {
+        var box = canvas.getBoundingClientRect();
+        zoomX = box.width/settings.width;
+        zoomY = box.height/settings.height;
+    }, 100);
 
     // 建立所有的按鍵並設為 false，避免 undefined 所造成的 exception
     for(var _key in keycode.codes){ holding[_key] = false; }
@@ -27,21 +38,21 @@ function IO(canvas, settings, debugMode){
         if(e.which == 1) cursor.left = true;
         if(e.which == 3) cursor.right = true;
         cursor.isDown = true;
-        mousedown.x = e.offsetX / settings.zoom;
-        mousedown.y = e.offsetY / settings.zoom;
+        mousedown.x = e.offsetX / zoomX;
+        mousedown.y = e.offsetY / zoomY;
     });
 
     canvas.addEventListener("mouseup", function(e){
         if(e.which == 1) cursor.left = false;
         if(e.which == 3) cursor.right = false;
         cursor.isDown = cursor.left || cursor.right;
-        mouseup.x = e.offsetX / settings.zoom;
-        mouseup.y = e.offsetY / settings.zoom;
+        mouseup.x = e.offsetX / zoomX;
+        mouseup.y = e.offsetY / zoomY;
     });
 
     canvas.addEventListener("mousemove", function(e){
-        cursor.x = e.offsetX / settings.zoom;
-        cursor.y = e.offsetY / settings.zoom;
+        cursor.x = e.offsetX / zoomX;
+        cursor.y = e.offsetY / zoomY;
     });
 
     canvas.addEventListener("touchstart", function (e) {
@@ -66,14 +77,14 @@ function IO(canvas, settings, debugMode){
 
     function getTouchPos (touch) {
         return {
-            x: (touch.pageX - canvas.offsetLeft) / settings.zoom,
-            y: (touch.pageY - canvas.offsetTop) / settings.zoom
+            x: (touch.pageX - canvas.offsetLeft) / zoomX,
+            y: (touch.pageY - canvas.offsetTop) / zoomY
         }
     }
 
     canvas.addEventListener("click", function(e){
-        clicked.x = e.offsetX / settings.zoom;
-        clicked.y = e.offsetY / settings.zoom;
+        clicked.x = e.offsetX / zoomX;
+        clicked.y = e.offsetY / zoomY;
         if(debugMode){
             console.log( "Clicked! cursor:"+JSON.stringify(cursor) );
         }

@@ -21,7 +21,6 @@ function engine(canvasId, debugMode){
     var settings = {
         width: canvas.width,
         height: canvas.height,
-        zoom: 1,
         updateFunctions: [],
         fpsMax: 60,
         precision: 1, // 像素碰撞的精確度，單位是 pixel
@@ -73,11 +72,6 @@ function engine(canvasId, debugMode){
         if(args.precision) settings.precision = args.precision;
         if(args.width) canvas.width = settings.width = args.width;
         if(args.height) canvas.height = settings.height = args.height;
-        if(args.zoom) {
-            settings.zoom = args.zoom;
-            canvas.style.width = canvas.width * settings.zoom + 'px';
-            canvas.style.height = canvas.height * settings.zoom + 'px';
-        }
         if (args.precision || args.width || args.height) {
             hitCanvas.width = canvas.width / settings.precision;
             hitCanvas.height = canvas.height / settings.precision;    
