@@ -65,6 +65,7 @@ section:last-child {
         transform: translate(100vw, 0px);
         box-shadow: 0 10px 16px 0 rgba(0, 0, 0, 0.2);
         overflow: scroll;
+        min-width: calc(100vw - 500px);
     }
 
     &.active {
@@ -157,10 +158,14 @@ span.example-code {
 }
 
 .runner {
-    width: 600px;
+    width: 100%;
+    max-width: calc(100vw - 300px);
+    .CodeMirror.cm-s-mbo {
+        height: 150px;
+    }
     #sandbox {
         margin-top: 15px;
-        width: 600px;
-        height: 450px;
+        width: 100%;
+        height: calc(100vh - 250px);
     }
 }
