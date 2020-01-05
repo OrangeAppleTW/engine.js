@@ -52,7 +52,8 @@ section:last-child {
     transition: all 0.4s;
     transform: translate(100vw, 0px);
     box-shadow: 0 10px 16px 0 rgba(0, 0, 0, 0.2);
-    overflow: scroll; }
+    overflow: scroll;
+    min-width: calc(100vw - 500px); }
   .popup.active {
     z-index: 1;
     background-color: rgba(0, 0, 0, 0.5); }
@@ -124,8 +125,11 @@ span.example-code {
   margin-left: 250px; }
 
 .runner {
-  width: 600px; }
+  width: 100%;
+  max-width: calc(100vw - 300px); }
+  .runner .CodeMirror.cm-s-mbo {
+    height: 150px; }
   .runner #sandbox {
     margin-top: 15px;
-    width: 600px;
-    height: 450px; }
+    width: 100%;
+    height: calc(100vh - 250px); }
