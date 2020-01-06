@@ -69,6 +69,7 @@ function engine(canvasId, debugMode){
     }
 
     function createSprite (args) {
+        if (arguments.length > 1) args = Array.from(arguments);
         return new Sprite(args, eventList, renderer, loader, touchSystem, sprites);
     }
 
