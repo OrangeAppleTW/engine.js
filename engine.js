@@ -166,7 +166,7 @@ function Clock (onTick, render) {
     };
 
     // when we create the game instance the game loop will start looping,
-    // if we stop the game it just make the game loop skip running game logic and rendering canvas
+    // if we stop the game it just makes the game loop skip running game logic and rendering canvas
     gameLoop();
 
     this.start = function () {
@@ -177,7 +177,6 @@ function Clock (onTick, render) {
         running = false;
     }
 }
-
 
 module.exports = Clock;
 },{}],3:[function(require,module,exports){
@@ -315,39 +314,35 @@ var TouchSystem = require("./touch-system");
 
 function engine(canvasId, debugMode){
 
-    //== Default params setting:
-    debugMode  = debugMode||false;
-
     var canvas = document.getElementById(canvasId);
     var hitCanvas = document.createElement('canvas');
+    hitCanvas.width = canvas.width;
+    hitCanvas.height = canvas.height;
 
     var settings = {
-        width: canvas.width,
-        height: canvas.height,
-        updateFunctions: [],
+        debugMode: debugMode || false,
+        autoRendering: true,
         precision: 1, // 像素碰撞的精確度，單位是 pixel
     };
 
-    hitCanvas.width = canvas.width / settings.precision;
-    hitCanvas.height = canvas.height / settings.precision;
-
-    var autoRendering = true;
+    var background = { path: '#ffffff' };
+    var updateFunctions = [];
 
     var loader = new Loader();
     var sprites = new Sprites();
     var inspector = new Inspector();
-    var io = new IO(canvas, settings, debugMode);
-    var eventList = new EventList(io, debugMode);
-    var renderer = new Renderer(canvas, loader, settings);
-    var sound = new Sound(loader, debugMode);
-    var pen = new Pen(canvas);
+    var io = new IO(canvas, settings);
+    var eventList = new EventList(io);
+    var renderer = new Renderer(canvas, loader);
+    var sound = new Sound(loader);
+    var pen = new Pen(canvas, settings);
     var touchSystem = new TouchSystem(hitCanvas, loader, settings);
     var clock = new Clock(
         // onTick function
         function(){
             eventList.traverse();
-            for(var i=0; i<settings.updateFunctions.length; i++){
-                settings.updateFunctions[i]();
+            for(var i=0; i<updateFunctions.length; i++){
+                updateFunctions[i]();
             };
             sprites.removeDeletedSprites();
             sprites.runOnTick();
@@ -355,36 +350,31 @@ function engine(canvasId, debugMode){
         },
         // render function
         function(){
-            if(autoRendering){
+            if(settings.autoRendering){
                 renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
                 pen.drawShapes();
                 renderer.drawSprites(sprites);
                 pen.drawTexts();
             }
         }
-    );
-
-    var background={
-        path: "#ffffff"
-    };    
+    );  
 
     function set(args){
+        if(args.width) canvas.width = args.width;
+        if(args.height) canvas.height = args.height;
         if(args.precision) settings.precision = args.precision;
-        if(args.width) canvas.width = settings.width = args.width;
-        if(args.height) canvas.height = settings.height = args.height;
         if (args.precision || args.width || args.height) {
             hitCanvas.width = canvas.width / settings.precision;
             hitCanvas.height = canvas.height / settings.precision;    
         }
-        settings.update = args.update || settings.update;
-        return this;
+        if (args.autoRendering != undefined) settings.autoRendering = !!args.autoRendering;
     }
 
     function createSprite (args) {
-        return new Sprite(args, eventList, renderer, loader, touchSystem, settings, sprites);
+        if (arguments.length > 1) args = Array.from(arguments);
+        return new Sprite(args, eventList, renderer, loader, touchSystem, sprites);
     }
 
-    // for proxy.setBackdrop, setBackground
     function setBackground (path, x, y, w, h) {
         background.path = path;
         background.x = x;
@@ -394,15 +384,7 @@ function engine(canvasId, debugMode){
     }
 
     function forever (func) {
-        settings.updateFunctions.push(func);
-    }
-
-    function preload (assets, completeFunc, progressFunc) {
-        loader.preload(assets, completeFunc, progressFunc);
-    }
-
-    function drawText (text, x, y, color ,size, font) {
-        pen.drawText(text, x, y, color ,size, font);
+        updateFunctions.push(func);
     }
 
     function stop () {
@@ -410,41 +392,35 @@ function engine(canvasId, debugMode){
         sound.stop();
     }
 
-    function stopRendering () {
-        autoRendering = false;
-        pen.drawingMode = 'instant';
-    }
-
     var proxy = {
+        set: set,
+        preload: loader.preload.bind(loader),
+        start: clock.start.bind(clock),
+        stop: stop,
         createSprite: createSprite,
-        Sprite: Sprite,
-        print: drawText,
-        drawText: drawText,
+        createSound: sound.play.bind(sound),
         setBackground: setBackground,
         setBackdrop: setBackground,
-        cursor: io.cursor,
-        key: io.holding,
         inspector: inspector,
-        when: eventList.register.bind(eventList),
-        on: eventList.register.bind(eventList),
-        set: set,
-        stop: stop,
-        stopRendering: stopRendering,
-        start: clock.start.bind(clock),
         forever: forever,
         update: forever,
         always: forever,
-        clear: renderer.clear.bind(renderer),
-        preload: preload,
         sound: sound,
+        cursor: io.cursor,
+        key: io.holding,
+        when: eventList.register.bind(eventList),
+        on: eventList.register.bind(eventList),
         broadcast: eventList.emit.bind(eventList),
         pen: pen,
-        // 以下指令是給繪圖用的
-        drawBackdrop: renderer.drawBackdrop,
-        drawBackground: renderer.drawBackdrop,
-        drawSprites: renderer.drawSprites
+        print: pen.drawText.bind(pen),
+        drawText: pen.drawText.bind(pen),
+        drawBackdrop: renderer.drawBackdrop.bind(renderer),
+        drawBackground: renderer.drawBackdrop.bind(renderer),
+        drawSprites: renderer.drawSprites.bind(renderer),
+        clear: renderer.clear.bind(renderer),
+        Sprite: Sprite,
     };
-    if(debugMode){
+    if(settings.debugMode){
         proxy.eventList = eventList;
     }
     return proxy;
@@ -467,7 +443,7 @@ module.exports = Inspector;
 },{}],6:[function(require,module,exports){
 var keycode = require('keycode');
 
-function IO(canvas, settings, debugMode){
+function IO(canvas, settings){
 
     var cursor    = this.cursor    = { x: 0, y: 0, isDown: false, left: false, right: false }
     var clicked   = this.clicked   = { x: null, y: null }
@@ -484,14 +460,14 @@ function IO(canvas, settings, debugMode){
     var zoomY = 1;
     setInterval(function () {
         var box = canvas.getBoundingClientRect();
-        zoomX = box.width/settings.width;
-        zoomY = box.height/settings.height;
+        zoomX = box.width/canvas.width;
+        zoomY = box.height/canvas.height;
     }, 100);
 
     // 建立所有的按鍵並設為 false，避免 undefined 所造成的 exception
     for(var _key in keycode.codes){ holding[_key] = false; }
 
-    debugMode = debugMode || false;
+    var debugMode = !!settings.debugMode;
 
     // Make any element focusable for keydown event.
     canvas.setAttribute("tabindex",'1');
@@ -696,12 +672,12 @@ Loader.prototype = {
 module.exports = Loader;
 
 },{}],8:[function(require,module,exports){
-function Pen (canvas) {
+function Pen (canvas, settings) {
     this.ctx = canvas.getContext('2d');
     this.size = 1;
     this.color = 'black';
     this.fillColor = null;
-    this.drawingMode = "onTick"; // ["onTick", "instant"]
+    this.settings = settings;
     this.shapes = [];
     this.texts = [];
 }
@@ -755,7 +731,7 @@ Pen.prototype = {
         font = font || 'Arial';
 
         // 如果不是 autoRender 模式，直接畫
-        if (this.drawingMode=="instant") return this._drawText(text, x, y, color ,size, font);
+        if (!this.settings.autoRendering) return this._drawText(text, x, y, color ,size, font);
         // 如果是 autoRener，存起來
         this._addText({
             text: text,
@@ -768,7 +744,7 @@ Pen.prototype = {
     },
     
     drawLine: function (x1, y1, x2, y2) {
-        if (this.drawingMode=="instant") return this._drawLine(x1, y1, x2, y2);
+        if (!this.settings.autoRendering) return this._drawLine(x1, y1, x2, y2);
         var s = {};
         s.x1 = x1;
         s.y1 = y1;
@@ -779,7 +755,7 @@ Pen.prototype = {
     },
 
     drawCircle: function (x, y ,r) {
-        if (this.drawingMode=="instant") return this._drawCircle(x, y ,r);
+        if (!this.settings.autoRendering) return this._drawCircle(x, y ,r);
         var s = {};
         s.x = x;
         s.y = y;
@@ -789,7 +765,7 @@ Pen.prototype = {
     },
 
     drawTriangle: function (x1, y1, x2, y2, x3, y3) {
-        if (this.drawingMode=="instant") return this._drawTriangle(x1, y1, x2, y2, x3, y3);
+        if (!this.settings.autoRendering) return this._drawTriangle(x1, y1, x2, y2, x3, y3);
         var s = {};
         s.x1 = x1;
         s.y1 = y1;
@@ -802,7 +778,7 @@ Pen.prototype = {
     },
 
     drawRect: function (x, y, width, height) {
-        if (this.drawingMode=="instant") return this._drawRect(x, y, width, height);
+        if (!this.settings.autoRendering) return this._drawRect(x, y, width, height);
         var s = {};
         s.x = x;
         s.y = y;
@@ -813,7 +789,7 @@ Pen.prototype = {
     },
     
     drawPolygon: function () {
-        if (this.drawingMode=="instant") return this._drawPolygon.apply(this, arguments);
+        if (!this.settings.autoRendering) return this._drawPolygon.apply(this, arguments);
         var s = {};
         s.points = Array.prototype.slice.call(arguments);
         s.type = 'polygon';
@@ -821,7 +797,7 @@ Pen.prototype = {
     },
 
     _drawText: function (text, x, y, color ,size, font) {
-        if(this.drawingMode=="instant") this._setPenAttr();
+        if(!this.settings.autoRendering) this._setPenAttr();
         this.ctx.textBaseline = "top";
         this.ctx.font = size + "px " + font;
         this.ctx.fillStyle = color;
@@ -829,7 +805,7 @@ Pen.prototype = {
     },
 
     _drawLine: function (x1, y1, x2, y2) {
-        if(this.drawingMode=="instant") this._setPenAttr();
+        if(!this.settings.autoRendering) this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.moveTo(x1, y1);
         this.ctx.lineTo(x2, y2);
@@ -839,7 +815,7 @@ Pen.prototype = {
     },
 
     _drawCircle: function (x, y ,r) {
-        if(this.drawingMode=="instant") this._setPenAttr();
+        if(!this.settings.autoRendering) this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.arc(x, y, r, 0, 2 * Math.PI);
         this.ctx.closePath();
@@ -848,7 +824,7 @@ Pen.prototype = {
     },
 
     _drawTriangle: function (x1, y1, x2, y2, x3, y3) {
-        if(this.drawingMode=="instant") this._setPenAttr();
+        if(!this.settings.autoRendering) this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.moveTo(x1, y1);
         this.ctx.lineTo(x2, y2);
@@ -859,7 +835,7 @@ Pen.prototype = {
     },
 
     _drawRect: function (x, y, w, h) {
-        if(this.drawingMode=="instant") this._setPenAttr();
+        if(!this.settings.autoRendering) this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.moveTo(x, y);
         this.ctx.lineTo(x+w, y);
@@ -871,7 +847,7 @@ Pen.prototype = {
     },
 
     _drawPolygon: function () {
-        if(this.drawingMode=="instant") this._setPenAttr();
+        if(!this.settings.autoRendering) this._setPenAttr();
         var points = Array.prototype.slice.call(arguments);
         this.ctx.beginPath();
         this.ctx.moveTo(points[0],points[1]);
@@ -906,17 +882,16 @@ module.exports = Pen;
 },{}],9:[function(require,module,exports){
 var util = require("./util");
 
-function Renderer (canvasEl, loader, settings) {
+function Renderer (canvasEl, loader) {
     this.canvas = canvasEl;
     this.ctx = canvasEl.getContext('2d');
     this.loader = loader;
-    this.settings = settings;
 }
 
 Renderer.prototype = {
     
     clear: function() {
-        this.ctx.clearRect(0, 0, this.settings.width, this.settings.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
 
     drawSprites: function(sprites){
@@ -978,7 +953,7 @@ Renderer.prototype = {
             this.ctx.drawImage(img, (x||0), (y||0), (width||img.width), (height||img.height));
         } else if(src) {
             this.ctx.fillStyle = src;
-            this.ctx.fillRect(0 ,0, this.settings.width, this.settings.height);
+            this.ctx.fillRect(0 ,0, this.canvas.width, this.canvas.height);
         }
     },
 }
@@ -1045,7 +1020,7 @@ module.exports = SoundNode;
 },{}],11:[function(require,module,exports){
 var SoundNode = require('./sound-node');
 
-function Sound (loader, debugMode) { 
+function Sound (loader) { 
     this.context = new (window.AudioContext || window.webkitAudioContext)();    
     this.soundNodes = [];
     
@@ -1119,14 +1094,14 @@ module.exports = Sound;
 },{"./sound-node":10}],12:[function(require,module,exports){
 var util = require('./util');
 
-function Sprite(args, eventList, renderer, loader, touchSystem, settings, sprites) {
+function Sprite(args, eventList, renderer, loader, touchSystem, sprites) {
 
     if (args.constructor === String || args.constructor === Array) {
         args = { costumes: [].concat(args) }
     }
 
-    this.x = util.isNumeric(args.x) ? args.x : settings.width/2;
-    this.y = util.isNumeric(args.y) ? args.y : settings.height/2;
+    this.x = util.isNumeric(args.x) ? args.x : renderer.canvas.width/2;
+    this.y = util.isNumeric(args.y) ? args.y : renderer.canvas.height/2;
     this.direction = util.isNumeric(args.direction) ? args.direction : 90;
     this.scale = util.isNumeric(args.scale) ? args.scale : 1;
     this.layer = util.isNumeric(args.layer) ? args.layer : 0;
@@ -1146,7 +1121,6 @@ function Sprite(args, eventList, renderer, loader, touchSystem, settings, sprite
     this._renderer = renderer;
     this._loader = loader;
     this._touchSystem = touchSystem;
-    this._settings = settings;
 
     sprites._sprites.push(this);
 }
@@ -1229,14 +1203,15 @@ Sprite.prototype = {
     },
 
     bounceEdge: function () {
+        var stage = this._renderer.canvas;
         if (this.x < 0) {
             this.x = 0;
             if (this.direction > 180 && this.direction > 0) {
                 this.direction = -this.direction;
             }
         }
-        else if (this.x > this._settings.width) {
-            this.x = this._settings.width;
+        else if (this.x > stage.width) {
+            this.x = stage.width;
             if (this.direction < 180) {
                 this.direction = -this.direction;
             }
@@ -1247,8 +1222,8 @@ Sprite.prototype = {
                 this.direction = -this.direction + 180;
             }
         }
-        else if (this.y > this._settings.height) {
-            this.y = this._settings.height;
+        else if (this.y > stage.height) {
+            this.y = stage.height;
             if (this.direction > 90 || this.direction < 270) {
                 this.direction = -this.direction + 180;
             }
@@ -1352,6 +1327,7 @@ var Sprite = require('./sprite');
 var Renderer = require('./renderer');
 
 function TouchSystem(canvas, loader, settings) {
+    this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.renderer = new Renderer(canvas, loader, settings);
     this.settings = settings;
@@ -1434,7 +1410,7 @@ TouchSystem.prototype = {
 
         if (box.width < 1 || box.height < 1) return false;
 
-        this.ctx.clearRect(0, 0, this.settings.width, this.settings.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.ctx.globalCompositeOperation = 'source-over';
         this.renderer.drawInstance(spriteA);
