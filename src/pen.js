@@ -1,9 +1,9 @@
-function Pen (canvas) {
+function Pen (canvas, settings) {
     this.ctx = canvas.getContext('2d');
     this.size = 1;
     this.color = 'black';
     this.fillColor = null;
-    this.drawingMode = "onTick"; // ["onTick", "instant"]
+    this.settings = settings;
     this.shapes = [];
     this.texts = [];
 }
@@ -57,7 +57,7 @@ Pen.prototype = {
         font = font || 'Arial';
 
         // 如果不是 autoRender 模式，直接畫
-        if (this.drawingMode=="instant") return this._drawText(text, x, y, color ,size, font);
+        if (!this.settings.autoRendering) return this._drawText(text, x, y, color ,size, font);
         // 如果是 autoRener，存起來
         this._addText({
             text: text,
@@ -70,7 +70,7 @@ Pen.prototype = {
     },
     
     drawLine: function (x1, y1, x2, y2) {
-        if (this.drawingMode=="instant") return this._drawLine(x1, y1, x2, y2);
+        if (!this.settings.autoRendering) return this._drawLine(x1, y1, x2, y2);
         var s = {};
         s.x1 = x1;
         s.y1 = y1;
@@ -81,7 +81,7 @@ Pen.prototype = {
     },
 
     drawCircle: function (x, y ,r) {
-        if (this.drawingMode=="instant") return this._drawCircle(x, y ,r);
+        if (!this.settings.autoRendering) return this._drawCircle(x, y ,r);
         var s = {};
         s.x = x;
         s.y = y;
@@ -91,7 +91,7 @@ Pen.prototype = {
     },
 
     drawTriangle: function (x1, y1, x2, y2, x3, y3) {
-        if (this.drawingMode=="instant") return this._drawTriangle(x1, y1, x2, y2, x3, y3);
+        if (!this.settings.autoRendering) return this._drawTriangle(x1, y1, x2, y2, x3, y3);
         var s = {};
         s.x1 = x1;
         s.y1 = y1;
@@ -104,7 +104,7 @@ Pen.prototype = {
     },
 
     drawRect: function (x, y, width, height) {
-        if (this.drawingMode=="instant") return this._drawRect(x, y, width, height);
+        if (!this.settings.autoRendering) return this._drawRect(x, y, width, height);
         var s = {};
         s.x = x;
         s.y = y;
@@ -115,7 +115,7 @@ Pen.prototype = {
     },
     
     drawPolygon: function () {
-        if (this.drawingMode=="instant") return this._drawPolygon.apply(this, arguments);
+        if (!this.settings.autoRendering) return this._drawPolygon.apply(this, arguments);
         var s = {};
         s.points = Array.prototype.slice.call(arguments);
         s.type = 'polygon';
@@ -123,7 +123,7 @@ Pen.prototype = {
     },
 
     _drawText: function (text, x, y, color ,size, font) {
-        if(this.drawingMode=="instant") this._setPenAttr();
+        if(!this.settings.autoRendering) this._setPenAttr();
         this.ctx.textBaseline = "top";
         this.ctx.font = size + "px " + font;
         this.ctx.fillStyle = color;
@@ -131,7 +131,7 @@ Pen.prototype = {
     },
 
     _drawLine: function (x1, y1, x2, y2) {
-        if(this.drawingMode=="instant") this._setPenAttr();
+        if(!this.settings.autoRendering) this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.moveTo(x1, y1);
         this.ctx.lineTo(x2, y2);
@@ -141,7 +141,7 @@ Pen.prototype = {
     },
 
     _drawCircle: function (x, y ,r) {
-        if(this.drawingMode=="instant") this._setPenAttr();
+        if(!this.settings.autoRendering) this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.arc(x, y, r, 0, 2 * Math.PI);
         this.ctx.closePath();
@@ -150,7 +150,7 @@ Pen.prototype = {
     },
 
     _drawTriangle: function (x1, y1, x2, y2, x3, y3) {
-        if(this.drawingMode=="instant") this._setPenAttr();
+        if(!this.settings.autoRendering) this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.moveTo(x1, y1);
         this.ctx.lineTo(x2, y2);
@@ -161,7 +161,7 @@ Pen.prototype = {
     },
 
     _drawRect: function (x, y, w, h) {
-        if(this.drawingMode=="instant") this._setPenAttr();
+        if(!this.settings.autoRendering) this._setPenAttr();
         this.ctx.beginPath();
         this.ctx.moveTo(x, y);
         this.ctx.lineTo(x+w, y);
@@ -173,7 +173,7 @@ Pen.prototype = {
     },
 
     _drawPolygon: function () {
-        if(this.drawingMode=="instant") this._setPenAttr();
+        if(!this.settings.autoRendering) this._setPenAttr();
         var points = Array.prototype.slice.call(arguments);
         this.ctx.beginPath();
         this.ctx.moveTo(points[0],points[1]);

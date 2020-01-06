@@ -1,16 +1,15 @@
 var util = require("./util");
 
-function Renderer (canvasEl, loader, settings) {
+function Renderer (canvasEl, loader) {
     this.canvas = canvasEl;
     this.ctx = canvasEl.getContext('2d');
     this.loader = loader;
-    this.settings = settings;
 }
 
 Renderer.prototype = {
     
     clear: function() {
-        this.ctx.clearRect(0, 0, this.settings.width, this.settings.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
 
     drawSprites: function(sprites){
@@ -72,7 +71,7 @@ Renderer.prototype = {
             this.ctx.drawImage(img, (x||0), (y||0), (width||img.width), (height||img.height));
         } else if(src) {
             this.ctx.fillStyle = src;
-            this.ctx.fillRect(0 ,0, this.settings.width, this.settings.height);
+            this.ctx.fillRect(0 ,0, this.canvas.width, this.canvas.height);
         }
     },
 }

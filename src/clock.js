@@ -29,5 +29,4 @@ function Clock (onTick, render) {
     }
 }
 
-
 module.exports = Clock;

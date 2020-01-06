@@ -1,6 +1,6 @@
 var SoundNode = require('./sound-node');
 
-function Sound (loader, debugMode) { 
+function Sound (loader) { 
     this.context = new (window.AudioContext || window.webkitAudioContext)();    
     this.soundNodes = [];
     

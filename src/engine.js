@@ -12,39 +12,35 @@ var TouchSystem = require("./touch-system");
 
 function engine(canvasId, debugMode){
 
-    //== Default params setting:
-    debugMode  = debugMode||false;
-
     var canvas = document.getElementById(canvasId);
     var hitCanvas = document.createElement('canvas');
+    hitCanvas.width = canvas.width;
+    hitCanvas.height = canvas.height;
 
     var settings = {
-        width: canvas.width,
-        height: canvas.height,
-        updateFunctions: [],
+        debugMode: debugMode || false,
+        autoRendering: true,
         precision: 1, // 像素碰撞的精確度，單位是 pixel
     };
 
-    hitCanvas.width = canvas.width / settings.precision;
-    hitCanvas.height = canvas.height / settings.precision;
-
-    var autoRendering = true;
+    var background = { path: '#ffffff' };
+    var updateFunctions = [];
 
     var loader = new Loader();
     var sprites = new Sprites();
     var inspector = new Inspector();
-    var io = new IO(canvas, settings, debugMode);
-    var eventList = new EventList(io, debugMode);
-    var renderer = new Renderer(canvas, loader, settings);
-    var sound = new Sound(loader, debugMode);
-    var pen = new Pen(canvas);
+    var io = new IO(canvas, settings);
+    var eventList = new EventList(io);
+    var renderer = new Renderer(canvas, loader);
+    var sound = new Sound(loader);
+    var pen = new Pen(canvas, settings);
     var touchSystem = new TouchSystem(hitCanvas, loader, settings);
     var clock = new Clock(
         // onTick function
         function(){
             eventList.traverse();
-            for(var i=0; i<settings.updateFunctions.length; i++){
-                settings.updateFunctions[i]();
+            for(var i=0; i<updateFunctions.length; i++){
+                updateFunctions[i]();
             };
             sprites.removeDeletedSprites();
             sprites.runOnTick();
@@ -52,36 +48,30 @@ function engine(canvasId, debugMode){
         },
         // render function
         function(){
-            if(autoRendering){
+            if(settings.autoRendering){
                 renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
                 pen.drawShapes();
                 renderer.drawSprites(sprites);
                 pen.drawTexts();
             }
         }
-    );
-
-    var background={
-        path: "#ffffff"
-    };    
+    );  
 
     function set(args){
+        if(args.width) canvas.width = args.width;
+        if(args.height) canvas.height = args.height;
         if(args.precision) settings.precision = args.precision;
-        if(args.width) canvas.width = settings.width = args.width;
-        if(args.height) canvas.height = settings.height = args.height;
         if (args.precision || args.width || args.height) {
             hitCanvas.width = canvas.width / settings.precision;
             hitCanvas.height = canvas.height / settings.precision;    
         }
-        settings.update = args.update || settings.update;
-        return this;
+        if (args.autoRendering) settings.autoRendering = !!args.autoRendering;
     }
 
     function createSprite (args) {
-        return new Sprite(args, eventList, renderer, loader, touchSystem, settings, sprites);
+        return new Sprite(args, eventList, renderer, loader, touchSystem, sprites);
     }
 
-    // for proxy.setBackdrop, setBackground
     function setBackground (path, x, y, w, h) {
         background.path = path;
         background.x = x;
@@ -91,15 +81,7 @@ function engine(canvasId, debugMode){
     }
 
     function forever (func) {
-        settings.updateFunctions.push(func);
-    }
-
-    function preload (assets, completeFunc, progressFunc) {
-        loader.preload(assets, completeFunc, progressFunc);
-    }
-
-    function drawText (text, x, y, color ,size, font) {
-        pen.drawText(text, x, y, color ,size, font);
+        updateFunctions.push(func);
     }
 
     function stop () {
@@ -107,41 +89,35 @@ function engine(canvasId, debugMode){
         sound.stop();
     }
 
-    function stopRendering () {
-        autoRendering = false;
-        pen.drawingMode = 'instant';
-    }
-
     var proxy = {
+        set: set,
+        preload: loader.preload.bind(loader),
+        start: clock.start.bind(clock),
+        stop: stop,
         createSprite: createSprite,
-        Sprite: Sprite,
-        print: drawText,
-        drawText: drawText,
+        createSound: sound.play.bind(sound),
         setBackground: setBackground,
         setBackdrop: setBackground,
-        cursor: io.cursor,
-        key: io.holding,
         inspector: inspector,
-        when: eventList.register.bind(eventList),
-        on: eventList.register.bind(eventList),
-        set: set,
-        stop: stop,
-        stopRendering: stopRendering,
-        start: clock.start.bind(clock),
         forever: forever,
         update: forever,
         always: forever,
-        clear: renderer.clear.bind(renderer),
-        preload: preload,
         sound: sound,
+        cursor: io.cursor,
+        key: io.holding,
+        when: eventList.register.bind(eventList),
+        on: eventList.register.bind(eventList),
         broadcast: eventList.emit.bind(eventList),
         pen: pen,
-        // 以下指令是給繪圖用的
-        drawBackdrop: renderer.drawBackdrop,
-        drawBackground: renderer.drawBackdrop,
-        drawSprites: renderer.drawSprites
+        print: pen.drawText.bind(pen),
+        drawText: pen.drawText.bind(pen),
+        drawBackdrop: renderer.drawBackdrop.bind(renderer),
+        drawBackground: renderer.drawBackdrop.bind(renderer),
+        drawSprites: renderer.drawSprites.bind(renderer),
+        clear: renderer.clear.bind(renderer),
+        Sprite: Sprite,
     };
-    if(debugMode){
+    if(settings.debugMode){
         proxy.eventList = eventList;
     }
     return proxy;

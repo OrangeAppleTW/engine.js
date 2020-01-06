@@ -3,6 +3,7 @@ var Sprite = require('./sprite');
 var Renderer = require('./renderer');
 
 function TouchSystem(canvas, loader, settings) {
+    this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.renderer = new Renderer(canvas, loader, settings);
     this.settings = settings;
@@ -85,7 +86,7 @@ TouchSystem.prototype = {
 
         if (box.width < 1 || box.height < 1) return false;
 
-        this.ctx.clearRect(0, 0, this.settings.width, this.settings.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.ctx.globalCompositeOperation = 'source-over';
         this.renderer.drawInstance(spriteA);

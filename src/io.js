@@ -1,6 +1,6 @@
 var keycode = require('keycode');
 
-function IO(canvas, settings, debugMode){
+function IO(canvas, settings){
 
     var cursor    = this.cursor    = { x: 0, y: 0, isDown: false, left: false, right: false }
     var clicked   = this.clicked   = { x: null, y: null }
@@ -17,14 +17,14 @@ function IO(canvas, settings, debugMode){
     var zoomY = 1;
     setInterval(function () {
         var box = canvas.getBoundingClientRect();
-        zoomX = box.width/settings.width;
-        zoomY = box.height/settings.height;
+        zoomX = box.width/canvas.width;
+        zoomY = box.height/canvas.height;
     }, 100);
 
     // 建立所有的按鍵並設為 false，避免 undefined 所造成的 exception
     for(var _key in keycode.codes){ holding[_key] = false; }
 
-    debugMode = debugMode || false;
+    var debugMode = !!settings.debugMode;
 
     // Make any element focusable for keydown event.
     canvas.setAttribute("tabindex",'1');

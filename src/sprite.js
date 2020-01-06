@@ -1,13 +1,13 @@
 var util = require('./util');
 
-function Sprite(args, eventList, renderer, loader, touchSystem, settings, sprites) {
+function Sprite(args, eventList, renderer, loader, touchSystem, sprites) {
 
     if (args.constructor === String || args.constructor === Array) {
         args = { costumes: [].concat(args) }
     }
 
-    this.x = util.isNumeric(args.x) ? args.x : settings.width/2;
-    this.y = util.isNumeric(args.y) ? args.y : settings.height/2;
+    this.x = util.isNumeric(args.x) ? args.x : renderer.canvas.width/2;
+    this.y = util.isNumeric(args.y) ? args.y : renderer.canvas.height/2;
     this.direction = util.isNumeric(args.direction) ? args.direction : 90;
     this.scale = util.isNumeric(args.scale) ? args.scale : 1;
     this.layer = util.isNumeric(args.layer) ? args.layer : 0;
@@ -27,7 +27,6 @@ function Sprite(args, eventList, renderer, loader, touchSystem, settings, sprite
     this._renderer = renderer;
     this._loader = loader;
     this._touchSystem = touchSystem;
-    this._settings = settings;
 
     sprites._sprites.push(this);
 }
@@ -110,14 +109,15 @@ Sprite.prototype = {
     },
 
     bounceEdge: function () {
+        var stage = this._renderer.canvas;
         if (this.x < 0) {
             this.x = 0;
             if (this.direction > 180 && this.direction > 0) {
                 this.direction = -this.direction;
             }
         }
-        else if (this.x > this._settings.width) {
-            this.x = this._settings.width;
+        else if (this.x > stage.width) {
+            this.x = stage.width;
             if (this.direction < 180) {
                 this.direction = -this.direction;
             }
@@ -128,8 +128,8 @@ Sprite.prototype = {
                 this.direction = -this.direction + 180;
             }
         }
-        else if (this.y > this._settings.height) {
-            this.y = this._settings.height;
+        else if (this.y > stage.height) {
+            this.y = stage.height;
             if (this.direction > 90 || this.direction < 270) {
                 this.direction = -this.direction + 180;
             }
