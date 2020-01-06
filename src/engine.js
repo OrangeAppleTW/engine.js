@@ -65,7 +65,7 @@ function engine(canvasId, debugMode){
             hitCanvas.width = canvas.width / settings.precision;
             hitCanvas.height = canvas.height / settings.precision;    
         }
-        if (args.autoRendering) settings.autoRendering = !!args.autoRendering;
+        if (args.autoRendering != undefined) settings.autoRendering = !!args.autoRendering;
     }
 
     function createSprite (args) {
