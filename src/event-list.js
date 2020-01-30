@@ -41,10 +41,10 @@ EventList.prototype = {
 
         if (event === 'touch'){
             eventObj.sprite = arguments[1];
-            eventObj.targets = [].concat(arguments[2]);
+            eventObj.targets = arguments[2] instanceof Array ? arguments[2] : [arguments[2]];
         }
         else if (event === 'hover') {
-            eventObj.sprite = [].concat(arguments[1]);
+            eventObj.sprite = arguments[1] instanceof Array ? arguments[1] : [arguments[1]];
         }
         else if (['keydown', 'keyup', 'holding'].includes(event)){
             eventObj.key = arguments[1] instanceof Function ? 'any' : arguments[1];
@@ -52,11 +52,8 @@ EventList.prototype = {
         else if (['mousedown', 'mouseup', 'click'].includes(event)) {
             if (arguments[1] instanceof Function) {
                 eventObj.sprite = null;
-            }
-            else if (arguments[1] instanceof Array) {
-                eventObj.sprite = arguments[1];
             } else {
-                eventObj.sprite = [arguments[1]];
+                eventObj.sprite = arguments[1] instanceof Array ? arguments[1] : [arguments[1]];
             }
         }
         else if (event === 'listen') {
