@@ -35,27 +35,27 @@ function engine(canvasId, debugMode){
     var sound = new Sound(loader);
     var pen = new Pen(canvas, settings);
     var touchSystem = new TouchSystem(hitCanvas, loader, settings);
-    var clock = new Clock(
-        // onTick function
-        function(){
-            eventList.traverse();
-            for(var i=0; i<updateFunctions.length; i++){
-                updateFunctions[i]();
-            };
-            sprites.removeDeletedSprites();
-            sprites.runOnTick();
-            inspector.updateFPS();
-        },
-        // render function
-        function(){
-            if(settings.autoRendering){
-                renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
-                pen.drawShapes();
-                renderer.drawSprites(sprites);
-                pen.drawTexts();
-            }
+    
+    function gameloop () {
+        // game logic
+        eventList.traverse();
+        for(var i=0; i<updateFunctions.length; i++){
+            updateFunctions[i]();
+        };
+        sprites.removeDeletedSprites();
+        sprites.runOnTick();
+        inspector.updateFPS();
+
+        // rendering
+        if(settings.autoRendering){
+            renderer.drawBackdrop(background.path, background.x, background.y, background.w, background.h);
+            pen.drawShapes();
+            renderer.drawSprites(sprites);
+            pen.drawTexts();
         }
-    );  
+    }
+
+    var clock = new Clock(gameloop);
 
     function set(args){
         if(args.width) canvas.width = args.width;
@@ -117,6 +117,7 @@ function engine(canvasId, debugMode){
         drawSprites: renderer.drawSprites.bind(renderer),
         clear: renderer.clear.bind(renderer),
         Sprite: Sprite,
+        gameloop: gameloop, // to ensure the errors in gameloop can be caugth, expose it to brython to excute
     };
     if(settings.debugMode){
         proxy.eventList = eventList;

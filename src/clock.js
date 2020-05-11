@@ -1,4 +1,4 @@
-function Clock (onTick, render) {
+function Clock (onTick) {
 
     var running = false;
 
@@ -11,7 +11,6 @@ function Clock (onTick, render) {
     function gameLoop () {
         if (running) {
             onTick();
-            render();
         }
         requestAnimationFrame(gameLoop);
     };
