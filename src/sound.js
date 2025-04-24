@@ -45,13 +45,13 @@ Sound.prototype = {
         if (volume < 0) {
             return console.error("無效的音量值");
         }
-        for(var i = 0; i < this.soundNodes.length; i++) {
+        for(let i = 0; i < this.soundNodes.length; i++) {
             var soundNode = this.soundNodes[i];
             soundNode.setVolume(volume);
         }
     },
     mute: function(isMute) {
-        for(var i = 0; i < this.soundNodes.length; i++) {
+        for(let i = 0; i < this.soundNodes.length; i++) {
             var soundNode = this.soundNodes[i];
             soundNode.mute(isMute);
         }
@@ -63,7 +63,7 @@ Sound.prototype = {
         this.context.resume();
     },
     stop: function() {
-        for(var i = 0; i < this.soundNodes.length; i++) {
+        for(let i = 0; i < this.soundNodes.length; i++) {
             var soundNode = this.soundNodes[i];
             soundNode.stop();
         }

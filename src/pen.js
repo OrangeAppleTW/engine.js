@@ -15,7 +15,7 @@ Pen.prototype = {
         var s;
         var ctx = this.ctx;
 
-        for(var i=0; i<this.shapes.length; i++) {
+        for(let i=0; i<this.shapes.length; i++) {
             
             s = this.shapes[i];
             ctx.lineWidth = s.size;
@@ -42,8 +42,8 @@ Pen.prototype = {
     },
 
     drawTexts: function () {
-        for(var i=0; i<this.texts.length; i++) {
-            t = this.texts[i];
+        for(let i=0; i<this.texts.length; i++) {
+            let t = this.texts[i];
             this._drawText(t.text, t.x, t.y, t.color, t.size, t.font);
         }
         this.texts=[];
@@ -177,7 +177,7 @@ Pen.prototype = {
         var points = Array.prototype.slice.call(arguments);
         this.ctx.beginPath();
         this.ctx.moveTo(points[0],points[1]);
-        for(var i=2; i<points.length; i+=2) {
+        for(let i=2; i<points.length; i+=2) {
                 this.ctx.lineTo(points[i],points[i+1]);
         }
         this.ctx.closePath();

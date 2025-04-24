@@ -65,7 +65,7 @@ EventList.prototype = {
     },
 
     emit: function (eventName) {
-        for(var i=0; i<this.pool.length; i++) {
+        for(let i=0; i<this.pool.length; i++) {
             var e = this.pool[i];
             if(e.event == 'listen' && e.message == eventName) {
                 e.handler.call(e.sprite);

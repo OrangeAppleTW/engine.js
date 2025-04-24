@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>貪食蛇遊戲 Demo - Engine.js</title>
+    <!-- 引入 CodeMirror CSS -->
+    <link rel="stylesheet" href="../lib/codemirror/codemirror.css">
+    <link rel="stylesheet" href="../lib/codemirror/theme/mbo.css"> <!-- 與 docs/index.html 一致的主題 -->
+    <!-- 引入自訂 CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="editor-panel">
+            <h2>程式碼</h2>
+            <textarea id="code-editor">// 正在加載 snake.js ...</textarea>
+            <button id="run-button">執行</button>
+        </div>
+        <div class="game-panel">
+            <h2>遊戲畫面</h2>
+            <canvas id="game-canvas" width="480" height="480">您的瀏覽器不支援 Canvas</canvas>
+        </div>
+    </div>
+
+    <!-- 引入 CodeMirror JS -->
+    <script src="../lib/codemirror/codemirror.js"></script>
+    <script src="../lib/codemirror/mode/javascript/javascript.js"></script>
+    <!-- 引入 Engine.js 函式庫 (假設在根目錄的 engine-min.js) -->
+    <script src="../engine-min.js"></script> 
+    <!-- <script src="../engine.js"></script> --> <!-- 或者使用未壓縮版本 -->
+    <!-- 引入應用程式邏輯 JS -->
+    <script src="app.js"></script>
+</body>
+</html> 

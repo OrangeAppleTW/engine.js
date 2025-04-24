@@ -57,7 +57,7 @@ Sprite.prototype = {
 
     touched: function () {
         if (arguments[0].constructor === Array) {
-            for(var i=0; i<arguments[0].length; i++){
+            for(let i=0; i<arguments[0].length; i++){
                 if (this._isTouched(arguments[0][i])){
                     return true;
                 }
@@ -154,7 +154,7 @@ Sprite.prototype = {
         this._updateDirection();
         this._updateSize();
         this._updateFrames();
-        for (var i=0; i < this._onTickFuncs.length; i++) {
+        for (let i=0; i < this._onTickFuncs.length; i++) {
             this._onTickFuncs[i].call(this);
         }
     },

@@ -39,7 +39,7 @@ function engine(canvasId, debugMode){
     function gameloop () {
         // game logic
         eventList.traverse();
-        for(var i=0; i<updateFunctions.length; i++){
+        for(let i=0; i<updateFunctions.length; i++){
             updateFunctions[i]();
         };
         sprites.removeDeletedSprites();
@@ -125,4 +125,4 @@ function engine(canvasId, debugMode){
     return proxy;
 }
 
-window.Engine = engine;
+module.exports = engine;

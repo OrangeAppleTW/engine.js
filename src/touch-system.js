@@ -38,7 +38,7 @@ TouchSystem.prototype = {
 
         var box = boxA.area < boxB.area ? boxA : boxB;
         this.reduceAccuracy(box);
-        result = this.pixelJudger(spriteA, spriteB, box);
+        let result = this.pixelJudger(spriteA, spriteB, box);
 
         undoA();
         undoB();
@@ -99,7 +99,7 @@ TouchSystem.prototype = {
         }
 
         var aData = this.ctx.getImageData(box.x - box.width/2, box.y - box.height/2, box.width, box.height).data;
-        for (var i = 0; i < aData.length; i += 4) {
+        for (let i = 0; i < aData.length; i += 4) {
             if (aData[i + 3] > 0) return true;
         }
         return false;

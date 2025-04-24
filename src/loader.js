@@ -19,7 +19,7 @@ Loader.prototype = {
         this.completeFunc = completeFunc;
         this.progressFunc = progressFunc;
 
-        for(var i=0; i<paths.length; i++) {
+        for(let i=0; i<paths.length; i++) {
             var path = paths[i];
             var ext = path.split('.').pop();
 

@@ -3,3 +3,4 @@
 /yarn.lock
 # Ignore all .DS_Store files
 .DS_Store
+engine.js.map
