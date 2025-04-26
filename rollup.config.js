@@ -5,7 +5,6 @@ import serve from 'rollup-plugin-serve';
 import livereload from 'rollup-plugin-livereload';
 import scss from 'rollup-plugin-scss';
 import copy from 'rollup-plugin-copy';
-import pug from 'rollup-plugin-pug';
 import pugCompiler from 'pug';
 import { globSync } from 'glob';
 import path from 'path';
@@ -18,8 +17,57 @@ const __dirname = path.dirname(__filename);
 
 const production = !process.env.ROLLUP_WATCH;
 
+// 读取 camelCase 到 snake_case 的映射
+const camelToSnakeMapping = JSON.parse(fs.readFileSync('camel-to-snake-mapping.json', 'utf-8'));
+
+// 自定义插件：将驼峰命名转换为蛇形命名
+function camelToSnakePlugin(mapping) {
+  return {
+    name: 'camel-to-snake',
+    renderChunk(code, chunk) {
+      // 只針對 snake_case 的 chunk 進行處理
+      if (!chunk.fileName.includes('engine-snake')) {
+        return null;
+      }
+
+      console.log(`[camelToSnakePlugin] Processing chunk: ${chunk.fileName}`);
+      let transformedCode = code;
+      let replacementOccurred = false;
+
+      for (const camel in mapping) {
+        if (Object.hasOwnProperty.call(mapping, camel)) {
+          const snake = mapping[camel];
+          // !!! 警告：移除 \b 以進行除錯，可能導致錯誤替換 !!!
+          // const regex = new RegExp(`\b${camel}\b`, 'g'); 
+          const searchString = camel; // 直接使用字串
+          
+          // 檢查字串是否存在
+          if (transformedCode.includes(searchString)) {
+            console.log(`[camelToSnakePlugin] Found match for: ${camel}, replacing with: ${snake}`);
+            // 使用 split/join 進行全域替換 (比 replaceAll 兼容性稍好)
+            transformedCode = transformedCode.split(searchString).join(snake);
+            replacementOccurred = true;
+          } else {
+            // 可選：如果想看到哪些 key 沒有匹配，可以取消註解下一行
+            // console.log(`[camelToSnakePlugin] No match found for: ${camel}`);
+          }
+        }
+      }
+      
+      if (!replacementOccurred) {
+           console.log('[camelToSnakePlugin] No replacements were made in this chunk.');
+      }
+
+      // 為了除錯，暫時輸出轉換後的程式碼片段
+      // console.log('\n--- Transformed Code Snippet ---\n', transformedCode.substring(0, 500), '\n---\n');
+
+      return { code: transformedCode, map: null };
+    }
+  };
+}
+
 export default [
-  // 主要JS引擎打包配置
+  // 主要JS引擎打包配置 (CamelCase)
   {
     input: 'src/engine.js',
     output: [
@@ -49,6 +97,32 @@ export default [
         port: 10001
       }),
       !production && livereload()
+    ].filter(Boolean)
+  },
+  // 主要JS引擎打包配置 (Snake_Case)
+  {
+    input: 'src/engine.js',
+    output: [
+      {
+        file: 'engine-snake.js', // Snake_case 文件名
+        format: 'iife',
+        name: 'Engine', // 全局变量名保持一致或改为 EngineSnake？ 保持 Engine
+        sourcemap: !production
+      },
+      production && {
+        file: 'engine-snake-min.js', // Snake_case 压缩文件名
+        format: 'iife',
+        name: 'Engine',
+        plugins: [terser()] // 注意：terser 可能会影响替换效果，需要测试
+      }
+    ].filter(Boolean),
+    plugins: [
+      resolve({
+        browser: true
+      }),
+      commonjs(),
+      camelToSnakePlugin(camelToSnakeMapping), // 应用转换插件
+      // 开发服务器和热重载通常只用于主开发版本，这里省略
     ].filter(Boolean)
   },
   // 处理SCSS和Pug文件

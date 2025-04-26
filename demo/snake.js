@@ -12,18 +12,18 @@ Game.set({
 
 
 // --- 資源預載入 ---
-Game.preload(['./snake/snake.png','./snake/apple.png'], () => {
+Game.preload(['./assets/snake.png','./assets/apple.png'], () => {
     console.log("資源加載完畢");
     Game.start(); // 確保引擎內部狀態準備就緒
 });
 
-var snakeHead = Game.createSprite('./snake/snake.png');
+var snakeHead = Game.createSprite('./assets/snake.png');
 snakeHead.x = 240;
 snakeHead.y = 320;
 var snakeBodies = [];
 var apples = [];
 function spawnApple(x=null,y=null){
-    let apple = Game.createSprite('./snake/apple.png');
+    let apple = Game.createSprite('./assets/apple.png');
     apple.x = x || Math.floor(Math.random() * canvasWidth / 20) * 20;
     apple.y = y || Math.floor(Math.random() * canvasHeight / 20) * 20;
     apple.on('touch',snakeHead,function(){
@@ -36,7 +36,7 @@ spawnApple(40,40);
 
 var timer = 0;
 
-// var apple = Game.createSprite('./snake/apple.png');
+// var apple = Game.createSprite('./assets/apple.png');
 // --- 遊戲循環 (由 Game.forever 調用) ---
 Game.forever(function() { 
     timer++;
@@ -56,7 +56,7 @@ function moveSnake() {
     snakeHead.stepForward(20);
 
     if(snakeHead.touched(apples)){
-        let newBody = Game.createSprite('./snake/snake.png');
+        let newBody = Game.createSprite('./assets/snake.png');
         newBody.x = snakeHeadOriginalPosition.x;
         newBody.y = snakeHeadOriginalPosition.y;
         snakeBodies.push(newBody);  

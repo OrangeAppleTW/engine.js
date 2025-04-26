@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engine Snake Case Demo</title>
+    <style>
+        body { font-family: sans-serif; }
+        canvas { border: 1px solid black; display: block; } /* display: block to prevent extra space below canvas */
+        .container {
+            display: flex;
+            gap: 20px; /* Add some space between code and game */
+        }
+        #code-display {
+            flex: 1; /* Take up half the space */
+            background-color: #f4f4f4;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow-x: auto; /* Add scrollbars if code is too wide */
+            max-height: 80vh; /* Limit height and add vertical scroll */
+            overflow-y: auto;
+        }
+        #code-display pre {
+            margin: 0; /* Remove default pre margin */
+        }
+        #game-container {
+            flex: 1; /* Take up half the space */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center canvas horizontally */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="code-display">
+            <h2>程式碼範例:</h2>
+            <pre><code class="language-javascript">
+        var Game = Engine('game-canvas');
+
+        const canvasWidth = 640;
+        const canvasHeight = 480;
+
+        Game.set({
+            width: canvasWidth, // 確保與 HTML canvas 尺寸匹配
+            height: canvasHeight,
+            debugMode: true,
+            precision: 4
+        });
+
+
+        // --- 資源預載入 ---
+        Game.preload(['./assets/snake.png','./assets/apple.png'], () => {
+            console.log("資源加載完畢");
+            Game.start(); // 確保引擎內部狀態準備就緒
+        });
+
+        var snakeHead = Game.create_sprite('./assets/assets.png');
+        snakeHead.x = 240;
+        snakeHead.y = 320;
+        var snakeBodies = [];
+        var apples = [];
+        function spawnApple(x=null,y=null){
+            let apple = Game.create_sprite('./assets/apple.png');
+            apple.x = x || Math.floor(Math.random() * canvasWidth / 20) * 20;
+            apple.y = y || Math.floor(Math.random() * canvasHeight / 20) * 20;
+            apple.on('touch',snakeHead,function(){
+                apple.destroy();
+                spawnApple();
+            });
+            apples.push(apple);
+        }
+        spawnApple(40,40);
+
+        var timer = 0;
+
+        // --- 遊戲循環 (由 Game.forever 調用) ---
+        Game.forever(function() {
+            timer++;
+            if (timer % 10 === 0) {
+                moveSnake();
+            }
+        });
+
+        // --- 移動邏輯 ---
+        function moveSnake() {
+
+            var snakeHeadOriginalPosition = {
+                x: snakeHead.x,
+                y: snakeHead.y
+            };
+
+            snakeHead.step_forward(20);
+
+            if(snakeHead.touched(apples)){
+                let newBody = Game.create_sprite('./assets/snake.png');
+                newBody.x = snakeHeadOriginalPosition.x;
+                newBody.y = snakeHeadOriginalPosition.y;
+                snakeBodies.push(newBody);
+            } else {
+                // 如果有蛇身，將最早的蛇身移動到蛇頭原來的位置，並重新放到數組末尾
+                if (snakeBodies.length > 0) {
+                    let firstBody = snakeBodies.shift(); // 取出最早的蛇身
+                    firstBody.x = snakeHeadOriginalPosition.x;
+                    firstBody.y = snakeHeadOriginalPosition.y;
+                    snakeBodies.push(firstBody); // 放到數組末尾
+                }
+            }
+            if(snakeHead.touched(snakeBodies)){
+                Game.stop();
+            }
+        }
+
+        Game.on("keydown","right",function(){
+            snakeHead.direction = 90;
+        });
+        Game.on("keydown","left",function(){
+            snakeHead.direction = 270;
+        });
+        Game.on("keydown","up",function(){
+            snakeHead.direction = 0;
+        });
+        Game.on("keydown","down",function(){
+            snakeHead.direction = 180;
+        });
+
+        console.log("Engine (snake_case) loaded. Please add your test code using snake_case API calls.");
+            </code></pre>
+        </div>
+        <div id="game-container">
+            <h1>Engine Snake Case Demo</h1>
+            <p>這個 Demo 頁面使用的是 snake_case 版本的引擎: <code>engine-snake.js</code>.</p>
+            <canvas id="game-canvas" width="480" height="360"></canvas>
+        </div>
+    </div>
+
+    <!-- 加载 snake_case 版本的引擎 -->
+    <script src="../engine-snake.js"></script>
+
+    <script>
+        var Game = Engine('game-canvas');
+
+        const canvasWidth = 640;
+        const canvasHeight = 480;
+
+        Game.set({
+            width: canvasWidth, // 確保與 HTML canvas 尺寸匹配
+            height: canvasHeight,
+            debugMode: true,
+            precision: 4
+        });
+
+
+        // --- 資源預載入 ---
+        Game.preload(['./assets/snake.png','./assets/apple.png'], () => {
+            console.log("資源加載完畢");
+            Game.start(); // 確保引擎內部狀態準備就緒
+        });
+
+        var snakeHead = Game.create_sprite('./assets/snake.png');
+        snakeHead.x = 240;
+        snakeHead.y = 320;
+        var snakeBodies = [];
+        var apples = [];
+        function spawnApple(x=null,y=null){
+            let apple = Game.create_sprite('./assets/apple.png');
+            apple.x = x || Math.floor(Math.random() * canvasWidth / 20) * 20;
+            apple.y = y || Math.floor(Math.random() * canvasHeight / 20) * 20;
+            apple.on('touch',snakeHead,function(){
+                apple.destroy();
+                spawnApple();
+            });
+            apples.push(apple);
+        }
+        spawnApple(40,40);
+
+        var timer = 0;
+
+        // --- 遊戲循環 (由 Game.forever 調用) ---
+        Game.forever(function() {
+            timer++;
+            if (timer % 10 === 0) {
+                moveSnake();
+            }
+        });
+
+        // --- 移動邏輯 ---
+        function moveSnake() {
+
+            var snakeHeadOriginalPosition = {
+                x: snakeHead.x,
+                y: snakeHead.y
+            };
+
+            snakeHead.step_forward(20);
+
+            if(snakeHead.touched(apples)){
+                let newBody = Game.create_sprite('./assets/snake.png');
+                newBody.x = snakeHeadOriginalPosition.x;
+                newBody.y = snakeHeadOriginalPosition.y;
+                snakeBodies.push(newBody);
+            } else {
+                // 如果有蛇身，將最早的蛇身移動到蛇頭原來的位置，並重新放到數組末尾
+                if (snakeBodies.length > 0) {
+                    let firstBody = snakeBodies.shift(); // 取出最早的蛇身
+                    firstBody.x = snakeHeadOriginalPosition.x;
+                    firstBody.y = snakeHeadOriginalPosition.y;
+                    snakeBodies.push(firstBody); // 放到數組末尾
+                }
+            }
+            if(snakeHead.touched(snakeBodies)){
+                Game.stop();
+            }
+        }
+
+        Game.on("keydown","right",function(){
+            snakeHead.direction = 90;
+        });
+        Game.on("keydown","left",function(){
+            snakeHead.direction = 270;
+        });
+        Game.on("keydown","up",function(){
+            snakeHead.direction = 0;
+        });
+        Game.on("keydown","down",function(){
+            snakeHead.direction = 180;
+        });
+
+        console.log("Engine (snake_case) loaded. Please add your test code using snake_case API calls.");
+
+    </script>
+
+    <hr style="margin: 40px 0;">
+
+    <div class="container">
+         <div id="api-test-code-display" style="flex: 1; background-color: #f4f4f4; padding: 15px; border: 1px solid #ddd; border-radius: 5px; overflow-x: auto; max-height: 80vh; overflow-y: auto;">
+            <h2>API 全面測試代碼:</h2>
+            <pre><code class="language-javascript" id="api-test-code-content">
+// 測試代碼將顯示在這裡...
+            </code></pre>
+        </div>
+        <div id="api-test-container" style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <h2>API 全面測試區域</h2>
+            <p>這個區域用於測試 <code>engine-snake.js</code> 的所有 API。</p>
+            <canvas id="api-test-canvas" width="480" height="360" style="border: 1px solid blue;"></canvas>
+            <p>控制台會輸出詳細的測試信息。</p>
+        </div>
+    </div>
+
+    <script id="api-test-script">
+        // --- API Test Code --- 
+        console.log("--- Starting API Comprehensive Test ---");
+
+        const TestEngine = Engine('api-test-canvas');
+        const testCanvasWidth = 480;
+        const testCanvasHeight = 360;
+
+        TestEngine.set({
+            width: testCanvasWidth,
+            height: testCanvasHeight,
+            debugMode: true,
+            precision: 2
+        });
+        console.log("TestEngine.set called.");
+
+        // --- Resource Preloading ---
+        const testSpriteImage = './assets/snake.png'; // Corrected path
+        const testSoundFile = './assets/sound-effect.wav'; // Corrected path and name
+        TestEngine.preload([testSpriteImage, testSoundFile], () => {
+            console.log("Test resources preloaded.");
+            runApiTests();
+            TestEngine.start();
+            console.log("TestEngine.start called.");
+        });
+
+        // --- Flags for continuous key press checks --- (Removed based on new info)
+        // let leftArrowDown = false;
+        // let rightArrowDown = false;
+
+        function runApiTests() {
+            console.log("--- Running API Tests --- ");
+
+            // --- Background / Backdrop ---
+            try {
+                TestEngine.set_background('lightblue');
+                console.log("TestEngine.set_background('lightblue') called.");
+                // Note: set_backdrop might require an image URL
+                // TestEngine.set_backdrop(testSpriteImage); // Example if it takes image
+                // console.log("TestEngine.set_backdrop called (image).");
+                TestEngine.set_backdrop('gray'); // Example if it takes color
+                console.log("TestEngine.set_backdrop('gray') called (color).");
+            } catch (e) { console.error("Error in Background/Backdrop tests:", e); }
+
+            // --- Sprite Creation & Properties ---
+            let testSprite;
+            try {
+                testSprite = TestEngine.create_sprite(testSpriteImage, {
+                    x: 50,
+                    y: 50,
+                    direction: 45
+                    // Assuming costume_id and rotation_style are set here or later
+                });
+                console.log(`TestEngine.create_sprite created sprite with ID: ${testSprite.id}`);
+
+                testSprite.rotation_style = 'all around'; // Assuming possible values: 'all around', 'left-right', 'none'
+                console.log(`Set testSprite.rotation_style to: ${testSprite.rotation_style}`);
+
+                testSprite.costume_id = 0; // Assuming it's index-based
+                console.log(`Set testSprite.costume_id to: ${testSprite.costume_id}`);
+            } catch (e) { console.error("Error in Sprite Creation/Properties tests:", e); }
+
+            // --- Drawing --- 
+            // These are typically called within the game loop (forever)
+            let drawTestCounter = 0;
+            const pen = TestEngine.pen; // Get the pen object
+            console.log("Acquired TestEngine.pen object.");
+
+            // --- Sound ---
+            let testSound;
+            try {
+                testSound = TestEngine.create_sound(testSoundFile);
+                console.log(`TestEngine.create_sound created sound object.`);
+                // testSound.play(); // Removed: Sound will play on spacebar press
+                // console.log("testSound.play() called."); 
+                // setTimeout(() => { // Commented out: Logic moved/removed
+                //     testSound.pause();
+                //     console.log("testSound.pause() called after delay.");
+                //     testSound.set_volume(50); // Volume 0-100
+                //     console.log(`testSound.set_volume(50) called.`);
+                //     testSound.set_loop(true);
+                //     console.log(`testSound.set_loop(true) called.`);
+                //      // testSound.stop(); // Optionally test stop
+                //      // console.log("testSound.stop() called.");
+                // }, 2000); // Pause after 2 seconds 
+            } catch (e) { console.error("Error in Sound tests:", e); }
+
+            // --- Events & Input (Corrected based on user examples) ---
+            try {
+                // Keydown (Specific key)
+                TestEngine.on("keydown", "space", () => {
+                    console.log("Space key pressed down (TestEngine.on keydown)");
+                    if (testSprite) {
+                        testSprite.next_costume();
+                        console.log("testSprite.next_costume() called on space down.");
+                    }
+                    // Play sound on spacebar press
+                    if (testSound) {
+                        testSound.stop(); // Stop first to replay from beginning
+                        testSound.play();
+                        console.log("testSound.play() called on space down.");
+                    }
+                });
+                // Keydown (Any key - example)
+                // TestEngine.on("keydown", function(event) { // Assuming event might contain key info
+                //     console.log(`Any key pressed down: ${event.key}`); 
+                // });
+
+                // Keyup (Specific key)
+                 TestEngine.on("keyup", "space", () => {
+                    console.log("Space key released (TestEngine.on keyup)");
+                 });
+
+                // Keydown for arrow keys (Removed - will use direct state check: TestEngine.key['...'])
+                // TestEngine.on("keydown", "left", () => {
+                //     console.log("Left arrow key down.");
+                //     leftArrowDown = true;
+                // });
+                // TestEngine.on("keydown", "right", () => {
+                //     console.log("Right arrow key down.");
+                //     rightArrowDown = true;
+                // });
+
+                // Keyup for arrow keys (Removed)
+                // TestEngine.on("keyup", "left", () => {
+                //     console.log("Left arrow key up.");
+                //     leftArrowDown = false;
+                // });
+                // TestEngine.on("keyup", "right", () => {
+                //     console.log("Right arrow key up.");
+                //     rightArrowDown = false;
+                // });
+
+                // Mousedown (Global)
+                 TestEngine.on("mousedown", function() {
+                    console.log(`Global mousedown at (${TestEngine.cursor.x.toFixed(0)}, ${TestEngine.cursor.y.toFixed(0)}) (TestEngine.on)`);
+                 });
+                 
+                // Mousedown (On Sprite - example: temporary scale change)
+                if (testSprite) {
+                    testSprite.on("mousedown", function() {
+                        console.log(`Mousedown on testSprite (ID: ${testSprite.id})`);
+                        testSprite.scale = 1.2; // Example effect
+                    });
+                }
+
+                // Mouseup (Global)
+                TestEngine.on("mouseup", function() {
+                    console.log(`Global mouseup at (${TestEngine.cursor.x.toFixed(0)}, ${TestEngine.cursor.y.toFixed(0)}) (TestEngine.on)`);
+                     if (testSprite && testSprite.scale !== 1.0) {
+                         testSprite.scale = 1.0; // Reset effect
+                         console.log(`Reset testSprite scale on global mouseup.`);
+                     }
+                });
+                
+                // Mouseup (On Sprite - example, could be used to reset sprite-specific effect)
+                // if (testSprite) {
+                //     testSprite.on("mouseup", function() {
+                //         console.log(`Mouseup on testSprite (ID: ${testSprite.id})`);
+                //         // Reset any sprite-specific mousedown effect here if needed
+                //     });
+                // }
+
+            } catch (e) { console.error("Error in Event tests:", e); }
+
+            // --- Game Loop (Forever) ---
+            TestEngine.forever(function() {
+                try {
+                     // Clear previous drawings if necessary (depends on engine design)
+                     // TestEngine.clear(); 
+
+                    // --- Drawing Tests (inside loop) ---
+                    drawTestCounter++;
+                    const textX = 10;
+                    const textY = testCanvasHeight - 20;
+                    // Set text style using pen properties
+                    pen.color = 'black';
+                    pen.font = '12px sans-serif'; // Assuming pen has font property or uses context directly
+                    pen.draw_text(`Frame: ${drawTestCounter}`, textX, textY);
+
+                    // Draw line
+                    pen.color = 'red';
+                    pen.size = 2;
+                    pen.draw_line(10, 10, 100, 100);
+
+                    // Draw circle
+                    pen.color = 'blue';
+                    pen.fillColor = 'yellow';
+                    pen.size = 3;
+                    pen.draw_circle(testCanvasWidth / 2, testCanvasHeight / 2, 30);
+
+                    // Draw rectangle
+                    pen.color = 'green';
+                    pen.fillColor = 'lightgreen';
+                    pen.size = 1;
+                    pen.draw_rect(200, 150, 50, 80);
+                    
+                    // Draw triangle
+                    pen.color = 'orange';
+                    pen.fillColor = 'pink';
+                    pen.size = 4;
+                    pen.draw_triangle(50, 200, 150, 250, 50, 300);
+
+                    // Draw polygon
+                    const polyPoints = [{x:300, y:50}, {x:350, y:100}, {x:300, y:150}, {x:250, y:100}];
+                    pen.color = 'purple';
+                    pen.fillColor = 'violet';
+                    pen.size = 2;
+                    pen.draw_polygon(polyPoints);
+                    
+                    // Explicit Draw Stages (Updated based on user feedback)
+                    TestEngine.draw_backdrop("black"); // Pass color argument
+                    TestEngine.draw_background("pink");
+
+                    // --- Sprite Method Tests (inside loop) ---
+                    if (testSprite) {
+                        testSprite.step_forward(1);
+                        testSprite.bounce_edge();
+
+                        let dist = testSprite.distance_to(0, 0);
+                        // console.log(`testSprite.distance_to(0, 0): ${dist}`);
+                        
+                        if (drawTestCounter % 100 === 0) { // Test less frequently
+                           let img = testSprite.get_costume_image(); 
+                           console.log(`testSprite.get_costume_image() returned:`, img ? 'Image Data' : 'null');
+                           testSprite.move_to( Math.random() * testCanvasWidth, Math.random() * testCanvasHeight);
+                           console.log(`testSprite.move_to called.`);
+                        }
+                    }
+                    
+                    // --- Input Check (inside loop - using direct state check) ---
+                    const cursor = TestEngine.cursor;
+                    const key = TestEngine.key;
+                    const stateY = 20; // Starting Y for state display
+                    const stateLineHeight = 15;
+                    pen.color = 'white'; // Use white for state text for contrast on black backdrop
+                    pen.font = '12px monospace';
+                    
+                    // Display Cursor State
+                    pen.draw_text(`Cursor X: ${cursor.x.toFixed(0)} Y: ${cursor.y.toFixed(0)}`, 10, stateY);
+                    pen.draw_text(`Left Down: ${cursor.left} Right Down: ${cursor.right} Any Down: ${cursor.isDown}`, 10, stateY + stateLineHeight);
+
+                    // Display Key State
+                    pen.draw_text(`Key Left: ${key['left']} Right: ${key['right']} Space: ${key['space']}`, 10, stateY + 3*stateLineHeight);
+                    
+                    // Control Sprite with Keys
+                    if (key['left']) { 
+                         if(testSprite) testSprite.direction = 270; // Turn sprite left
+                    }
+                     if (key['right']) { 
+                         if(testSprite) testSprite.direction = 90; // Turn sprite right
+                    }
+
+                } catch(loopError) {
+                    console.error("Error inside TestEngine.forever:", loopError);
+                    TestEngine.stop(); // Stop the loop on error
+                }
+            });
+            console.log("TestEngine.forever setup complete.");
+        }
+
+        console.log("--- API Comprehensive Test Script Loaded ---");
+
+        // Function to display code in the pre tag (Ensure it cleans new console logs)
+        function displayCode() {
+            const scriptContent = document.getElementById('api-test-script').textContent;
+            const codeBlock = document.getElementById('api-test-code-content');
+             // Basic cleaning: remove the displayCode function definition and initial logs
+            const cleanedContent = scriptContent
+                .replace(/function displayCode\(\) {[\s\S]*?}\s*displayCode\(\);/m, '') // Remove displayCode function
+                .replace(/console\.log\("--- Starting API Comprehensive Test ---"\);/, '') 
+                .replace(/console\.log\("Acquired TestEngine\.pen object\."\);/, '') // Clean new log
+                .replace(/console\.log\("--- API Comprehensive Test Script Loaded ---"\);/, '') 
+                .replace(/^\s*\/\/ --- API Test Code ---/, '') // Remove placeholder comment
+                .trim();
+            codeBlock.textContent = cleanedContent;
+            // If using a syntax highlighter like Prism.js or highlight.js, trigger highlighting here
+            // Example for Prism.js: Prism.highlightElement(codeBlock);
+        }
+        // Display the code once the script is loaded
+        displayCode();
+    </script>
+
+</body>
+</html> 

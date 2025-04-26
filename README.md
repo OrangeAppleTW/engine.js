@@ -1,5 +1,7 @@
 # Koding Game Engine
 
+## About
+
 #### Website 👍
 [https://orangeappletw.github.io/engine.js/docs](https://orangeappletw.github.io/engine.js/docs)  
 
@@ -12,7 +14,10 @@
 #### Games  🎮
 [https://koding.school](https://koding.school)
 
-#### Development  🔧
+We also support snake-case:
+[https://orangeappletw.github.io/engine.js/snake-case-test.html](https://orangeappletw.github.io/engine.js/snake-case-test.html)
+
+## Development  🔧
 
 To start the development server with live reloading:
 
@@ -22,7 +27,7 @@ npm run dev
 yarn dev
 ```
 
-#### Build  📦
+## Build  📦
 
 To build the project for production:
 
