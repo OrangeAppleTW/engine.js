@@ -749,36 +749,69 @@ var Engine = (function () {
 
 	var loader = Loader$1;
 
-	function getKey(e){
-	    const specialKeys = {
-	        "Backspace": "backspace",
-	        "Tab": "tab",
-	        "Enter": "enter",
-	        "Shift": "shift",
-	        "Control": "ctrl",
-	        "Alt": "alt",
-	        "Pause": "pause/break",
-	        "CapsLock": "caps lock",
-	        "Escape": "esc",
-	        " ": "space",
-	        "PageUp": "page up",
-	        "PageDown": "page down",
-	        "End": "end",
-	        "Home": "home",
-	        "ArrowLeft": "left",
-	        "ArrowUp": "up",
-	        "ArrowRight": "right",
-	        "ArrowDown": "down",
-	        "Insert": "insert",
-	        "Delete": "delete",
-	        "Meta": "command"
-	    };
-	    if (e.key in specialKeys) {
-	        return specialKeys[e.key];
-	    } else {
-	        return e.key;
+	class KeyMapper {
+	    constructor() {
+	        this._mapping = {
+	            "Backspace": "backspace",
+	            "Tab": "tab",
+	            "Enter": "enter",
+	            "Shift": "shift",
+	            "Control": "ctrl",
+	            "Alt": "alt",
+	            "Pause": "pause/break",
+	            "CapsLock": "caps lock",
+	            "Escape": "esc",
+	            " ": "space",
+	            "PageUp": "page up",
+	            "PageDown": "page down",
+	            "End": "end",
+	            "Home": "home",
+	            "ArrowLeft": "left",
+	            "ArrowUp": "up",
+	            "ArrowRight": "right",
+	            "ArrowDown": "down",
+	            "Insert": "insert",
+	            "Delete": "delete",
+	            "Meta": "command"
+	        };
+
+	        // 添加字母 a-z
+	        for (let i = 97; i <= 122; i++) {
+	            const char = String.fromCharCode(i);
+	            this._mapping[char] = char;
+	        }
+
+	        // 添加數字 0-9
+	        for (let i = 0; i <= 9; i++) {
+	            const num = i.toString();
+	            this._mapping[num] = num;
+	        }
+	    }
+
+	    /**
+	     * 從鍵盤事件取得標準化的按鍵名稱。
+	     * @param {Event} e - 鍵盤事件物件。
+	     * @returns {string} 標準化的按鍵名稱。
+	     */
+	    getNameFromEvent(e) {
+	        if (e.key in this._mapping) {
+	            return this._mapping[e.key];
+	        } else {
+	            return e.key; // 若不在映射表中，則回傳原始按鍵值
+	        }
+	    }
+
+	    /**
+	     * 取得所有已定義的按鍵映射名稱。
+	     * @returns {string[]} 所有映射後的按鍵名稱陣列。
+	     */
+	    getAllMappedNames() {
+	        return Object.values(this._mapping);
 	    }
 	}
+
+	// 創建 KeyMapper 的單一實例
+	const keyMapperInstance = new KeyMapper();
 
 	/**
 	 * IO 類別用於處理 HTML Canvas 的輸入事件 (滑鼠、觸控、鍵盤)。
@@ -803,6 +836,12 @@ var Engine = (function () {
 	    // 目前按住的按鍵狀態
 	    var holding   = this.holding   = { any: false, count: 0 };
 	    
+	    // 將 KeyMapper 中所有已知的按鍵名稱添加到 holding 物件，並設為 false
+	    // 雖然不設定為 false, 在 JS 環境中大致沒問題，但是用 Brython 執行時，例如 `if key.space:` 會出現 undefined 的錯誤
+	    keyMapperInstance.getAllMappedNames().forEach(keyName => {
+	        holding[keyName] = false;
+	    });
+
 	    // 遊戲場景響應式的縮放是交由外部 css 樣式來控制
 	    // zoom 表示遊戲場景的縮放比例，讓滑鼠事件或是觸控事件的觸發位置精準偵測
 	    // 因為沒有針對單一元素 resize 的事件，因此改每 100ms 偵測一次 canvas 的大小
@@ -813,9 +852,6 @@ var Engine = (function () {
 	        zoomX = box.width/canvas.width;
 	        zoomY = box.height/canvas.height;
 	    }, 100);
-
-	    // // 建立所有的按鍵並設為 false，避免 undefined 所造成的 exception
-	    // for(var _key in keycode.codes){ holding[_key] = false; }
 
 	    var debugMode = !!settings.debugMode;
 
@@ -903,7 +939,7 @@ var Engine = (function () {
 
 	    // 鍵盤按下事件監聽器
 	    canvas.addEventListener("keydown", function(e){
-	        var key = getKey(e); // 將 e.key 轉換為可讀的鍵名
+	        var key = keyMapperInstance.getNameFromEvent(e); // 使用 KeyMapper 實例
 	        // 如果此鍵之前未被按下，增加按鍵計數
 	        if(!holding[key]) holding.any = (holding.count += 1) > 0;
 	        keydown.any = true; // 標記有鍵被按下
@@ -916,7 +952,7 @@ var Engine = (function () {
 
 	    // 鍵盤放開事件監聽器
 	    canvas.addEventListener("keyup", function(e){
-	        var key = getKey(e);
+	        var key = keyMapperInstance.getNameFromEvent(e); // 使用 KeyMapper 實例
 	        // 減少按鍵計數，如果計數大於 0，表示仍有其他鍵被按住
 	        holding.any = (holding.count -= 1) > 0;
 	        keyup.any = true; // 標記有鍵被放開

@@ -69,10 +69,10 @@ Pen.prototype.drawPolygon = Pen.prototype.draw_polygon;
 proxy.createSprite = proxy.create_sprite;
 proxy.createSound = proxy.create_sound;
 proxy.setBackground = proxy.set_background;
-proxy.setBackground = proxy.set_backdrop;
+proxy.setBackdrop = proxy.set_backdrop;
 proxy.drawText = proxy.draw_text;
 proxy.drawBackdrop = proxy.draw_backdrop;
-proxy.drawBackdrop = proxy.draw_background;
+proxy.drawBackground = proxy.draw_background;
 proxy.drawSprites = proxy.draw_sprites;
 // ================================
 ```
