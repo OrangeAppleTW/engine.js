@@ -1310,7 +1310,7 @@ var Engine = (function () {
 	    var settings = {
 	        debugMode: debugMode || false,
 	        autoRendering: true,
-	        precision: 1, // 像素碰撞的精確度，單位是 pixel
+	        precision: 1, // 像素碰撞的精確度，單位是 pixel
 	    };
 
 	    var background = { path: '#ffffff' };
@@ -1411,8 +1411,42 @@ var Engine = (function () {
 	    if(settings.debugMode){
 	        proxy.eventList = eventList;
 	    }
+
+		// For Koding.school old python env:
+		proxy.createSprite = proxy.create_sprite;
+		proxy.createSound = proxy.create_sound;
+		proxy.setBackground = proxy.set_background;
+		proxy.setBackground = proxy.set_backdrop;
+		proxy.drawText = proxy.draw_text;
+		proxy.drawBackdrop = proxy.draw_backdrop;
+		proxy.drawBackdrop = proxy.draw_background;
+		proxy.drawSprites = proxy.draw_sprites;
+		// ================================
+		
 	    return proxy;
 	}
+
+	// For Koding.school old python env:
+	Sprite.prototype.stepForward = Sprite.prototype.step_forward;
+	Sprite.prototype.moveTo = Sprite.prototype.move_to;
+	Sprite.prototype.distanceTo = Sprite.prototype.distance_to;
+	Sprite.prototype.nextCostume = Sprite.prototype.next_costume;
+	Sprite.prototype.bounceEdge = Sprite.prototype.bounce_edge;
+	Sprite.prototype.getCostumeImage = Sprite.prototype.get_costume_image;
+
+	SoundNode.prototype.setVolume = SoundNode.prototype.set_volume;
+	SoundNode.prototype.setLoop = SoundNode.prototype.set_loop;
+
+	Sound.prototype.setVolume = Sound.prototype.set_volume;
+
+	Pen.prototype.drawShapes = Pen.prototype.draw_shapes;
+	Pen.prototype.drawTexts = Pen.prototype.draw_texts;
+	Pen.prototype.drawText = Pen.prototype.draw_text;
+	Pen.prototype.drawLine = Pen.prototype.draw_line;
+	Pen.prototype.drawCircle = Pen.prototype.draw_circle;
+	Pen.prototype.drawRect = Pen.prototype.draw_rect;
+	Pen.prototype.drawPolygon = Pen.prototype.draw_polygon;
+	// ================================
 
 	var engine_1 = engine;
 

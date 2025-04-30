@@ -100,31 +100,26 @@ export default [
     ].filter(Boolean)
   },
   // 主要JS引擎打包配置 (Snake_Case)
-  {
-    input: 'src/engine.js',
-    output: [
-      {
-        file: 'engine-snake.js', // Snake_case 文件名
-        format: 'iife',
-        name: 'Engine', // 全局变量名保持一致或改为 EngineSnake？ 保持 Engine
-        sourcemap: !production
-      },
-      production && {
-        file: 'engine-snake-min.js', // Snake_case 压缩文件名
-        format: 'iife',
-        name: 'Engine',
-        plugins: [terser()] // 注意：terser 可能会影响替换效果，需要测试
-      }
-    ].filter(Boolean),
-    plugins: [
-      resolve({
-        browser: true
-      }),
-      commonjs(),
-      camelToSnakePlugin(camelToSnakeMapping), // 应用转换插件
-      // 开发服务器和热重载通常只用于主开发版本，这里省略
-    ].filter(Boolean)
-  },
+  // 
+  // {
+  //   input: 'src/engine.js',
+  //   output: [
+  //     {
+  //       file: 'engine-snake.js', // Snake_case 文件名
+  //       format: 'iife',
+  //       name: 'Engine',
+  //       sourcemap: !production
+  //     }
+  //   ].filter(Boolean),
+  //   plugins: [
+  //     resolve({
+  //       browser: true
+  //     }),
+  //     commonjs(),
+  //     camelToSnakePlugin(camelToSnakeMapping), // 应用转换插件
+  //     // 开发服务器和热重载通常只用于主开发版本，这里省略
+  //   ].filter(Boolean)
+  // },
   // 处理SCSS和Pug文件
   {
     input: 'docs/index.js',

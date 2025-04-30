@@ -1310,7 +1310,7 @@ var Engine = (function () {
 	    var settings = {
 	        debugMode: debugMode || false,
 	        autoRendering: true,
-	        precision: 1, // 像素碰撞的精確度，單位是 pixel
+	        precision: 1, // 像素碰撞的精確度，單位是 pixel
 	    };
 
 	    var background = { path: '#ffffff' };
